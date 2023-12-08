@@ -7,6 +7,10 @@ Deploy your autonomous agents to the cloud with infinite scalability, 99% uptime
 Base swarms code -> fastapi code is added to top and bottom -> agent is decorated with expose as api decorator -> file is parsed and then -> added onto yaml for -> skypilot
 
 
+# Install
+`pip install swarms-cloud`
+
+
 # Stack
 - Backend: FastAPI
 - Skypilot for container management
