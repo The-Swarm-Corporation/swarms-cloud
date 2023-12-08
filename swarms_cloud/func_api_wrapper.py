@@ -4,6 +4,7 @@ from typing import Callable
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
+# Logger initialization
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -90,7 +91,14 @@ class FuncAPIWrapper:
 
         def decorator(func: Callable):
             try:
+                if method.lower() == "get":
+                    endpoint_func = self.app.get(path)
+                elif method.lower() == "post":
+                    endpoint_func = self.app.post(path)
+                else:
+                    raise ValueError(f"Invalid method: {method}")
 
+                @endpoint_func
                 async def endpoint_wrapper(*args, **kwargs):
                     try:
                         logger.info(f"Calling method {func.__name__}")
@@ -100,7 +108,7 @@ class FuncAPIWrapper:
                         logger.error(f"Error in {func.__name__}: {error}")
                         raise HTTPException(status_code=500, detail=str(error))
 
-                # Register the endpoint with the hhttp methopd
+                # Register the endpoint with the http method
                 endpoint_func = getattr(self.app, method.lower())
                 endpoint_func(path)(endpoint_wrapper)
                 return func
