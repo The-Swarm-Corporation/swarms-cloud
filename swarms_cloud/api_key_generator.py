@@ -2,7 +2,7 @@ import secrets
 import string
 
 
-def generate_api_key(prefix="sk-", length: int = 50):
+def generate_api_key(prefix: str = "sk-", length: int = 50, *args, **kwargs):
     """Generate a random api key
 
     Args:

@@ -1,3 +1,4 @@
 swarms
 skypilot
 fastapi
+supabase
