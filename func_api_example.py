@@ -17,8 +17,7 @@ api_key = os.environ.get("OPENAI_API_KEY")
 
 # Initialize the API wrapper
 api = FuncAPIWrapper(
-    host = "0.0.0.0",
-    port = 8000,
+    port=8001,
 )
 
 
@@ -39,7 +38,7 @@ agent = Agent(
 )
 
 
-@api.add("/agent")
+@api.add("/agent", method="post")
 def agent_method(task: str):
     """Agent method
 

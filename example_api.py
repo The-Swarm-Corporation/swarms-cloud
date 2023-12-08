@@ -7,14 +7,14 @@ load_dotenv()
 
 
 # Define the API endpoint
-url = "http://localhost:8000/agent"
+url = "http://localhost:8001/agent"
 
 # Define the task for the agent
 task = "Generate a 10,000 word blog on health and wellness."
 
 # Define the payload for the POST request
 payload = {
-    "msg": task,
+    "task": task,
 }
 
 # Send the POST request to the API
