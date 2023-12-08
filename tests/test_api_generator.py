@@ -107,7 +107,6 @@ def test_generate_api_key_long_prefix():
     assert len(api_key) == 63  # Custom prefix (16) + 50 random characters
 
 
-
 class MockAgent(Agent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
