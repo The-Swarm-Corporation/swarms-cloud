@@ -1,12 +1,3 @@
-DEBUG:jaxlib.mlir._mlir_libs:Initializing MLIR with module: _site_initialize_0
 Initializing MLIR with module: _site_initialize_0
-DEBUG:jaxlib.mlir._mlir_libs:Registering dialects from initializer <module 'jaxlib.mlir._mlir_libs._site_initialize_0' from '/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/jaxlib/mlir/_mlir_libs/_site_initialize_0.so'>
 Registering dialects from initializer <module 'jaxlib.mlir._mlir_libs._site_initialize_0' from '/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/jaxlib/mlir/_mlir_libs/_site_initialize_0.so'>
-DEBUG:jax._src.path:etils.epath was not found. Using pathlib for file I/O.
 etils.epath was not found. Using pathlib for file I/O.
-INFO:swarms_cloud.main:Registering POST endpoint at /agent
-Registering POST endpoint at /agent
-[32mINFO[0m:     Started server process [[36m28866[0m]
-[32mINFO[0m:     Waiting for application startup.
-[32mINFO[0m:     Application startup complete.
-[32mINFO[0m:     Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)

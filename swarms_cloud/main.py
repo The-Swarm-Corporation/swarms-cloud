@@ -1,63 +1,109 @@
-import logging
-from typing import Callable, Type, Optional
+import pytest
+from unittest.mock import MagicMock
 
 from fastapi import FastAPI, HTTPException
 from swarms.structs.agent import Agent
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from swarms_cloud.main import agent_api_wrapper
 
 
-def agent_api_wrapper(
-    agent_class: Type[Agent],
-    app: FastAPI,
-    path: Optional[str] = None,
-    http_method: Optional[str] = "get",
-    logging: bool = False,
-    *args,
-    **kwargs,
-):
-    """Expose agent methods as API endpoints
+class MockAgent(Agent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.method_called = False
 
-    Args:
-        agent_class (Type[Agent]): _description_
-        app (FastAPI): _description_
-        path (str): _description_
-        http_method (str, optional): _description_. Defaults to "get".
+    def mock_method(self):
+        self.method_called = True
+        return "Hello World"
 
-    Example:
-    >>> from swarms.agents import Agent
-    >>> from fastapi import FastAPI
-    >>> app = FastAPI()
-    >>> @agent_api_wrapper(Agent, app, "/agent")
-    ... def agent_method():
-    ...     return "Hello World"
 
-    """
+@pytest.mark.parametrize(
+    "http_method",
+    ["get", "post"],
+)
+def test_decorator_registers_endpoint(http_method):
+    # Arrange
+    app = FastAPI()
+    path = "/agent"
 
-    def decorator(func: Callable):
-        async def endpoint_wrapper(*args, **kwargs):
-            try:
-                logger.info(
-                    f"Creating instance of {agent_class.__name__} with args: {args} and kwargs: {kwargs}"
-                )
-                agent_instance = agent_class(*args, **kwargs)
-                logger.info(f"Calling method {func.__name__} of {agent_class.__name__}")
-                result = getattr(agent_instance, func.__name__)()
-                logger.info(
-                    f"Method {func.__name__} of {agent_class.__name__} returned: {result}"
-                )
-                return result
-            except Exception as error:
-                logger.error(f"An error occurred: {str(error)}")
-                raise HTTPException(status_code=500, detail=str(error))
+    # Act
+    @agent_api_wrapper(MockAgent, app, path, http_method=http_method)
+    def mock_method():
+        return "Hello World"
 
-        if http_method.lower() == "get":
-            logger.info(f"Registering GET endpoint at {path}")
-            app.get(path)(endpoint_wrapper)
-        elif http_method.lower() == "post":
-            logger.info(f"Registering POST endpoint at {path}")
-            app.post(path)(endpoint_wrapper)
-        return func
+    # Assert
+    if http_method == "get":
+        assert "GET" in app.routes
+    else:
+        assert "POST" in app.routes
 
-    return decorator
+    assert path in app.routes
+
+
+def test_decorator_logs_correctly():
+    # Arrange
+    app = FastAPI()
+    path = "/agent"
+    logger = MagicMock()
+
+    # Act
+    @agent_api_wrapper(MockAgent, app, path, logging=True)
+    def mock_method():
+        return "Hello World"
+
+    # Assert
+    assert logger.info.call_count == 3
+    assert logger.error.call_count == 0
+
+
+def test_endpoint_wrapper_calls_agent_method():
+    # Arrange
+    app = FastAPI()
+    path = "/agent"
+    agent_instance = MockAgent()
+
+    # Act
+    @agent_api_wrapper(MockAgent, app, path)
+    def mock_method():
+        return "Hello World"
+
+    # Assert
+    assert agent_instance.mock_method.called
+
+
+def test_endpoint_wrapper_returns_result():
+    # Arrange
+    app = FastAPI()
+    path = "/agent"
+    agent_instance = MockAgent()
+    expected_result = "Hello World"
+
+    # Act
+    @agent_api_wrapper(MockAgent, app, path)
+    def mock_method():
+        return expected_result
+
+    # Assert
+    response = app.get(path)
+    assert response.status_code == 200
+    assert response.json() == expected_result
+
+
+def test_endpoint_wrapper_raises_exception():
+    # Arrange
+    app = FastAPI()
+    path = "/agent"
+    agent_instance = MockAgent()
+    expected_error = Exception("Test error")
+
+    # Act
+    @agent_api_wrapper(MockAgent, app, path)
+    def mock_method():
+        raise expected_error
+
+    # Assert
+    with pytest.raises(HTTPException) as error:
+        app.get(path)
+
+    assert error.value.status_code == 500
+    assert error.value.detail == str(expected_error)

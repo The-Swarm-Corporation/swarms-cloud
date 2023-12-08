@@ -3,15 +3,15 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "paper"
+name = "swarms-cloud"
 version = "0.0.1"
-description = "Paper - Pytorch"
+description = "Swarms Cloud - Pytorch"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
-homepage = "https://github.com/kyegomez/paper"
-documentation = ""  # Add this if you have documentation.
+homepage = "https://github.com/kyegomez/swarms-cloud"
+documentation = "https://github.com/kyegomez/swarms-cloud"  # Add this if you have documentation.
 readme = "README.md"  # Assuming you have a README.md
-repository = "https://github.com/kyegomez/paper"
+repository = "https://github.com/kyegomez/swarms-cloud"
 keywords = ["artificial intelligence", "deep learning", "optimizers", "Prompt Engineering"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -23,6 +23,10 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
+swarms = "*"
+fastapi = "*"
+skypilot = "*"
+
 
 
 [tool.poetry.dev-dependencies]
