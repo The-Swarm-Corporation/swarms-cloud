@@ -4,7 +4,6 @@ import pytest
 from supabase import Client
 from swarms_cloud.supabase_handler import SwarmCloudUsageLogger
 
-
 # Create a mock Supabase client for testing
 @pytest.fixture
 def mock_supabase_client():
