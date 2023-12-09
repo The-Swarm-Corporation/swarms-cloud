@@ -140,18 +140,18 @@ class SwarmCloudUsageLogger:
             raise RuntimeError(f"Error checking api key: {error}")
 
 
-# Usage example
-logger = SwarmCloudUsageLogger(
-    supabase_url="https://<your_supabase_url>.supabase.co",
-    supabase_key="<your_supabase_key>",
-)
+# # Usage example
+# logger = SwarmCloudUsageLogger(
+#     supabase_url="https://<your_supabase_url>.supabase.co",
+#     supabase_key="<your_supabase_key>",
+# )
 
-log_in = logger.log_usage(
-    user_id="user123",
-    api_key="sk-<your_api_key>",
-    endpoint="/agent",
-    usage_type="get",
-    tokens_used=1,
-)
+# log_in = logger.log_usage(
+#     user_id="user123",
+#     api_key="sk-<your_api_key>",
+#     endpoint="/agent",
+#     usage_type="get",
+#     tokens_used=1,
+# )
 
-check_api_key = logger.check_api_key("sk-<your_api_key>")
+# check_api_key = logger.check_api_key("sk-<your_api_key>")
