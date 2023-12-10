@@ -1,6 +1,6 @@
 import logging
 from typing import Callable
-
+import modal
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
@@ -76,9 +76,17 @@ class FuncAPIWrapper:
 
     """
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8000, *args, **kwargs):
+    def __init__(
+        self,
+        host: str = "0.0.0.0",
+        port: int = 8000,
+        local_api: bool = False,
+        *args,
+        **kwargs,
+    ):
         self.host = host
         self.port = port
+
         self.app = FastAPI()
 
     def add(self, path: str, method: str = "post", *args, **kwargs):
