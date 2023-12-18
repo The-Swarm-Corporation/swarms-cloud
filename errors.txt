@@ -1,22 +1,37 @@
 Initializing MLIR with module: _site_initialize_0
 Registering dialects from initializer <module 'jaxlib.mlir._mlir_libs._site_initialize_0' from '/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/jaxlib/mlir/_mlir_libs/_site_initialize_0.so'>
 etils.epath was not found. Using pathlib for file I/O.
-[2023-12-18 10:53:11,004] torch.distributed.elastic.multiprocessing.redirects: [WARNING] NOTE: Redirects are currently not supported in Windows or MacOs.
-Registering GET endpoint at /test-get
-Registering POST endpoint at /test-post
-Registering GET endpoint at /test-args
-Registering GET endpoint at /agent
-Registering POST endpoint at /agent
-Registering GET endpoint at /agent
-Registering GET endpoint at /agent
-Registering GET endpoint at /agent
-Registering GET endpoint at /agent
+[2023-12-18 11:08:34,472] torch.distributed.elastic.multiprocessing.redirects: [WARNING] NOTE: Redirects are currently not supported in Windows or MacOs.
 Using selector: KqueueSelector
-HTTP Request: GET http://testserver/endpoint "HTTP/1.1 405 Method Not Allowed"
+HTTP Request: GET http://testserver/test "HTTP/1.1 422 Unprocessable Entity"
+Error in test_endpoint: Invalid method: invalid
 Using selector: KqueueSelector
-HTTP Request: GET http://testserver/endpoint "HTTP/1.1 405 Method Not Allowed"
+HTTP Request: POST http://testserver/test_post "HTTP/1.1 422 Unprocessable Entity"
+Error in test_put_endpoint: Invalid method: put
 Using selector: KqueueSelector
-HTTP Request: GET http://testserver/endpoint "HTTP/1.1 404 Not Found"
+HTTP Request: PUT http://testserver/test_put "HTTP/1.1 404 Not Found"
+Error in test_delete_endpoint: Invalid method: delete
 Using selector: KqueueSelector
-HTTP Request: GET http://testserver/endpoint "HTTP/1.1 404 Not Found"
-Starting new HTTP connection (1): usage.skypilot.co:9090
+HTTP Request: DELETE http://testserver/test_delete "HTTP/1.1 404 Not Found"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_error "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Error in test_patch_endpoint: Invalid method: patch
+Using selector: KqueueSelector
+HTTP Request: PATCH http://testserver/test_patch "HTTP/1.1 404 Not Found"
+Using selector: KqueueSelector
+HTTP Request: POST http://testserver/test_data "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_params?key=value "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector

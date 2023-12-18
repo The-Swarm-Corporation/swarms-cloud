@@ -88,7 +88,7 @@ def test_rate_limiter_logs_warnings(max_requests: int, time_span: int):
 def test_rate_limiter_catches_exceptions(max_requests: int, time_span: int, mock_time):
     # Arrange
     app = FastAPI()
-    function = MockFunction()
+    MockFunction()
     client = MockClient("client")
 
     # Act
