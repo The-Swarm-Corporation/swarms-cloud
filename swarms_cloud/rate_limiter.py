@@ -8,7 +8,7 @@ from fastapi import HTTPException
 logger = logging.getLogger(__name__)
 
 
-def rate_limiter(max_requests: int, time_span: int):
+def rate_limiter(max_requests: int, time_span: int, *args, **kwargs):
     """Rate limiter decorator
 
     Args:

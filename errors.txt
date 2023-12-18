@@ -1,7 +1,13 @@
 Initializing MLIR with module: _site_initialize_0
 Registering dialects from initializer <module 'jaxlib.mlir._mlir_libs._site_initialize_0' from '/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/jaxlib/mlir/_mlir_libs/_site_initialize_0.so'>
 etils.epath was not found. Using pathlib for file I/O.
-[2023-12-18 11:08:34,472] torch.distributed.elastic.multiprocessing.redirects: [WARNING] NOTE: Redirects are currently not supported in Windows or MacOs.
+[2023-12-18 11:15:00,058] torch.distributed.elastic.multiprocessing.redirects: [WARNING] NOTE: Redirects are currently not supported in Windows or MacOs.
+Registering GET endpoint at /agent
+Registering POST endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
 Using selector: KqueueSelector
 HTTP Request: GET http://testserver/test "HTTP/1.1 422 Unprocessable Entity"
 Error in test_endpoint: Invalid method: invalid
