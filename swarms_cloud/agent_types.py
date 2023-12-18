@@ -37,8 +37,8 @@ class AgentParameters(BaseModel):
     code_interpreter (Optional[bool], optional): _description_. Defaults to False.
     multi_modal (Optional[bool], optional): _description_. Defaults to None.
     pdf_path (Optional[str], optional): _description_. Defaults to None.
-    
-    
+
+
     """
 
     temperature: float = None

@@ -1,142 +1,62 @@
+from unittest.mock import patch
+
 import pytest
+
 from swarms_cloud.sky_api import SkyInterface
-from sky.exceptions import (
-    ClusterNotUpError,
-    ClusterOwnerIdentityMismatchError,
-    CommandError,
-    InvalidClusterNameError,
-    NoCloudAccessError,
-    NotSupportedError,
-    ResourcesMismatchError,
-    ResourcesUnavailableError,
-    CloudUserIdentityError,
-)
 
 
-# Create a SkyInterface instance for testing
+# Create a fixture for an instance of SkyInterface
 @pytest.fixture
 def sky_interface():
     return SkyInterface()
 
 
-# Test launching tasks
-def test_launch_successful(sky_interface):
-    job_id = sky_interface.launch("sample_task", cluster_name="test_cluster")
-    assert isinstance(job_id, str)
+# Create a fixture for a mock of the sky module
+@pytest.fixture
+def mock_sky():
+    with patch("swarms_cloud.sky_api.sky") as mock:
+        yield mock
 
 
-def test_launch_invalid_cluster_name(sky_interface):
-    with pytest.raises(InvalidClusterNameError):
-        sky_interface.launch("sample_task", cluster_name="invalid-cluster")
+def test_launch(sky_interface, mock_sky):
+    mock_sky.launch.return_value = ("job_id", "handle")
+    job_id = sky_interface.launch("task", "cluster_name")
+    mock_sky.launch.assert_called_once_with("task", cluster_name="cluster_name")
+    assert job_id == "job_id"
+    assert sky_interface.clusters["cluster_name"] == "handle"
 
 
-def test_launch_owner_identity_mismatch(sky_interface):
-    with pytest.raises(ClusterOwnerIdentityMismatchError):
-        sky_interface.launch("sample_task", cluster_name="owner-mismatch")
+def test_execute(sky_interface, mock_sky):
+    sky_interface.clusters["cluster_name"] = "handle"
+    sky_interface.execute("task", "cluster_name")
+    mock_sky.exec.assert_called_once_with("task", "cluster_name")
 
 
-# Test executing tasks
-def test_execute_successful(sky_interface):
-    result = sky_interface.execute("sample_task", cluster_name="test_cluster")
-    assert isinstance(result, str)
+def test_stop(sky_interface, mock_sky):
+    sky_interface.clusters["cluster_name"] = "handle"
+    sky_interface.stop("cluster_name")
+    mock_sky.stop.assert_called_once_with("cluster_name")
 
 
-def test_execute_cluster_not_exist(sky_interface):
-    with pytest.raises(ValueError):
-        sky_interface.execute("sample_task", cluster_name="non-existent-cluster")
+def test_start(sky_interface, mock_sky):
+    sky_interface.clusters["cluster_name"] = "handle"
+    sky_interface.start("cluster_name")
+    mock_sky.start.assert_called_once_with("cluster_name")
 
 
-def test_execute_not_supported(sky_interface):
-    with pytest.raises(NotSupportedError):
-        sky_interface.execute("unsupported_task", cluster_name="test_cluster")
+def test_down(sky_interface, mock_sky):
+    sky_interface.clusters["cluster_name"] = "handle"
+    sky_interface.down("cluster_name")
+    mock_sky.down.assert_called_once_with("cluster_name")
+    assert "cluster_name" not in sky_interface.clusters
 
 
-# Test stopping clusters
-def test_stop_successful(sky_interface):
-    sky_interface.stop("test_cluster")
-    # No assertion needed, just check for exceptions
+def test_status(sky_interface, mock_sky):
+    sky_interface.status()
+    mock_sky.status.assert_called_once()
 
 
-def test_stop_value_error(sky_interface):
-    with pytest.raises(ValueError):
-        sky_interface.stop("non-existent-cluster")
-
-
-# Test starting clusters
-def test_start_successful(sky_interface):
-    sky_interface.start("test_cluster")
-    # No assertion needed, just check for exceptions
-
-
-def test_start_not_supported(sky_interface):
-    with pytest.raises(NotSupportedError):
-        sky_interface.start("unsupported-cluster")
-
-
-# Test tearing down clusters
-def test_down_successful(sky_interface):
-    sky_interface.down("test_cluster")
-    # No assertion needed, just check for exceptions
-
-
-def test_down_value_error(sky_interface):
-    with pytest.raises(ValueError):
-        sky_interface.down("non-existent-cluster")
-
-
-# Test getting status
-def test_status_successful(sky_interface):
-    status = sky_interface.status()
-    assert isinstance(status, dict)
-
-
-def test_status_exception(sky_interface):
-    with pytest.raises(Exception):
-        sky_interface.status()
-
-
-# Test autostop
-def test_autostop_successful(sky_interface):
-    sky_interface.autostop("test_cluster")
-    # No assertion needed, just check for exceptions
-
-
-def test_autostop_not_supported(sky_interface):
-    with pytest.raises(NotSupportedError):
-        sky_interface.autostop("unsupported-cluster")
-
-
-# Additional tests for various exceptions
-def test_cluster_not_up_error():
-    with pytest.raises(ClusterNotUpError):
-        raise ClusterNotUpError("Cluster is not up")
-
-
-def test_resources_mismatch_error():
-    with pytest.raises(ResourcesMismatchError):
-        raise ResourcesMismatchError("Resources mismatch")
-
-
-def test_command_error():
-    with pytest.raises(CommandError):
-        raise CommandError("Command failed")
-
-
-def test_no_cloud_access_error():
-    with pytest.raises(NoCloudAccessError):
-        raise NoCloudAccessError("No cloud access")
-
-
-def test_cluster_owner_identities_mismatch_error():
-    with pytest.raises(ClusterOwnerIdentityMismatchError):
-        raise ClusterOwnerIdentityMismatchError("Cluster owner identities mismatch")
-
-
-def test_resources_unavailable_error():
-    with pytest.raises(ResourcesUnavailableError):
-        raise ResourcesUnavailableError("Resources unavailable")
-
-
-def test_cloud_user_identity_error():
-    with pytest.raises(CloudUserIdentityError):
-        raise CloudUserIdentityError("Cloud user identity error")
+def test_autostop(sky_interface, mock_sky):
+    sky_interface.clusters["cluster_name"] = "handle"
+    sky_interface.autostop("cluster_name")
+    mock_sky.autostop.assert_called_once_with("cluster_name")

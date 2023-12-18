@@ -1,8 +1,7 @@
 import pytest
-from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from swarms_cloud import FuncAPIWrapper, api_wrapper
+from swarms_cloud.func_api_wrapper import FuncAPIWrapper, api_wrapper
 
 
 # Create an instance of FuncAPIWrapper for testing
@@ -77,8 +76,3 @@ def test_api_wrapper_error_handling(client):
 
     response = client.get("/endpoint")
     assert response.status_code == 500
-
-
-# Add more tests as needed
-
-# ...
