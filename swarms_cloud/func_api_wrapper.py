@@ -86,15 +86,14 @@ class FuncAPIWrapper:
     ):
         self.host = host
         self.port = port
-
         self.app = FastAPI()
 
     def add(self, path: str, method: str = "post", *args, **kwargs):
         """Add an endpoint to the API
 
         Args:
-            path (str): _description_
-            method (str, optional): _description_. Defaults to "post".
+            path (str): path to add the endpoint to (e.g. "/endpoint")
+            method (str, optional): post . Defaults to "post".
         """
 
         def decorator(func: Callable):
@@ -103,6 +102,13 @@ class FuncAPIWrapper:
                     endpoint_func = self.app.get(path)
                 elif method.lower() == "post":
                     endpoint_func = self.app.post(path)
+                elif method.lower == "put":
+                    endpoint_func = self.app.put(path)
+                elif method.lower == "delete":
+                    endpoint_func = self.app.delete(path)
+                elif method.lower == "patch":
+                    endpoint_func = self.app.patch(path)
+
                 else:
                     raise ValueError(f"Invalid method: {method}")
 
@@ -126,12 +132,11 @@ class FuncAPIWrapper:
         return decorator
 
     def run(self, *args, **kwargs):
-        """Run the API
-
-        Args:
-
-        """
-        uvicorn.run(self.app, host=self.host, port=self.port)
+        """Run the API"""
+        try:
+            uvicorn.run(self.app, host=self.host, port=self.port)
+        except Exception as error:
+            logger.error(f"Error in {self.__class__.__name__}: {error}")
 
     def __call__(self, *args, **kwargs):
         """Call the run method
@@ -139,4 +144,7 @@ class FuncAPIWrapper:
         Args:
 
         """
-        self.run(*args, **kwargs)
+        try:
+            self.run(*args, **kwargs)
+        except Exception as error:
+            logger.error(f"Error in {self.__class__.__name__}: {error}")

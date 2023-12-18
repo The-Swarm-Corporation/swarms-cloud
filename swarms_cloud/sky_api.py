@@ -1,16 +1,4 @@
 import sky
-from sky.exceptions import (
-    ClusterNotUpError,
-    ClusterOwnerIdentityMismatchError,
-    ClusterOwnerIdentitiesMismatchError,
-    CommandError,
-    InvalidClusterNameError,
-    NoCloudAccessError,
-    NotSupportedError,
-    ResourcesMismatchError,
-    ResourcesUnavailableError,
-    CloudUserIdentityError,
-)
 
 
 class SkyInterface:
@@ -41,15 +29,8 @@ class SkyInterface:
             if handle:
                 self.clusters[cluster_name] = handle
             return job_id
-        except (
-            ClusterOwnerIdentityMismatchError,
-            InvalidClusterNameError,
-            ResourcesMismatchError,
-            ResourcesUnavailableError,
-            CommandError,
-            NoCloudAccessError,
-        ) as e:
-            print("Error launching task:", e)
+        except Exception as error:
+            print("Error launching cluster:", error)
 
     def execute(self, task, cluster_name, **kwargs):
         """Execute a task on a cluster
@@ -68,7 +49,7 @@ class SkyInterface:
             raise ValueError("Cluster {} does not exist".format(cluster_name))
         try:
             return sky.exec(task, cluster_name, **kwargs)
-        except NotSupportedError as e:
+        except Exception as e:
             print("Error executing on cluster:", e)
 
     def stop(self, cluster_name, **kwargs):
@@ -79,7 +60,7 @@ class SkyInterface:
         """
         try:
             sky.stop(cluster_name, **kwargs)
-        except (ValueError, RuntimeError, NotSupportedError) as e:
+        except (ValueError, RuntimeError) as e:
             print("Error stopping cluster:", e)
 
     def start(self, cluster_name, **kwargs):
@@ -90,11 +71,7 @@ class SkyInterface:
         """
         try:
             sky.start(cluster_name, **kwargs)
-        except (
-            ValueError,
-            NotSupportedError,
-            ClusterOwnerIdentitiesMismatchError,
-        ) as e:
+        except Exception as e:
             print("Error starting cluster:", e)
 
     def down(self, cluster_name, **kwargs):
@@ -107,7 +84,7 @@ class SkyInterface:
             sky.down(cluster_name, **kwargs)
             if cluster_name in self.clusters:
                 del self.clusters[cluster_name]
-        except (ValueError, RuntimeError, NotSupportedError) as e:
+        except (ValueError, RuntimeError) as e:
             print("Error tearing down cluster:", e)
 
     def status(self, **kwargs):
@@ -129,11 +106,5 @@ class SkyInterface:
         """
         try:
             sky.autostop(cluster_name, **kwargs)
-        except (
-            ValueError,
-            ClusterNotUpError,
-            NotSupportedError,
-            ClusterOwnerIdentityMismatchError,
-            CloudUserIdentityError,
-        ) as e:
+        except Exception as e:
             print("Error setting autostop:", e)
