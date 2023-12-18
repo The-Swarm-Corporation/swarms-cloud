@@ -6,8 +6,8 @@ def generate_api_key(prefix: str = "sk-", length: int = 50, *args, **kwargs):
     """Generate a random api key
 
     Args:
-        prefix (str, optional): _description_. Defaults to "sk-".
-        length (int, optional): _description_. Defaults to 50.
+        prefix (str, optional): Prefix. Defaults to "sk-".
+        length (int, optional): length of the apikey. Defaults to 50.
 
     Raises:
         ValueError: _description_

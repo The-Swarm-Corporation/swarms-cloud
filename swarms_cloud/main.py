@@ -1,7 +1,7 @@
 import logging
 from typing import Callable, Type, Optional, Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from swarms.structs.agent import Agent
 
 logger = logging.getLogger(__name__)
