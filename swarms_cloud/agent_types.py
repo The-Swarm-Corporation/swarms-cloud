@@ -6,7 +6,39 @@ class AgentParameters(BaseModel):
     """Agent Parameters
 
     Args:
-        BaseModel (_type_): _description_
+    temperature (float, optional): _description_. Defaults to None.
+    model_name (str, optional): _description_. Defaults to None.
+    openai_api_key (str, optional): _description_. Defaults to None.
+    id (str, optional): _description_. Defaults to None.
+    llm (Any, optional): _description_. Defaults to None.
+    template (Optional[str], optional): _description_. Defaults to None.
+    max_loops (int, optional): _description_. Defaults to 5.
+    stopping_condition (Optional[Callable], optional): _description_. Defaults to None.
+    loop_interval (int, optional): _description_. Defaults to 1.
+    retry_attempts (int, optional): _description_. Defaults to 3.
+    retry_interval (int, optional): _description_. Defaults to 1.
+    return_history (bool, optional): _description_. Defaults to False.
+    stopping_token (str, optional): _description_. Defaults to None.
+    dynamic_loops (Optional[bool], optional): _description_. Defaults to False.
+    interactive (bool, optional): _description_. Defaults to False.
+    dashboard (bool, optional): _description_. Defaults to False.
+    agent_name (str, optional): _description_. Defaults to "Autonomous-Agent-XYZ1B".
+    agent_description (str, optional): _description_. Defaults to None.
+    system_prompt (str, optional): _description_. Defaults to None.
+    tools (List[Any], optional): _description_. Defaults to None.
+    dynamic_temperature_enabled (Optional[bool], optional): _description_. Defaults to False.
+    sop (Optional[str], optional): _description_. Defaults to None.
+    sop_list (Optional[List[str]], optional): _description_. Defaults to None.
+    saved_state_path (Optional[str], optional): _description_. Defaults to None.
+    autosave (Optional[bool], optional): _description_. Defaults to False.
+    context_length (Optional[int], optional): _description_. Defaults to 8192.
+    user_name (str, optional): _description_. Defaults to "Human:".
+    self_healing_enabled (Optional[bool], optional): _description_. Defaults to False.
+    code_interpreter (Optional[bool], optional): _description_. Defaults to False.
+    multi_modal (Optional[bool], optional): _description_. Defaults to None.
+    pdf_path (Optional[str], optional): _description_. Defaults to None.
+    
+    
     """
 
     temperature: float = None
