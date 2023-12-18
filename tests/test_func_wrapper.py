@@ -123,6 +123,7 @@ class CustomMiddleware(BaseHTTPMiddleware):
         response.headers["X-Custom-Header"] = "Test"
         return response
 
+
 def test_add_patch(func_api_wrapper):
     @func_api_wrapper.add("/test_patch", method="patch")
     def test_patch_endpoint():
@@ -132,6 +133,7 @@ def test_add_patch(func_api_wrapper):
     response = client.patch("/test_patch")
     assert response.status_code == 200
     assert response.json() == {"message": "test_patch"}
+
 
 def test_request_data(func_api_wrapper):
     @func_api_wrapper.add("/test_data", method="post")
@@ -144,6 +146,7 @@ def test_request_data(func_api_wrapper):
     assert response.status_code == 200
     assert response.json() == {"key": "value"}
 
+
 def test_query_params(func_api_wrapper):
     @func_api_wrapper.add("/test_params", method="get")
     def test_params_endpoint(key: str):
@@ -154,8 +157,10 @@ def test_query_params(func_api_wrapper):
     assert response.status_code == 200
     assert response.json() == {"key": "value"}
 
+
 def test_custom_middleware(func_api_wrapper):
     func_api_wrapper.app.middleware("http")(CustomMiddleware)
+
     @func_api_wrapper.add("/test_middleware", method="get")
     def test_middleware_endpoint():
         return {"message": "test_middleware"}
