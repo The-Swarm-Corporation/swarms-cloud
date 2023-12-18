@@ -21,10 +21,6 @@ class SkyInterface:
     tearing down clusters.
 
 
-
-
-
-
     """
 
     def __init__(self):

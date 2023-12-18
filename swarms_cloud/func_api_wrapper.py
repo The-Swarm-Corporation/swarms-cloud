@@ -1,6 +1,6 @@
 import logging
 from typing import Callable
-import modal
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
