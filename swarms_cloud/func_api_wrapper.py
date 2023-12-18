@@ -1,12 +1,18 @@
+import inspect
 import logging
-from typing import Callable
+from typing import Callable, TypeVar, get_type_hints
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
+from pydantic import create_model
 
 # Logger initialization
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+# Genertic type for return type
+T = TypeVar("T")
 
 
 # Function API Wrapper for functions: [CLASS]
@@ -43,6 +49,7 @@ class FuncAPIWrapper:
         self.host = host
         self.port = port
         self.app = FastAPI()
+        self.error_handlers = {}
 
     def add(self, path: str, method: str = "post", *args, **kwargs):
         """Add an endpoint to the API
@@ -104,3 +111,67 @@ class FuncAPIWrapper:
             self.run(*args, **kwargs)
         except Exception as error:
             logger.error(f"Error in {self.__class__.__name__}: {error}")
+            
+    def add_endpoints(self, endpoints: list):
+        """
+        Batch addition of multiple endpoints.
+
+        Args:
+            endpoints (list): A list of tuples, each containing path, method, and function.
+                              Example: [("/path1", "get", function1), ("/path2", "post", function2)]
+
+        """
+        for path, method, func in endpoints:
+            self.add(path, method)(func)
+
+    def _generate_request_model(self, func: Callable):
+        """Generate requests model
+
+        Args:
+            func (Callable): function to generate the request model for
+
+        Returns:
+            : dynamically generated request model
+        """
+        # Extract arguments from the function signature
+        signature = inspect.signature(func)
+        fields = {
+            name: (param.annotation, ...)
+            for name, param in signature.parameters.items()
+        }
+        return create_model(f"{func.__name__}Request", **fields)
+
+    def _generate_response_model(self, func: Callable):
+        """Generate response model
+
+        Args:
+            func (Callable): function to generate the response model for
+
+        Returns:
+            : dynamically generated response model
+        """
+        return_type = get_type_hints(func).get("return")
+        return create_model(f"{func.__name__}Response", result=(return_type, ...))
+
+    def add_error_handler(
+        self, exception_class: type, handler: Callable[[Request, Exception], Response]
+    ):
+        """Add an error handler
+
+        Args:
+            exception_class (type): exception class to handle
+            handler (Callable[[Request, Exception], Response]): handler function
+        """
+        self.error_handlers[exception_class] = handler
+
+    async def _call_async_func(self, func, **kwargs):
+        """Call an async function
+
+        Args:
+            func (callable): function to call
+
+        """
+        if inspect.iscoroutinefunction(func):
+            return await func(**kwargs)
+        else:
+            return func(**kwargs)

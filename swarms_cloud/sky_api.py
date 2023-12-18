@@ -7,12 +7,12 @@ class SkyInterface:
     SkyInterface is a wrapper around the sky Python API. It provides a
     simplified interface for launching, executing, stopping, starting, and
     tearing down clusters.
-    
+
     Attributes:
         clusters (dict): A dictionary of clusters that have been launched.
         The keys are the names of the clusters and the values are the handles
         to the clusters.
-        
+
     Methods:
         launch: Launch a cluster
         execute: Execute a task on a cluster
@@ -21,7 +21,7 @@ class SkyInterface:
         down: Tear down a cluster
         status: Get the status of a cluster
         autostop: Set the autostop of a cluster
-        
+
     Example:
         >>> sky_interface = SkyInterface()
         >>> job_id = sky_interface.launch("task", "cluster_name")
@@ -42,7 +42,7 @@ class SkyInterface:
         """Launch a task on a cluster
 
         Args:
-            task (_type_): _description_
+            task (str): code to execute on the cluster
             cluster_name (_type_, optional): _description_. Defaults to None.
 
         Returns:
@@ -80,7 +80,7 @@ class SkyInterface:
         """Stop a cluster
 
         Args:
-            cluster_name (_type_): _description_
+            cluster_name (str): name of the cluster to stop
         """
         try:
             sky.stop(cluster_name, **kwargs)
@@ -91,7 +91,7 @@ class SkyInterface:
         """start a cluster
 
         Args:
-            cluster_name (_type_): _description_
+            cluster_name (str): name of the cluster to start
         """
         try:
             sky.start(cluster_name, **kwargs)
@@ -102,7 +102,7 @@ class SkyInterface:
         """Down a cluster
 
         Args:
-            cluster_name (_type_): _description_
+            cluster_name (str): name of the cluster to tear down
         """
         try:
             sky.down(cluster_name, **kwargs)
@@ -115,7 +115,7 @@ class SkyInterface:
         """Save a cluster
 
         Returns:
-            _type_: _description_
+            r: the status of the cluster
         """
         try:
             return sky.status(**kwargs)
@@ -126,7 +126,7 @@ class SkyInterface:
         """Autostop a cluster
 
         Args:
-            cluster_name (_type_): _description_
+            cluster_name (str): name of the cluster to autostop
         """
         try:
             sky.autostop(cluster_name, **kwargs)

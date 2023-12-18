@@ -169,3 +169,39 @@ def test_custom_middleware(func_api_wrapper):
     response = client.get("/test_middleware")
     assert response.status_code == 200
     assert response.headers["X-Custom-Header"] == "Test"
+
+
+
+def test_add_endpoints(func_api_wrapper):
+    endpoints = [
+        ("/test1", "get", lambda: {"message": "test1"}),
+        ("/test2", "post", lambda: {"message": "test2"}),
+    ]
+    func_api_wrapper.add_endpoints(endpoints)
+
+    client = TestClient(func_api_wrapper.app)
+    response = client.get("/test1")
+    assert response.status_code == 200
+    assert response.json() == {"message": "test1"}
+
+    response = client.post("/test2")
+    assert response.status_code == 200
+    assert response.json() == {"message": "test2"}
+
+def test_add_endpoints_invalid_method(func_api_wrapper):
+    endpoints = [
+        ("/test_invalid", "invalid", lambda: {"message": "test_invalid"}),
+    ]
+    with pytest.raises(ValueError):
+        func_api_wrapper.add_endpoints(endpoints)
+
+def test_add_endpoints_exception(func_api_wrapper):
+    endpoints = [
+        ("/test_exception", "get", lambda: 1 / 0),
+    ]
+    func_api_wrapper.add_endpoints(endpoints)
+
+    client = TestClient(func_api_wrapper.app)
+    response = client.get("/test_exception")
+    assert response.status_code == 500
+    assert "division by zero" in response.text
