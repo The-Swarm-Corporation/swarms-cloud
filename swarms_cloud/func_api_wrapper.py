@@ -16,7 +16,7 @@ T = TypeVar("T")
 
 
 # Function API Wrapper for functions: [CLASS]
-class FuncAPIWrapper:
+class SwarmCloud:
     """Functional API Wrapper
 
 
@@ -29,7 +29,7 @@ class FuncAPIWrapper:
         run: Run the API
 
     Example:
-    >>> api = FuncAPIWrapper()
+    >>> api = SwarmCloud()
     >>> @api.add("/endpoint")
     ... def endpoint():
     ...     return "Hello World"

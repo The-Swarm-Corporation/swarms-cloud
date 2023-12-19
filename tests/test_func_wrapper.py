@@ -5,13 +5,13 @@ from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from swarms_cloud.func_api_wrapper import FuncAPIWrapper
+from swarms_cloud.func_api_wrapper import SwarmCloud
 
 
-# Create a fixture for an instance of FuncAPIWrapper
+# Create a fixture for an instance of SwarmCloud
 @pytest.fixture
 def func_api_wrapper():
-    return FuncAPIWrapper()
+    return SwarmCloud()
 
 
 # Create a fixture for a mock of the uvicorn module
