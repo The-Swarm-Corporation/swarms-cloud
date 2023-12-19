@@ -1,7 +1,5 @@
-from unittest.mock import MagicMock
 
 import pytest
-from fastapi import FastAPI, HTTPException
 from swarms.structs.agent import Agent
 
 from swarms_cloud.api_key_generator import generate_api_key
