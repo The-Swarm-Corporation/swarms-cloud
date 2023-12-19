@@ -1,54 +1,43 @@
-Traceback (most recent call last):
-  File "/Users/defalt/Desktop/Athena/research/swarms-cloud/tests/test_func_wrapper.py", line 8, in <module>
-    from swarms_cloud.func_api_wrapper import FuncAPIWrapper
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/swarms_cloud/__init__.py", line 1, in <module>
-    from swarms_cloud.main import agent_api_wrapper
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/swarms_cloud/main.py", line 5, in <module>
-    from swarms.structs.agent import Agent
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/swarms/__init__.py", line 8, in <module>
-    from swarms.models import *  # noqa: E402, F403
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/swarms/models/__init__.py", line 4, in <module>
-    from swarms.models.petals import Petals  # noqa: E402
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/swarms/models/petals.py", line 1, in <module>
-    from transformers import AutoTokenizer, AutoModelForCausalLM
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/__init__.py", line 26, in <module>
-    from . import dependency_versions_check
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/dependency_versions_check.py", line 16, in <module>
-    from .utils.versions import require_version, require_version_core
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/utils/__init__.py", line 31, in <module>
-    from .generic import (
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/utils/generic.py", line 29, in <module>
-    from .import_utils import is_flax_available, is_tf_available, is_torch_available, is_torch_fx_proxy
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/utils/import_utils.py", line 124, in <module>
-    _scipy_available = _is_package_available("scipy")
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/transformers/utils/import_utils.py", line 47, in _is_package_available
-    package_version = importlib.metadata.version(pkg_name)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/__init__.py", line 991, in version
-    return distribution(distribution_name).version
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/__init__.py", line 628, in version
-    return self.metadata['Version']
-           ^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/__init__.py", line 613, in metadata
-    return _adapters.Message(email.message_from_string(text))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/_adapters.py", line 36, in __init__
-    self._headers = self._repair_headers()
-                    ^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/_adapters.py", line 49, in _repair_headers
-    headers = [(key, redent(value)) for key, value in vars(self)['_headers']]
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/_adapters.py", line 49, in <listcomp>
-    headers = [(key, redent(value)) for key, value in vars(self)['_headers']]
-                     ^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/importlib/metadata/_adapters.py", line 47, in redent
-    return textwrap.dedent(' ' * 8 + value)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/textwrap.py", line 435, in dedent
-    text = _whitespace_only_re.sub('', text)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+Initializing MLIR with module: _site_initialize_0
+Registering dialects from initializer <module 'jaxlib.mlir._mlir_libs._site_initialize_0' from '/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/jaxlib/mlir/_mlir_libs/_site_initialize_0.so'>
+etils.epath was not found. Using pathlib for file I/O.
+[2023-12-18 17:25:09,090] torch.distributed.elastic.multiprocessing.redirects: [WARNING] NOTE: Redirects are currently not supported in Windows or MacOs.
+Registering GET endpoint at /agent
+Registering POST endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
+Registering GET endpoint at /agent
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test "HTTP/1.1 422 Unprocessable Entity"
+Error in test_endpoint: Invalid method: invalid
+Using selector: KqueueSelector
+HTTP Request: POST http://testserver/test_post "HTTP/1.1 422 Unprocessable Entity"
+Error in test_put_endpoint: Invalid method: put
+Using selector: KqueueSelector
+HTTP Request: PUT http://testserver/test_put "HTTP/1.1 404 Not Found"
+Error in test_delete_endpoint: Invalid method: delete
+Using selector: KqueueSelector
+HTTP Request: DELETE http://testserver/test_delete "HTTP/1.1 404 Not Found"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_error "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_rate_limit "HTTP/1.1 422 Unprocessable Entity"
+Error in test_patch_endpoint: Invalid method: patch
+Using selector: KqueueSelector
+HTTP Request: PATCH http://testserver/test_patch "HTTP/1.1 404 Not Found"
+Using selector: KqueueSelector
+HTTP Request: POST http://testserver/test_data "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector
+HTTP Request: GET http://testserver/test_params?key=value "HTTP/1.1 422 Unprocessable Entity"
+Using selector: KqueueSelector

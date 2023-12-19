@@ -171,7 +171,6 @@ def test_custom_middleware(func_api_wrapper):
     assert response.headers["X-Custom-Header"] == "Test"
 
 
-
 def test_add_endpoints(func_api_wrapper):
     endpoints = [
         ("/test1", "get", lambda: {"message": "test1"}),
@@ -188,12 +187,14 @@ def test_add_endpoints(func_api_wrapper):
     assert response.status_code == 200
     assert response.json() == {"message": "test2"}
 
+
 def test_add_endpoints_invalid_method(func_api_wrapper):
     endpoints = [
         ("/test_invalid", "invalid", lambda: {"message": "test_invalid"}),
     ]
     with pytest.raises(ValueError):
         func_api_wrapper.add_endpoints(endpoints)
+
 
 def test_add_endpoints_exception(func_api_wrapper):
     endpoints = [

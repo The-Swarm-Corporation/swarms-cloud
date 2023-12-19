@@ -111,7 +111,7 @@ class FuncAPIWrapper:
             self.run(*args, **kwargs)
         except Exception as error:
             logger.error(f"Error in {self.__class__.__name__}: {error}")
-            
+
     def add_endpoints(self, endpoints: list):
         """
         Batch addition of multiple endpoints.
