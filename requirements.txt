@@ -2,3 +2,5 @@ swarms
 skypilot
 fastapi
 supabase
+pytest 
+pytest-benchmark 
