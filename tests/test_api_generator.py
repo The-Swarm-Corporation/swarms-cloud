@@ -10,7 +10,7 @@ def test_generate_api_key_default():
     api_key = generate_api_key()
     assert isinstance(api_key, str)
     assert api_key.startswith("sk-")
-    assert len(api_key) == 52  # Prefix (3) + 50 random characters
+    assert len(api_key) == 53  # Prefix (3) + 50 random characters
 
 
 def test_generate_api_key_custom_length():
