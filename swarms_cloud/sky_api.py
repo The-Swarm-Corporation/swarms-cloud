@@ -197,6 +197,4 @@ class SkyInterface:
         # Chaining setters.
         sky.Task().set_resources(...).set_file_mounts(...)
         """
-        return Task(
-            name=name, setup=setup, run=run, workdir=workdir, *args, **kwargs
-        )
+        return Task(name=name, setup=setup, run=run, workdir=workdir, *args, **kwargs)
