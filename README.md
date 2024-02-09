@@ -16,6 +16,9 @@ Base swarms code -> fastapi code is added to top and bottom -> agent is decorate
 - Skypilot for container management
 - Stripe for payment tracking
 - Postresql for database
+- TensorRT for inference
+- Docker for cluster management
+- Kubernetes for managing and autoscaling docker containers
 
 
 
