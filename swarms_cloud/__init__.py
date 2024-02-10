@@ -38,6 +38,12 @@ from swarms_cloud.api_utils import (
     check_request,
 )
 
+from swarms_cloud.openai_spec import (
+    InputOpenAISpec,
+    OutputOpenAISpec,
+    OpenAIAPIWrapper,
+)
+
 
 __all__ = [
     "generate_api_key",
@@ -75,4 +81,7 @@ __all__ = [
     "get_model_list",
     "create_error_response",
     "check_request",
+    "InputOpenAISpec",
+    "OutputOpenAISpec",
+    "OpenAIAPIWrapper",
 ]

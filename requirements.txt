@@ -4,3 +4,8 @@ fastapi
 supabase
 pytest 
 pytest-benchmark 
+tensorrt
+torch 
+einops
+tiktoken
+uvicorn
