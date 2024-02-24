@@ -7,7 +7,7 @@ import uvicorn
 from executor import GenerationExecutor
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
-from swarms import Fuyu, Conversation
+from swarms import Fuyu
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
@@ -47,12 +47,10 @@ async def generate(request: Request) -> Response:
     model = Fuyu(
         model_name=model_name,
         max_new_tokens=max_new_tokens,
-        args=args  # Injecting args into the Fuyu model
+        args=args,  # Injecting args into the Fuyu model
     )
     response = model.run(
-        request_dict.pop("prompt"),
-        request_dict.pop("max_num_tokens", 8),
-        streaming
+        request_dict.pop("prompt"), request_dict.pop("max_num_tokens", 8), streaming
     )
 
     async def stream_results() -> AsyncGenerator[bytes, None]:
@@ -72,11 +70,13 @@ async def generate(request: Request) -> Response:
         "args": {
             "model_dir": args.model_dir,
             "tokenizer_type": args.tokenizer_type,
-            "max_beam_width": args.max_beam_width
-        }
+            "max_beam_width": args.max_beam_width,
+        },
     }
 
-    return JSONResponse({"model_config": model_config, "choices": [{"text": response.text}]})
+    return JSONResponse(
+        {"model_config": model_config, "choices": [{"text": response.text}]}
+    )
 
 
 async def main(args):

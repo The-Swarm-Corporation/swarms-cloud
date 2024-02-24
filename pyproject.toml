@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "swarms-cloud"
-version = "0.1.1"
+version = "0.1.2"
 description = "Swarms Cloud - Pytorch"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
@@ -26,11 +26,9 @@ python = "^3.9"
 swarms = "*"
 fastapi = "*"
 skypilot = "*"
-supabase = "*"
-
-
-[tool.poetry.dev-dependencies]
-# Add development dependencies here
+torch = "*"
+einops = "*"
+pydantic = "*"
 
 
 [tool.poetry.group.lint.dependencies]

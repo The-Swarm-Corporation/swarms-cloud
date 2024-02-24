@@ -43,7 +43,7 @@ from swarms_cloud.openai_spec import (
     OutputOpenAISpec,
     OpenAIAPIWrapper,
 )
-
+from swarms_cloud.calculate_pricing import calculate_pricing
 
 __all__ = [
     "generate_api_key",
@@ -84,4 +84,5 @@ __all__ = [
     "InputOpenAISpec",
     "OutputOpenAISpec",
     "OpenAIAPIWrapper",
+    "calculate_pricing",
 ]

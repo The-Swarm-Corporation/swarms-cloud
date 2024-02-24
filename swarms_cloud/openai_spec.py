@@ -82,6 +82,7 @@ class OutputOpenAISpec(BaseModel):
     error_type: Optional[str] = None
     error_context: Optional[str] = None
 
+
 class OpenAIAPIWrapper:
     """
     A wrapper class for the OpenAI API.
@@ -92,7 +93,7 @@ class OpenAIAPIWrapper:
     def __init__(self):
         self.input_spec = InputOpenAISpec()
         self.output_spec = OutputOpenAISpec()
-        
+
     def set_input_spec(self, **kwargs):
         """
         Set the input specification for the OpenAI API.
@@ -103,7 +104,7 @@ class OpenAIAPIWrapper:
         for key, value in kwargs.items():
             if hasattr(self.input_spec, key):
                 setattr(self.input_spec, key, value)
-    
+
     def set_output_spec(self, **kwargs):
         """
         Set the output specification for the OpenAI API.
@@ -114,7 +115,7 @@ class OpenAIAPIWrapper:
         for key, value in kwargs.items():
             if hasattr(self.output_spec, key):
                 setattr(self.output_spec, key, value)
-                
+
     def get_input_spec(self):
         """
         Get the input specification for the OpenAI API.
@@ -123,7 +124,7 @@ class OpenAIAPIWrapper:
             str: JSON representation of the input specification.
         """
         return self.input_spec.json()
-    
+
     def get_output_spec(self):
         """
         Get the output specification for the OpenAI API.
