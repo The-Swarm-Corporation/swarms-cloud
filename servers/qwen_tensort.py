@@ -30,8 +30,8 @@ from tensorrt_llm.runtime import ModelConfig, SamplingConfig, Session, TensorInf
 
 def get_engine_name(model, dtype, tp_size, pp_size, rank):
     if pp_size == 1:
-        return "{}_{}_tp{}_rank{}.engine".format(model, dtype, tp_size, rank)
-    return "{}_{}_tp{}_pp{}_rank{}.engine".format(model, dtype, tp_size, pp_size, rank)
+        return f"{model}_{dtype}_tp{tp_size}_rank{rank}.engine"
+    return f"{model}_{dtype}_tp{tp_size}_pp{pp_size}_rank{rank}.engine"
 
 
 def trt_dtype_to_torch(dtype):
@@ -42,7 +42,7 @@ def trt_dtype_to_torch(dtype):
     elif dtype == trt.int32:
         return torch.int32
     else:
-        raise TypeError("%s is not supported" % dtype)
+        raise TypeError(f"{dtype} is not supported")
 
 
 class QWenInfer(object):
