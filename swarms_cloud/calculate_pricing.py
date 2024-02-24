@@ -1,8 +1,17 @@
 from transformers import PreTrainedTokenizer
+from PIL import Image
+from types import Any, List
 
 
 # Function to calculate tokens and pricing
-def calculate_pricing(texts, tokenizer: PreTrainedTokenizer, rate_per_million=0.01):
+def calculate_pricing(
+    texts: List[str] = None,
+    tokenizer: PreTrainedTokenizer = None,
+    images: List[str] = None,
+    rate_per_million: float = 0.01,
+    img_model: Any = None,
+    rate_img: float = 0.003,
+):
     """
     Calculates the pricing for a given list of texts based on the number of tokens, sentences, words, characters, and paragraphs.
 
@@ -27,6 +36,8 @@ def calculate_pricing(texts, tokenizer: PreTrainedTokenizer, rate_per_million=0.
     total_words = 0
     total_characters = 0
     total_paragraphs = 0
+    total_images_processed = 0
+    image_processing_cost = 0
 
     for text in texts:
         # Tokenize the text and count tokens
@@ -48,6 +59,17 @@ def calculate_pricing(texts, tokenizer: PreTrainedTokenizer, rate_per_million=0.
         # Count paragraphs
         paragraphs = text.count("\n\n") + 1
         total_paragraphs += paragraphs
+
+    if images and img_model:
+        for img_path in images:
+            # Load the image
+            Image.open(img_path)
+            # Process the image
+            image_processing_cost += rate_img
+            total_images_processed += 1
+
+        # Calculate the image processing cost
+        total_images_processed + rate_img
 
     # Calculate total cost with high precision
     cost = (total_tokens / 1_000_000) * rate_per_million
