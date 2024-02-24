@@ -9,3 +9,5 @@ torch
 einops
 tiktoken
 uvicorn
+loguru
+pydantic
