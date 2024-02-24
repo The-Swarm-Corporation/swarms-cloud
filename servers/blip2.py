@@ -9,7 +9,7 @@ import tensorrt_llm
 
 
 def get_engine_name(rank):
-    return "rank{}.engine".format(rank)
+    return f"rank{rank}.engine"
 
 
 def trt_dtype_to_torch(dtype):
@@ -20,7 +20,7 @@ def trt_dtype_to_torch(dtype):
     elif dtype == trt.int32:
         return torch.int32
     else:
-        raise TypeError("%s is not supported" % dtype)
+        raise TypeError(f"{dtype} is not supported")
 
 
 def TRTOPT(args, config):

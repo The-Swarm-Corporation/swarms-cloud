@@ -220,7 +220,7 @@ async def predict(model_id: str, params: dict):
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     previous_text = ""
     for new_response in generate_stream_cogvlm(model, tokenizer, params):
@@ -238,7 +238,7 @@ async def predict(model_id: str, params: dict):
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
-        yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+        yield f"{chunk.model_dump_json(exclude_unset=True)}"
     choice_data = ChatCompletionResponseStreamChoice(
         index=0,
         delta=DeltaMessage(),
@@ -246,7 +246,7 @@ async def predict(model_id: str, params: dict):
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
 
 def generate_cogvlm(
@@ -405,9 +405,7 @@ if __name__ == "__main__":
         torch_type = torch.float16
 
     print(
-        "========Use torch type as:{} with device:{}========\n\n".format(
-            torch_type, DEVICE
-        )
+        f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n"
     )
 
     if "cuda" in DEVICE:
