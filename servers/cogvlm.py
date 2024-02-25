@@ -404,9 +404,7 @@ if __name__ == "__main__":
     else:
         torch_type = torch.float16
 
-    print(
-        f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n"
-    )
+    print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
     if "cuda" in DEVICE:
         if QUANT_ENABLED:
