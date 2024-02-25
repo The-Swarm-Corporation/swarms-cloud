@@ -11,3 +11,4 @@ tiktoken
 uvicorn
 loguru
 pydantic
+stripe
