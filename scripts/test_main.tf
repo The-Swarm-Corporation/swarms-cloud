@@ -93,21 +93,79 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ],
   })
 }
+resource "aws_iam_policy" "ecr_read_policy" {
+  name        = "ecr_read_policy"
+  path        = "/"
+  description = "IAM policy for reading from ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability",
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      },
+    ],
+  })
+}
+resource "aws_iam_policy" "ecr_policy" {
+  name        = "ECRPolicy"
+  path        = "/"
+  description = "Allow ECS tasks to pull images from ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "ecr:GetAuthorizationToken",
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ],
+        Resource = "arn:aws:ecr:REGION-GOES-HERE:USER-ACCOUNT-ID:repository/helloworld"
+      }
+    ]
+  })
+}
+resource "aws_iam_policy_attachment" "ecr_policy_attach" {
+  name       = "ECRPolicyAttachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = aws_iam_policy.ecr_policy.arn
+}
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attach" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecr_read_policy.arn
+}
 # Note: This script sets up the VPC, subnets, and security group. Ensure your ECS Task Definition and Service configurations align with this setup.
 resource "aws_ecs_task_definition" "app_task" {
   family                   = "helloworld"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = "256" # Minimum vCPU for FARGATE
-  memory                   = "512" # Minimum memory for FARGATE
+  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  cpu                      = "4096" # Minimum vCPU for FARGATE
+  memory                   = "16384" # Minimum memory for FARGATE
 
+  ephemeral_storage {
+    size_in_gib = 70
+  }
   container_definitions = jsonencode([
     {
       name      = "helloworld-container"
-      image     = "karthequian/helloworld:latest"
-      cpu       = 256
-      memory    = 512
+      image     = "USER-ACCOUNT-ID.dkr.ecr.REGION-GOES-HERE.amazonaws.com/helloworld:latest"
+      cpu       = 2048
+      memory    = 8192
       essential = true
       portMappings = [
         {
