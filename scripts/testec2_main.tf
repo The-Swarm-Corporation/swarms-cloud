@@ -225,7 +225,7 @@ resource "aws_iam_policy" "ecr_policy" {
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage"
         ],
-        Resource = "arn:aws:ecr:[REGION]:[ACCOUNT_ID]:repository/helloworld"
+        Resource = "arn:aws:ecr:us-east-1:916723593639:repository/helloworld"
       }
     ]
   })
@@ -251,8 +251,8 @@ resource "aws_ecs_task_definition" "app_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "qwenfastapi-container"
-      image     = "[ACCOUNT_ID].dkr.ecr.[REGION].amazonaws.com/qwenfastapi:latest"
+      name      = "helloworld-container"
+      image     = "916723593639.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest"
       cpu       = 4096
       memory    = 32768
       essential = true
