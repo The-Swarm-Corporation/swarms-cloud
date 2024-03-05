@@ -327,7 +327,7 @@ resource "aws_ecs_task_definition" "app_task" {
     "name": "s3-sync-container",
     "image": "amazon/aws-cli",
     "entryPoint": ["sh", "-c"],
-    "command": [aws s3 sync s3://qwenvlchat /qwenvl"],
+    "command": ["aws s3 sync s3://qwenvlchat /qwenvl"],
     "mountPoints": [
       {
         "sourceVolume": "efs-volume",

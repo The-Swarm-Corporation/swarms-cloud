@@ -38,7 +38,9 @@ print(f"Total cost: ${cost:.5f}")
 ```python
 from swarms_cloud.api_key_generator import generate_api_key
 
-generate_api_key(prefix="sk", length=30)
+out = generate_api_key(prefix="sk", length=30)
+
+print(out)
 
 ```
 
