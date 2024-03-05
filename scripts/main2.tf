@@ -1,5 +1,10 @@
 provider "aws" {
-  region = "REGION"
+  region = "us-east-1"
+}
+variable "create_new_mount_target" {
+  description = "Whether to create new EFS mount targets"
+  type        = bool
+  default     = true
 }
 
 resource "aws_vpc" "test_vpc" {
@@ -12,7 +17,7 @@ resource "aws_subnet" "test_subnet" {
   vpc_id                  = aws_vpc.test_vpc.id
   cidr_block              = "10.0.1.${count.index * 64}/26"
   map_public_ip_on_launch = true
-  availability_zone       = element(["REGION"], count.index)
+  availability_zone       = element(["us-east-1a"], count.index)
 }
 
 resource "aws_internet_gateway" "test_igw" {
@@ -66,22 +71,21 @@ resource "aws_ecs_service" "test_service" {
   launch_type     = "EC2"
 
   network_configuration {
-    subnets         = aws_subnet.test_subnet.*.id
+    subnets         = [aws_subnet.test_subnet[0].id]
     security_groups = [aws_security_group.test_sg.id]
   }
 }
 
-resource "aws_efs_file_system" "example2" {
-  creation_token = "my-product2"
+resource "aws_efs_file_system" "example" {
+  creation_token = "my-product"
 
   tags = {
-    Name = "MyProduct2"
+    Name = "MyProduct"
   }
 }
-resource "aws_efs_mount_target" "example2" {
-  count           = length(aws_subnet.test_subnet.*.id)
-  file_system_id  = aws_efs_file_system.example2.id
-  subnet_id       = element(aws_subnet.test_subnet.*.id, count.index)
+resource "aws_efs_mount_target" "example" {
+  file_system_id  = aws_efs_file_system.example.id
+  subnet_id       = aws_subnet.test_subnet[0].id
   security_groups = [aws_security_group.test_sg.id]
 }
 # IAM Role for EC2 Instances (if not already defined)
@@ -169,7 +173,7 @@ resource "aws_autoscaling_group" "app_asg" {
     version = "$Latest"
   }
 
-  vpc_zone_identifier = aws_subnet.test_subnet.*.id
+  vpc_zone_identifier = [aws_subnet.test_subnet[0].id]
 
   tag {
     key                 = "Name"
@@ -280,7 +284,7 @@ resource "aws_iam_policy" "ecr_policy" {
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage"
         ],
-        Resource = "arn:aws:ecr:REGION:ACCOUNT-ID:repository/qwenlight"
+        Resource = "arn:aws:ecr:us-east-1:ACCOUNT-ID-HERE:repository/qwenlight"
       }
     ]
   })
@@ -313,7 +317,7 @@ resource "aws_ecs_task_definition" "app_task" {
     name = "efs-volume"
 
     efs_volume_configuration {
-      file_system_id = aws_efs_file_system.example2.id
+      file_system_id = aws_efs_file_system.example.id
       root_directory = "/"
       transit_encryption = "ENABLED"
     }
@@ -323,7 +327,7 @@ resource "aws_ecs_task_definition" "app_task" {
     "name": "s3-sync-container",
     "image": "amazon/aws-cli",
     "entryPoint": ["sh", "-c"],
-    "command": ["aws s3 sync s3://qwenvlchat /qwenvl"],
+    "command": [aws s3 sync s3://qwenvlchat /qwenvl"],
     "mountPoints": [
       {
         "sourceVolume": "efs-volume",
@@ -331,11 +335,19 @@ resource "aws_ecs_task_definition" "app_task" {
         "readOnly": false
       }
     ],
-    "essential": true
+    "essential": true,
+    "log_configuration": {
+      "log_driver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/app-task-logs",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "s3-sync-container"
+      }
+    }
   },
     {
       name      = "qwenfastapi-container"
-      image     = "ACCOUNT-ID.dkr.ecr.REGION.amazonaws.com/qwenlight:latest"
+      image     = "ACCOUNT-ID-HERE.dkr.ecr.us-east-1.amazonaws.com/qwenlight:latest"
       cpu       = 2048
       memory    = 32768
       essential = true
