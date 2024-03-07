@@ -25,8 +25,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy the rest of your application's code into the container
-COPY . /swarms_cloud
-WORKDIR /swarm_cloud/servers
+COPY . /swarms_root
+WORKDIR /swarm_root/servers
 
 # Expose the port the app runs on
 EXPOSE 8000
