@@ -127,7 +127,7 @@ resource "aws_autoscaling_group" "model_api_asg" {
 
 resource "aws_lb_target_group" "model_api_tg" {
   name     = "model-api-tg"
-  port     = 80
+  port     = 8000
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
