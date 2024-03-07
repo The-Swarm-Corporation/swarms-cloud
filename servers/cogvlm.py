@@ -22,9 +22,12 @@ from transformers import (
 from PIL import Image
 from io import BytesIO
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "THUDM/cogvlm-chat-hf")
+# Environment variables
+MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
 if os.environ.get("QUANT_ENABLED"):
     QUANT_ENABLED = True
 else:

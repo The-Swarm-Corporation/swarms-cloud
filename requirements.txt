@@ -8,6 +8,7 @@ tensorrt
 torch 
 einops
 tiktoken
+sse-starlette
 uvicorn
 loguru
 pydantic
