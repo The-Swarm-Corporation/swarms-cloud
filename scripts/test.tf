@@ -1,18 +1,21 @@
 provider "aws" {
   region = "us-east-1"
 }
-
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name = "/ecs/app-task-logs"
+  retention_in_days = 14
+}
 resource "aws_vpc" "test_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 }
 resource "aws_subnet" "test_subnet" {
-  count                   = 2
+  count                   = 1
   vpc_id                  = aws_vpc.test_vpc.id
   cidr_block              = "10.0.1.${count.index * 64}/26"
   map_public_ip_on_launch = true
-  availability_zone       = element(["us-east-1a", "us-east-1b"], count.index)
+  availability_zone       = element(["us-east-1a"], count.index)
 }
 
 resource "aws_internet_gateway" "test_igw" {
@@ -28,10 +31,6 @@ resource "aws_route_table" "test_route_table" {
   }
 }
 
-resource "aws_iam_instance_profile" "app_instance_profile" {
-  name = "app_instance_profile"
-  role = aws_iam_role.ecs_instance_role.name
-}
 resource "aws_route_table_association" "test_rta" {
   count          = length(aws_subnet.test_subnet.*.id)
   subnet_id      = element(aws_subnet.test_subnet.*.id, count.index)
@@ -70,13 +69,23 @@ resource "aws_ecs_service" "test_service" {
   launch_type     = "EC2"
 
   network_configuration {
-    subnets         = aws_subnet.test_subnet.*.id
+    subnets         = [aws_subnet.test_subnet[0].id]
     security_groups = [aws_security_group.test_sg.id]
   }
 }
 
+resource "aws_efs_file_system" "example" {
+  creation_token = "my-product"
 
-
+  tags = {
+    Name = "MyProduct"
+  }
+}
+resource "aws_efs_mount_target" "example" {
+  file_system_id  = aws_efs_file_system.example.id
+  subnet_id       = aws_subnet.test_subnet[0].id
+  security_groups = [aws_security_group.test_sg.id]
+}
 # IAM Role for EC2 Instances (if not already defined)
 resource "aws_iam_role" "ecs_instance_role" {
   name = "ecs_instance_role"
@@ -96,7 +105,16 @@ resource "aws_iam_role" "ecs_instance_role" {
   })
 }
 
+# Attach the necessary policies to the ECS Instance Role
+resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy_attach" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
 
+resource "aws_iam_instance_profile" "app_instance_profile" {
+  name = "app_instance_profile"
+  role = aws_iam_role.ecs_instance_role.name
+}
 
 
 resource "aws_launch_template" "app_launch_template" {
@@ -127,7 +145,7 @@ EOF
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size           = 60
+      volume_size           = 70
       delete_on_termination = true
       volume_type           = "gp2" # General Purpose SSD
     }
@@ -140,7 +158,24 @@ EOF
   }
 }
 
+resource "aws_iam_policy" "ecs_logging" {
+  name        = "ecsLoggingPolicy"
+  description = "IAM policy for ECS logging to CloudWatch Logs"
 
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        Effect   = "Allow",
+        Resource = aws_cloudwatch_log_group.ecs_logs.arn,
+      },
+    ],
+  })
+}
 
 resource "aws_autoscaling_group" "app_asg" {
   name_prefix          = "app-asg-"
@@ -153,7 +188,7 @@ resource "aws_autoscaling_group" "app_asg" {
     version = "$Latest"
   }
 
-  vpc_zone_identifier = aws_subnet.test_subnet.*.id
+  vpc_zone_identifier = [aws_subnet.test_subnet[0].id]
 
   tag {
     key                 = "Name"
@@ -179,6 +214,50 @@ resource "aws_iam_role" "ecs_task_execution_role" {
       },
     ],
   })
+}
+resource "aws_iam_policy" "s3_access_policy" {
+  name        = "s3AccessPolicy"
+  description = "Policy to access specific S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+        ],
+        Effect = "Allow",
+        Resource = [
+          "arn:aws:s3:::qwenvlchat/*",
+        ],
+      },
+    ],
+  })
+}
+
+resource "aws_iam_policy" "efs_permissions" {
+  name        = "EFSPermissions"
+  description = "Policy that allows EFS actions"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:Describe*",
+          // Include any additional actions your task requires
+        ],
+        Resource = "*"
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = aws_iam_policy.s3_access_policy.arn
 }
 resource "aws_iam_policy" "ecr_read_policy" {
   name        = "ecr_read_policy"
@@ -220,16 +299,19 @@ resource "aws_iam_policy" "ecr_policy" {
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage"
         ],
-        Resource = "arn:aws:ecr:us-east-1:916723593639:repository/helloworld"
+        Resource = "arn:aws:ecr:us-east-1:916723593639:repository/qwenlight"
       }
     ]
   })
 }
-
-# Attach the necessary policies to the ECS Instance Role
-resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy_attach" {
-  role       = aws_iam_role.ecs_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+resource "aws_iam_role_policy_attachment" "ecs_logging_attach" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecs_logging.arn
+}
+resource "aws_iam_policy_attachment" "efs_permissions_attach" {
+  name       = "EFSPermissionsAttachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = aws_iam_policy.efs_permissions.arn
 }
 resource "aws_iam_policy_attachment" "ecr_policy_attach" {
   name       = "ECRPolicyAttachment"
@@ -250,19 +332,56 @@ resource "aws_ecs_task_definition" "app_task" {
   cpu                      = "4096" # Minimum vCPU for EC2
   memory                   = "32768" # Minimum memory for EC2
 
+  volume {
+    name = "efs-volume"
+
+    efs_volume_configuration {
+      file_system_id = aws_efs_file_system.example.id
+      root_directory = "/"
+      transit_encryption = "ENABLED"
+    }
+  }
   container_definitions = jsonencode([
+  {
+    "name": "s3-sync-container",
+    "image": "amazon/aws-cli",
+    "entryPoint": ["sh", "-c"],
+    "command": ["aws s3 sync s3://qwenvlchat /qwenvl"],
+    "mountPoints": [
+      {
+        "sourceVolume": "efs-volume",
+        "containerPath": "/qwenvl",
+        "readOnly": false
+      }
+    ],
+    "essential": true,
+    "log_configuration": {
+      "log_driver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/app-task-logs",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "s3-sync-container"
+      }
+    }
+  },
     {
-      name      = "helloworld-container"
-      image     = "916723593639.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest"
-      cpu       = 4096
-      memory    = 32768
+      name      = "qwenfastapi-container"
+      image     = "916723593639.dkr.ecr.us-east-1.amazonaws.com/qwenlight:latest"
+      cpu       = 2048
+      memory    = 16384
       essential = true
+      mountPoints = [
+        {
+          "sourceVolume": "efs-volume",
+          "containerPath": "/qwenvl",
+          "readOnly": false
+        }
+      ],
       portMappings = [
         {
-          containerPort = 8000
-          hostPort      = 8000
+          containerPort = 80
+          hostPort      = 80
           protocol      = "tcp"
-          cidr_blocks = ["0.0.0.0/0"]
         },
       ]
       resourceRequirements = [
