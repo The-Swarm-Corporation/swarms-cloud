@@ -10,7 +10,6 @@ from utils import (
     DEFAULT_PROMPT_TEMPLATES,
     load_tokenizer,
     read_model_name,
-    throttle_generator,
 )
 import tensorrt_llm
 from tensorrt_llm.runtime import ModelRunner
@@ -407,9 +406,9 @@ async def generate(request: GenerateRequest):
             max_new_tokens=16384,
             max_attention_window=4096,
             sink_token_length=None,
-	    end_id=end_id,
+            end_id=end_id,
             pad_id=pad_id,
-	    temperature=0.7,
+            temperature=0.7,
             top_k=1,
             top_p=0.0,
             length_penalty=1.0,
@@ -443,7 +442,7 @@ async def generate(request: GenerateRequest):
             context_logits=context_logits,
             generation_logits=generation_logits,
         )
-    print(f'output: {read_output}')
+    print(f"output: {read_output}")
     output = {"output": read_output}
     return output
 
