@@ -101,7 +101,7 @@ resource "aws_launch_configuration" "model_api_conf" {
               git clone https://github.com/kyegomez/swarms-cloud.git
               cd swarms-cloud
               sudo docker build -t cogvlm .
-              sudo docker run -d -p 80:80 cogvlm
+              sudo docker run -d -p 8000:8000 cogvlm
               EOF
 
   lifecycle {

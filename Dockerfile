@@ -32,4 +32,4 @@ WORKDIR /swarm_cloud/servers
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python3.10", "-m", "uvicorn", "main:cogvlm", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python3.10", "-m", "uvicorn", "main:cogvlm", "--host", "0.0.0.0", "--port", "8000"]
