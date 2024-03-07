@@ -11,3 +11,4 @@ uvicorn
 loguru
 pydantic
 stripe
+xformers
