@@ -1,9 +1,7 @@
 import requests
 import base64
-import json
 from PIL import Image
 from io import BytesIO
-from swarms.utils.loguru_logger import logger
 
 # Convert image to Base64
 def image_to_base64(image_path):
@@ -26,7 +24,7 @@ try:
             "content": [
                 {
                 "type": "text",
-                "text": "What’s in this image?"
+                "text": "Whats in this image?"
                 },
                 {
                 "type": "image_url",
@@ -42,10 +40,7 @@ try:
         "max_tokens": 1024,
     }
 except Exception as error:
-    logger.error(f"Error in sending image to base64: {error}")
-    raise Exception(f"Error in sending image to base64: {error}")
-
-
+    raise Exception(f"Error in constructing request data: {error}")
 # Specify the URL of your FastAPI application
 url = 'http://18.208.184.237:8000/v1/chat/completions'
 
@@ -53,10 +48,7 @@ url = 'http://18.208.184.237:8000/v1/chat/completions'
 try:
     response = requests.post(url, json=request_data)
 except Exception as error:
-    logger.error(f"Error in sending request to the server: {error}")
     raise Exception(f"Error in sending request to the server: {error}")
 
 # Print the response from the server
 print(response.text)
-logger.info(response)
-logger.info(response.text)
