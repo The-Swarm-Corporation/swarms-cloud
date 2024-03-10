@@ -1,1011 +1,499 @@
-import asyncio
-import os
-import random
+import copy
+import json
+import re
 import time
-from http import HTTPStatus
-from typing import Any, AsyncGenerator, List, Literal, Optional, Union
+from argparse import ArgumentParser
+from contextlib import asynccontextmanager
+from typing import Dict, List, Literal, Optional, Union
 
+import torch
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.generation import GenerationConfig
 
-from swarms_cloud.openai_protocol import (  # noqa: E501
-    ChatCompletionRequest,
-    ChatCompletionRequestQos,
-    ChatCompletionResponse,
-    ChatCompletionResponseChoice,
-    ChatCompletionResponseStreamChoice,
-    ChatCompletionStreamResponse,
-    ChatMessage,
-    CompletionRequest,
-    CompletionRequestQos,
-    CompletionResponse,
-    CompletionResponseChoice,
-    CompletionResponseStreamChoice,
-    CompletionStreamResponse,
-    DeltaMessage,
-    EmbeddingsRequest,
-    EncodeRequest,
-    EncodeResponse,
-    ErrorResponse,
-    GenerateRequest,
-    GenerateResponse,
-    ModelCard,
-    ModelList,
-    ModelPermission,
-    UsageInfo,
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # collects GPU memory
+    yield
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
-class VariableInterface:
-    """A IO interface maintaining variables."""
-
-    async_engine: Any = None
-    api_keys: Optional[List[str]] = None
-    qos_engine: Any = None
-    request_hosts = []
-
-
-app = FastAPI(docs_url="/")
-get_bearer_token = HTTPBearer(auto_error=False)
+class ModelCard(BaseModel):
+    id: str
+    object: str = "model"
+    created: int = Field(default_factory=lambda: int(time.time()))
+    owned_by: str = "owner"
+    root: Optional[str] = None
+    parent: Optional[str] = None
+    permission: Optional[list] = None
 
 
-async def check_api_key(
-    auth: Optional[HTTPAuthorizationCredentials] = Depends(get_bearer_token),
-) -> str:
-    """Check if client provide valid api key.
-
-    Adopted from https://github.com/lm-sys/FastChat/blob/v0.2.35/fastchat/serve/openai_api_server.py#L108-L127
-    """  # noqa
-    if VariableInterface.api_keys:
-        if (
-            auth is None
-            or (token := auth.credentials) not in VariableInterface.api_keys
-        ):
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "error": {
-                        "message": "Please request with valid api key!",
-                        "type": "invalid_request_error",
-                        "param": None,
-                        "code": "invalid_api_key",
-                    }
-                },
-            )
-        return token
-    else:
-        # api_keys not set; allow all
-        return None
+class ModelList(BaseModel):
+    object: str = "list"
+    data: List[ModelCard] = []
 
 
-def get_model_list():
-    """Available models."""
-    return [
-        "Qwen/Qwen-VL-Chat-Int4",
-        "Qwen/Qwen-VL-Chat",
-        "Qwen/Qwen-VL",
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant", "system", "function"]
+    content: Optional[str]
+    function_call: Optional[Dict] = None
+
+
+class DeltaMessage(BaseModel):
+    role: Optional[Literal["user", "assistant", "system"]] = None
+    content: Optional[str] = None
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str
+    messages: List[ChatMessage]
+    functions: Optional[List[Dict]] = None
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
+    max_length: Optional[int] = None
+    stream: Optional[bool] = False
+    stop: Optional[List[str]] = None
+
+
+class ChatCompletionResponseChoice(BaseModel):
+    index: int
+    message: ChatMessage
+    finish_reason: Literal["stop", "length", "function_call"]
+
+
+class ChatCompletionResponseStreamChoice(BaseModel):
+    index: int
+    delta: DeltaMessage
+    finish_reason: Optional[Literal["stop", "length"]]
+
+
+class ChatCompletionResponse(BaseModel):
+    model: str
+    object: Literal["chat.completion", "chat.completion.chunk"]
+    choices: List[
+        Union[ChatCompletionResponseChoice, ChatCompletionResponseStreamChoice]
     ]
+    created: Optional[int] = Field(default_factory=lambda: int(time.time()))
 
 
-@app.get("/v1/models", dependencies=[Depends(check_api_key)])
-def available_models():
-    """Show available models."""
-    model_cards = []
-    for model_name in get_model_list():
-        model_cards.append(
-            ModelCard(id=model_name, root=model_name, permission=[ModelPermission()])
-        )
-    return ModelList(data=model_cards)
+@app.get("/v1/models", response_model=ModelList)
+async def list_models():
+    global model_args
+    model_card = ModelCard(id="gpt-3.5-turbo")
+    return ModelList(data=[model_card])
 
 
-def create_error_response(status: HTTPStatus, message: str):
-    """Create error response according to http status and message.
-
-    Args:
-        status (HTTPStatus): HTTP status codes and reason phrases
-        message (str): error message
-    """
-    return JSONResponse(
-        ErrorResponse(
-            message=message, type="invalid_request_error", code=status.value
-        ).model_dump()
-    )
-
-
-async def check_request(request) -> Optional[JSONResponse]:
-    """Check if a request is valid."""
-    if request.model in get_model_list():
-        return
-    ret = create_error_response(
-        HTTPStatus.NOT_FOUND, f"The model `{request.model}` does not exist."
-    )
-    return ret
+# To work around that unpleasant leading-\n tokenization issue!
+def add_extra_stop_words(stop_words):
+    if stop_words:
+        _stop_words = []
+        _stop_words.extend(stop_words)
+        for x in stop_words:
+            s = x.lstrip("\n")
+            if s and (s not in _stop_words):
+                _stop_words.append(s)
+        return _stop_words
+    return stop_words
 
 
-@app.post("/v1/chat/completions_qos")
-async def chat_completions_v1_qos(
-    request: ChatCompletionRequestQos, raw_request: Request = None
-):
-    """Completion API similar to OpenAI's API.
+def trim_stop_words(response, stop_words):
+    if stop_words:
+        for stop in stop_words:
+            idx = response.find(stop)
+            if idx != -1:
+                response = response[:idx]
+    return response
 
-    Refer to  `https://platform.openai.com/docs/api-reference/chat/create`
-    for the API specification.
 
-    The request should be a JSON object with the following fields:
-    - model: model name. Available from /v1/models.
-    - messages: string prompt or chat history in OpenAI format.
-    - temperature (float): to modulate the next token probability
-    - top_p (float): If set to float < 1, only the smallest set of most
-        probable tokens with probabilities that add up to top_p or higher
-        are kept for generation.
-    - n (int): How many chat completion choices to generate for each input
-        message. Only support one here.
-    - stream: whether to stream the results or not. Default to false.
-    - max_tokens (int): output token nums
-    - repetition_penalty (float): The parameter for repetition penalty.
-        1.0 means no penalty
+TOOL_DESC = """{name_for_model}: Call this tool to interact with the {name_for_human} API. What is the {name_for_human} API useful for? {description_for_model} Parameters: {parameters}"""
 
-    Additional arguments supported by Swarms:
-    - ignore_eos (bool): indicator for ignoring eos
-    - session_id (int): if not specified, will set random value
-    - user_id (str): for qos; if not specified, will set to "default"
+REACT_INSTRUCTION = """Answer the following questions as best you can. You have access to the following APIs:
 
-    Currently we do not support the following features:
-    - function_call (Users should implement this by themselves)
-    - logit_bias (not supported yet)
-    - presence_penalty (replaced with repetition_penalty)
-    - frequency_penalty (replaced with repetition_penalty)
-    """
-    if request.session_id == -1:
-        request.session_id = random.randint(1, 10086)
-    error_check_ret = await check_request(request)
-    if error_check_ret is not None:
-        return error_check_ret
+{tools_text}
 
-    model_name = request.model
-    request_id = str(request.session_id)
-    created_time = int(time.time())
+Use the following format:
 
-    if VariableInterface.qos_engine is None:
-        return create_error_response(
-            HTTPStatus.NOT_FOUND, "cannot parse qos engine config, this api is not work"
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tools_name_text}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can be repeated zero or more times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!"""
+
+_TEXT_COMPLETION_CMD = object()
+
+
+#
+# Temporarily, the system role does not work as expected.
+# We advise that you write the setups for role-play in your query,
+# i.e., use the user role instead of the system role.
+#
+# TODO: Use real system role when the model is ready.
+#
+def parse_messages(messages, functions):
+    if all(m.role != "user" for m in messages):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid request: Expecting at least one user message.",
         )
 
-    result_generator = await VariableInterface.qos_engine.generate_with_qos(request)
+    messages = copy.deepcopy(messages)
+    default_system = "You are a helpful assistant."
+    system = ""
+    if messages[0].role == "system":
+        system = messages.pop(0).content.lstrip("\n").rstrip()
+        if system == default_system:
+            system = ""
 
-    if result_generator is None:
-        return create_error_response(
-            HTTPStatus.INTERNAL_SERVER_ERROR, "Failed to generate completions"
-        )
-
-    def create_stream_response_json(
-        index: int,
-        text: str,
-        finish_reason: Optional[str] = None,
-    ) -> str:
-        choice_data = ChatCompletionResponseStreamChoice(
-            index=index,
-            delta=DeltaMessage(role="assistant", content=text),
-            finish_reason=finish_reason,
-        )
-        response = ChatCompletionStreamResponse(
-            id=request_id,
-            created=created_time,
-            model=model_name,
-            choices=[choice_data],
-        )
-        response_json = response.model_dump_json()
-
-        return response_json
-
-    async def completion_stream_generator() -> AsyncGenerator[str, None]:
-        # First chunk with role
-        for i in range(request.n):
-            choice_data = ChatCompletionResponseStreamChoice(
-                index=i,
-                delta=DeltaMessage(role="assistant"),
-                finish_reason=None,
+    if functions:
+        tools_text = []
+        tools_name_text = []
+        for func_info in functions:
+            name = func_info.get("name", "")
+            name_m = func_info.get("name_for_model", name)
+            name_h = func_info.get("name_for_human", name)
+            desc = func_info.get("description", "")
+            desc_m = func_info.get("description_for_model", desc)
+            tool = TOOL_DESC.format(
+                name_for_model=name_m,
+                name_for_human=name_h,
+                # Hint: You can add the following format requirements in description:
+                #   "Format the arguments as a JSON object."
+                #   "Enclose the code within triple backticks (`) at the beginning and end of the code."
+                description_for_model=desc_m,
+                parameters=json.dumps(func_info["parameters"], ensure_ascii=False),
             )
-            chunk = ChatCompletionStreamResponse(
-                id=request_id, choices=[choice_data], model=model_name
-            )
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-
-        async for res in result_generator:
-            response_json = create_stream_response_json(
-                index=0,
-                text=res.response,
-            )
-            yield f"data: {response_json}\n\n"
-        yield "data: [DONE]\n\n"
-
-    # Streaming response
-    if request.stream:
-        return StreamingResponse(
-            completion_stream_generator(), media_type="text/event-stream"
+            tools_text.append(tool)
+            tools_name_text.append(name_m)
+        tools_text = "\n\n".join(tools_text)
+        tools_name_text = ", ".join(tools_name_text)
+        system += "\n\n" + REACT_INSTRUCTION.format(
+            tools_text=tools_text,
+            tools_name_text=tools_name_text,
         )
+        system = system.lstrip("\n").rstrip()
 
-    # Non-streaming response
-    final_res = None
-    text = ""
-    async for res in result_generator:
-        if await raw_request.is_disconnected():
-            # Abort the request if the client disconnects.
-            VariableInterface.async_engine.stop_session(request.session_id)
-            return create_error_response(HTTPStatus.BAD_REQUEST, "Client disconnected")
-        final_res = res
-        text += res.response
-    assert final_res is not None
-    choices = []
+    dummy_thought = {
+        "en": "\nThought: I now know the final answer.\nFinal answer: ",
+        "zh": "\nThought: 我会作答了。\nFinal answer: ",
+    }
+
+    _messages = messages
+    messages = []
+    for m_idx, m in enumerate(_messages):
+        role, content, func_call = m.role, m.content, m.function_call
+        if content:
+            content = content.lstrip("\n").rstrip()
+        if role == "function":
+            if (len(messages) == 0) or (messages[-1].role != "assistant"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid request: Expecting role assistant before role function.",
+                )
+            messages[-1].content += f"\nObservation: {content}"
+            if m_idx == len(_messages) - 1:
+                messages[-1].content += "\nThought:"
+        elif role == "assistant":
+            if len(messages) == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid request: Expecting role user before role assistant.",
+                )
+            last_msg = messages[-1].content
+            last_msg_has_zh = len(re.findall(r"[\u4e00-\u9fff]+", last_msg)) > 0
+            if func_call is None:
+                if functions:
+                    content = dummy_thought["zh" if last_msg_has_zh else "en"] + content
+            else:
+                f_name, f_args = func_call["name"], func_call["arguments"]
+                if not content:
+                    if last_msg_has_zh:
+                        content = f"Thought: 我可以使用 {f_name} API。"
+                    else:
+                        content = f"Thought: I can use {f_name}."
+                content = f"\n{content}\nAction: {f_name}\nAction Input: {f_args}"
+            if messages[-1].role == "user":
+                messages.append(
+                    ChatMessage(role="assistant", content=content.lstrip("\n").rstrip())
+                )
+            else:
+                messages[-1].content += content
+        elif role == "user":
+            messages.append(
+                ChatMessage(role="user", content=content.lstrip("\n").rstrip())
+            )
+        else:
+            raise HTTPException(
+                status_code=400, detail=f"Invalid request: Incorrect role {role}."
+            )
+
+    query = _TEXT_COMPLETION_CMD
+    if messages[-1].role == "user":
+        query = messages[-1].content
+        messages = messages[:-1]
+
+    if len(messages) % 2 != 0:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+    history = []  # [(Q1, A1), (Q2, A2), ..., (Q_last_turn, A_last_turn)]
+    for i in range(0, len(messages), 2):
+        if messages[i].role == "user" and messages[i + 1].role == "assistant":
+            usr_msg = messages[i].content.lstrip("\n").rstrip()
+            bot_msg = messages[i + 1].content.lstrip("\n").rstrip()
+            if system and (i == len(messages) - 2):
+                usr_msg = f"{system}\n\nQuestion: {usr_msg}"
+                system = ""
+            for t in dummy_thought.values():
+                t = t.lstrip("\n")
+                if bot_msg.startswith(t) and ("\nAction: " in bot_msg):
+                    bot_msg = bot_msg[len(t) :]
+            history.append([usr_msg, bot_msg])
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid request: Expecting exactly one user (or function) role before every assistant role.",
+            )
+    if system:
+        assert query is not _TEXT_COMPLETION_CMD
+        query = f"{system}\n\nQuestion: {query}"
+    return query, history
+
+
+def parse_response(response):
+    func_name, func_args = "", ""
+    i = response.rfind("\nAction:")
+    j = response.rfind("\nAction Input:")
+    k = response.rfind("\nObservation:")
+    if 0 <= i < j:  # If the text has `Action` and `Action input`,
+        if k < j:  # but does not contain `Observation`,
+            # then it is likely that `Observation` is omitted by the LLM,
+            # because the output text may have discarded the stop word.
+            response = response.rstrip() + "\nObservation:"  # Add it back.
+        k = response.rfind("\nObservation:")
+        func_name = response[i + len("\nAction:") : j].strip()
+        func_args = response[j + len("\nAction Input:") : k].strip()
+    if func_name:
+        choice_data = ChatCompletionResponseChoice(
+            index=0,
+            message=ChatMessage(
+                role="assistant",
+                content=response[:i],
+                function_call={"name": func_name, "arguments": func_args},
+            ),
+            finish_reason="function_call",
+        )
+        return choice_data
+    z = response.rfind("\nFinal Answer: ")
+    if z >= 0:
+        response = response[z + len("\nFinal Answer: ") :]
     choice_data = ChatCompletionResponseChoice(
         index=0,
-        message=ChatMessage(role="assistant", content=text),
-        finish_reason=final_res.finish_reason,
+        message=ChatMessage(role="assistant", content=response),
+        finish_reason="stop",
     )
-    choices.append(choice_data)
-
-    total_tokens = sum(
-        [
-            final_res.history_token_len,
-            final_res.input_token_len,
-            final_res.generate_token_len,
-        ]
-    )
-    usage = UsageInfo(
-        prompt_tokens=final_res.input_token_len,
-        completion_tokens=final_res.generate_token_len,
-        total_tokens=total_tokens,
-    )
-    response = ChatCompletionResponse(
-        id=request_id,
-        created=created_time,
-        model=model_name,
-        choices=choices,
-        usage=usage,
-    )
-
-    return response
+    return choice_data
 
 
-@app.post("/v1/chat/completions", dependencies=[Depends(check_api_key)])
-async def chat_completions_v1(
-    request: ChatCompletionRequest, raw_request: Request = None
+# completion mode, not chat mode
+def text_complete_last_message(history, stop_words_ids):
+    im_start = "<|im_start|>"
+    im_end = "<|im_end|>"
+    prompt = f"{im_start}system\nYou are a helpful assistant.{im_end}"
+    for i, (query, response) in enumerate(history):
+        query = query.lstrip("\n").rstrip()
+        response = response.lstrip("\n").rstrip()
+        prompt += f"\n{im_start}user\n{query}{im_end}"
+        prompt += f"\n{im_start}assistant\n{response}{im_end}"
+    prompt = prompt[: -len(im_end)]
+
+    _stop_words_ids = [tokenizer.encode(im_end)]
+    if stop_words_ids:
+        for s in stop_words_ids:
+            _stop_words_ids.append(s)
+    stop_words_ids = _stop_words_ids
+
+    input_ids = torch.tensor([tokenizer.encode(prompt)]).to(model.device)
+    output = model.generate(input_ids, stop_words_ids=stop_words_ids).tolist()[0]
+    output = tokenizer.decode(output, errors="ignore")
+    assert output.startswith(prompt)
+    output = output[len(prompt) :]
+    output = trim_stop_words(output, ["<|endoftext|>", im_end])
+    print(f"<completion>\n{prompt}\n<!-- *** -->\n{output}\n</completion>")
+    return output
+
+
+@app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
+async def create_chat_completion(request: ChatCompletionRequest):
+    global model, tokenizer
+
+    stop_words = add_extra_stop_words(request.stop)
+    if request.functions:
+        stop_words = stop_words or []
+        if "Observation:" not in stop_words:
+            stop_words.append("Observation:")
+
+    query, history = parse_messages(request.messages, request.functions)
+
+    if request.stream:
+        if request.functions:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid request: Function calling is not yet implemented for stream mode.",
+            )
+        # generate = predict(query, history, request.model, stop_words)
+        # return EventSourceResponse(generate, media_type="text/event-stream")
+        raise HTTPException(
+            status_code=400, detail="Stream request is not supported currently."
+        )
+
+    stop_words_ids = [tokenizer.encode(s) for s in stop_words] if stop_words else None
+    if query is _TEXT_COMPLETION_CMD:
+        response = text_complete_last_message(history, stop_words_ids=stop_words_ids)
+    else:
+        response, _ = model.chat(
+            tokenizer,
+            query,
+            history=history,
+            stop_words_ids=stop_words_ids,
+            append_history=False,
+            top_p=request.top_p,
+            temperature=request.temperature,
+        )
+        print(f"<chat>\n{history}\n{query}\n<!-- *** -->\n{response}\n</chat>")
+    response = trim_stop_words(response, stop_words)
+    if request.functions:
+        choice_data = parse_response(response)
+    else:
+        choice_data = ChatCompletionResponseChoice(
+            index=0,
+            message=ChatMessage(role="assistant", content=response),
+            finish_reason="stop",
+        )
+    return ChatCompletionResponse(
+        model=request.model, choices=[choice_data], object="chat.completion"
+    )
+
+
+async def predict(
+    query: str, history: List[List[str]], model_id: str, stop_words: List[str]
 ):
-    """Completion API similar to OpenAI's API.
-
-    Refer to  `https://platform.openai.com/docs/api-reference/chat/create`
-    for the API specification.
-
-    The request should be a JSON object with the following fields:
-    - model: model name. Available from /v1/models.
-    - messages: string prompt or chat history in OpenAI format. Chat history
-        example: `[{"role": "user", "content": "hi"}]`.
-    - temperature (float): to modulate the next token probability
-    - top_p (float): If set to float < 1, only the smallest set of most
-        probable tokens with probabilities that add up to top_p or higher
-        are kept for generation.
-    - n (int): How many chat completion choices to generate for each input
-        message. Only support one here.
-    - stream: whether to stream the results or not. Default to false.
-    - max_tokens (int): output token nums
-    - repetition_penalty (float): The parameter for repetition penalty.
-        1.0 means no penalty
-    - stop (str | List[str] | None): To stop generating further
-        tokens. Only accept stop words that's encoded to one token idex.
-
-    Additional arguments supported by Swarms:
-    - ignore_eos (bool): indicator for ignoring eos
-    - session_id (int): if not specified, will set random value
-
-    Currently we do not support the following features:
-    - function_call (Users should implement this by themselves)
-    - logit_bias (not supported yet)
-    - presence_penalty (replaced with repetition_penalty)
-    - frequency_penalty (replaced with repetition_penalty)
-    """
-    if request.session_id == -1:
-        request.session_id = random.randint(1, 10086)
-    error_check_ret = await check_request(request)
-    if error_check_ret is not None:
-        return error_check_ret
-
-    model_name = request.model
-    request_id = str(request.session_id)
-    created_time = int(time.time())
-
-    if isinstance(request.stop, str):
-        request.stop = [request.stop]
-
-    gen_config = GenerationConfig(
-        max_new_tokens=request.max_tokens if request.max_tokens else 512,
-        top_p=request.top_p,
-        temperature=request.temperature,
-        repetition_penalty=request.repetition_penalty,
-        ignore_eos=request.ignore_eos,
-        stop_words=request.stop,
+    global model, tokenizer
+    choice_data = ChatCompletionResponseStreamChoice(
+        index=0, delta=DeltaMessage(role="assistant"), finish_reason=None
     )
-
-    result_generator = VariableInterface.async_engine.generate(
-        request.messages,
-        request.session_id,
-        gen_config=gen_config,
-        stream_response=True,  # always use stream to enable batching
-        sequence_start=True,
-        sequence_end=True,
-        do_preprocess=not isinstance(
-            request.messages, str
-        ),  # text completion for string input
+    chunk = ChatCompletionResponse(
+        model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
+    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
 
-    def create_stream_response_json(
-        index: int,
-        text: str,
-        finish_reason: Optional[str] = None,
-    ) -> str:
+    current_length = 0
+    stop_words_ids = [tokenizer.encode(s) for s in stop_words] if stop_words else None
+    if stop_words:
+        # TODO: It's a little bit tricky to trim stop words in the stream mode.
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid request: custom stop words are not yet supported for stream mode.",
+        )
+    response_generator = model.chat_stream(
+        tokenizer, query, history=history, stop_words_ids=stop_words_ids
+    )
+    for new_response in response_generator:
+        if len(new_response) == current_length:
+            continue
+
+        new_text = new_response[current_length:]
+        current_length = len(new_response)
+
         choice_data = ChatCompletionResponseStreamChoice(
-            index=index,
-            delta=DeltaMessage(role="assistant", content=text),
-            finish_reason=finish_reason,
+            index=0, delta=DeltaMessage(content=new_text), finish_reason=None
         )
-        response = ChatCompletionStreamResponse(
-            id=request_id,
-            created=created_time,
-            model=model_name,
-            choices=[choice_data],
+        chunk = ChatCompletionResponse(
+            model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
-        response_json = response.model_dump_json()
+        yield "{}".format(chunk.model_dump_json(exclude_unset=True))
 
-        return response_json
-
-    async def completion_stream_generator() -> AsyncGenerator[str, None]:
-        # First chunk with role
-        for i in range(request.n):
-            choice_data = ChatCompletionResponseStreamChoice(
-                index=i,
-                delta=DeltaMessage(role="assistant"),
-                finish_reason=None,
-            )
-            chunk = ChatCompletionStreamResponse(
-                id=request_id, choices=[choice_data], model=model_name
-            )
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-
-        async for res in result_generator:
-            response_json = create_stream_response_json(
-                index=0,
-                text=res.response,
-                finish_reason=res.finish_reason,
-            )
-            yield f"data: {response_json}\n\n"
-        yield "data: [DONE]\n\n"
-
-    # Streaming response
-    if request.stream:
-        return StreamingResponse(
-            completion_stream_generator(), media_type="text/event-stream"
-        )
-
-    # Non-streaming response
-    final_res = None
-    text = ""
-    async for res in result_generator:
-        if await raw_request.is_disconnected():
-            # Abort the request if the client disconnects.
-            VariableInterface.async_engine.stop_session(request.session_id)
-            return create_error_response(HTTPStatus.BAD_REQUEST, "Client disconnected")
-        final_res = res
-        text += res.response
-    assert final_res is not None
-    choices = []
-    choice_data = ChatCompletionResponseChoice(
-        index=0,
-        message=ChatMessage(role="assistant", content=text),
-        finish_reason=final_res.finish_reason,
+    choice_data = ChatCompletionResponseStreamChoice(
+        index=0, delta=DeltaMessage(), finish_reason="stop"
     )
-    choices.append(choice_data)
+    chunk = ChatCompletionResponse(
+        model=model_id, choices=[choice_data], object="chat.completion.chunk"
+    )
+    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield "[DONE]"
 
-    total_tokens = sum(
-        [
-            final_res.history_token_len,
-            final_res.input_token_len,
-            final_res.generate_token_len,
-        ]
+
+def _get_args():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--checkpoint-path",
+        type=str,
+        default="QWen/QWen-7B-Chat",
+        help="Checkpoint name or path, default to %(default)r",
     )
-    usage = UsageInfo(
-        prompt_tokens=final_res.input_token_len,
-        completion_tokens=final_res.generate_token_len,
-        total_tokens=total_tokens,
+    parser.add_argument(
+        "--cpu-only", action="store_true", help="Run demo with CPU only"
     )
-    response = ChatCompletionResponse(
-        id=request_id,
-        created=created_time,
-        model=model_name,
-        choices=choices,
-        usage=usage,
+    parser.add_argument(
+        "--server-port", type=int, default=8000, help="Demo server port."
+    )
+    parser.add_argument(
+        "--server-name",
+        type=str,
+        default="127.0.0.1",
+        help="Demo server name. Default: 127.0.0.1, which is only visible from the local computer."
+        " If you want other computers to access your server, use 0.0.0.0 instead.",
     )
 
-    return response
-
-
-@app.post("/v1/completions_qos")
-async def completions_v1_qos(
-    request: CompletionRequestQos, raw_request: Request = None
-):
-    """Completion API similar to OpenAI's API.
-
-    Go to `https://platform.openai.com/docs/api-reference/completions/create`
-    for the API specification.
-
-    The request should be a JSON object with the following fields:
-    - model (str): model name. Available from /v1/models.
-    - prompt (str): the input prompt.
-    - suffix (str): The suffix that comes after a completion of inserted text.
-    - max_tokens (int): output token nums
-    - temperature (float): to modulate the next token probability
-    - top_p (float): If set to float < 1, only the smallest set of most
-        probable tokens with probabilities that add up to top_p or higher
-        are kept for generation.
-    - n (int): How many chat completion choices to generate for each input
-        message. Only support one here.
-    - stream: whether to stream the results or not. Default to false.
-    - repetition_penalty (float): The parameter for repetition penalty.
-        1.0 means no penalty
-    - user (str): A unique identifier representing your end-user.
-
-    Additional arguments supported by Swarms:
-    - top_k (int): The number of the highest probability vocabulary
-        tokens to keep for top-k-filtering
-    - ignore_eos (bool): indicator for ignoring eos
-    - session_id (int): if not specified, will set random value
-    - user_id (str): for qos; if not specified, will set to "default"
-
-    Currently we do not support the following features:
-    - logprobs (not supported yet)
-    - presence_penalty (replaced with repetition_penalty)
-    - frequency_penalty (replaced with repetition_penalty)
-    """
-    if request.session_id == -1:
-        request.session_id = random.randint(1, 10086)
-    error_check_ret = await check_request(request)
-    if error_check_ret is not None:
-        return error_check_ret
-
-    model_name = request.model
-    request_id = str(request.session_id)
-    created_time = int(time.time())
-    if isinstance(request.prompt, str):
-        request.prompt = [request.prompt]
-
-    if VariableInterface.qos_engine is None:
-        return create_error_response(
-            HTTPStatus.NOT_FOUND, "cannot parse qos engine config, this api is not work"
-        )
-
-    generators = await VariableInterface.qos_engine.generate_with_qos(request)
-
-    def create_stream_response_json(
-        index: int,
-        text: str,
-        finish_reason: Optional[str] = None,
-    ) -> str:
-        choice_data = CompletionResponseStreamChoice(
-            index=index,
-            text=text,
-            finish_reason=finish_reason,
-        )
-        response = CompletionStreamResponse(
-            id=request_id,
-            created=created_time,
-            model=model_name,
-            choices=[choice_data],
-        )
-        response_json = response.model_dump_json()
-
-        return response_json
-
-    async def completion_stream_generator() -> AsyncGenerator[str, None]:
-        # First chunk with role
-        for generator in generators:
-            for i in range(request.n):
-                choice_data = CompletionResponseStreamChoice(
-                    index=i,
-                    text="",
-                    finish_reason=None,
-                )
-                chunk = CompletionStreamResponse(
-                    id=request_id, choices=[choice_data], model=model_name
-                )
-                data = chunk.model_dump_json(exclude_unset=True)
-                yield f"data: {data}\n\n"
-
-            async for res in generator:
-                response_json = create_stream_response_json(
-                    index=0,
-                    text=res.response,
-                )
-                yield f"data: {response_json}\n\n"
-        yield "data: [DONE]\n\n"
-
-    # Streaming response
-    if request.stream:
-        return StreamingResponse(
-            completion_stream_generator(), media_type="text/event-stream"
-        )
-
-    # Non-streaming response
-    usage = UsageInfo()
-    choices = []
-
-    async def _inner_call(i, generator):
-        final_res = None
-        text = ""
-        async for res in generator:
-            if await raw_request.is_disconnected():
-                # Abort the request if the client disconnects.
-                VariableInterface.async_engine.stop_session(request.session_id)
-                return create_error_response(
-                    HTTPStatus.BAD_REQUEST, "Client disconnected"
-                )
-            final_res = res
-            text += res.response
-        assert final_res is not None
-        choice_data = CompletionResponseChoice(
-            index=0,
-            text=text,
-            finish_reason=final_res.finish_reason,
-        )
-        choices.append(choice_data)
-
-        total_tokens = sum(
-            [
-                final_res.history_token_len,
-                final_res.input_token_len,
-                final_res.generate_token_len,
-            ]
-        )
-        usage.prompt_tokens += final_res.input_token_len
-        usage.completion_tokens += final_res.generate_token_len
-        usage.total_tokens += total_tokens
-
-    await asyncio.gather(
-        *[_inner_call(i, generators[i]) for i in range(len(generators))]
-    )
-
-    response = CompletionResponse(
-        id=request_id,
-        created=created_time,
-        model=model_name,
-        choices=choices,
-        usage=usage,
-    )
-
-    return response
-
-
-@app.post("/v1/completions", dependencies=[Depends(check_api_key)])
-async def completions_v1(request: CompletionRequest, raw_request: Request = None):
-    """Completion API similar to OpenAI's API.
-
-    Go to `https://platform.openai.com/docs/api-reference/completions/create`
-    for the API specification.
-
-    The request should be a JSON object with the following fields:
-    - model (str): model name. Available from /v1/models.
-    - prompt (str): the input prompt.
-    - suffix (str): The suffix that comes after a completion of inserted text.
-    - max_tokens (int): output token nums
-    - temperature (float): to modulate the next token probability
-    - top_p (float): If set to float < 1, only the smallest set of most
-        probable tokens with probabilities that add up to top_p or higher
-        are kept for generation.
-    - n (int): How many chat completion choices to generate for each input
-        message. Only support one here.
-    - stream: whether to stream the results or not. Default to false.
-    - repetition_penalty (float): The parameter for repetition penalty.
-        1.0 means no penalty
-    - user (str): A unique identifier representing your end-user.
-    - stop (str | List[str] | None): To stop generating further
-        tokens. Only accept stop words that's encoded to one token idex.
-
-    Additional arguments supported by Swarms:
-    - ignore_eos (bool): indicator for ignoring eos
-    - session_id (int): if not specified, will set random value
-    - top_k (int): The number of the highest probability vocabulary
-        tokens to keep for top-k-filtering
-
-    Currently we do not support the following features:
-    - logprobs (not supported yet)
-    - presence_penalty (replaced with repetition_penalty)
-    - frequency_penalty (replaced with repetition_penalty)
-    """
-    if request.session_id == -1:
-        request.session_id = random.randint(1, 10086)
-    error_check_ret = await check_request(request)
-    if error_check_ret is not None:
-        return error_check_ret
-
-    model_name = request.model
-    request_id = str(request.session_id)
-    created_time = int(time.time())
-    if isinstance(request.prompt, str):
-        request.prompt = [request.prompt]
-    if isinstance(request.stop, str):
-        request.stop = [request.stop]
-    gen_config = GenerationConfig(
-        max_new_tokens=request.max_tokens if request.max_tokens else 512,
-        top_k=request.top_k,
-        top_p=request.top_p,
-        temperature=request.temperature,
-        repetition_penalty=request.repetition_penalty,
-        ignore_eos=request.ignore_eos,
-        stop_words=request.stop,
-    )
-    generators = []
-    for i in range(len(request.prompt)):
-        result_generator = VariableInterface.async_engine.generate(
-            request.prompt[i],
-            request.session_id + i,
-            gen_config=gen_config,
-            stream_response=True,  # always use stream to enable batching
-            sequence_start=True,
-            sequence_end=True,
-            do_preprocess=False,
-        )
-        generators.append(result_generator)
-
-    def create_stream_response_json(
-        index: int,
-        text: str,
-        finish_reason: Optional[str] = None,
-    ) -> str:
-        choice_data = CompletionResponseStreamChoice(
-            index=index,
-            text=text,
-            finish_reason=finish_reason,
-        )
-        response = CompletionStreamResponse(
-            id=request_id,
-            created=created_time,
-            model=model_name,
-            choices=[choice_data],
-        )
-        response_json = response.model_dump_json()
-
-        return response_json
-
-    async def completion_stream_generator() -> AsyncGenerator[str, None]:
-        # First chunk with role
-        for generator in generators:
-            for i in range(request.n):
-                choice_data = CompletionResponseStreamChoice(
-                    index=i,
-                    text="",
-                    finish_reason=None,
-                )
-                chunk = CompletionStreamResponse(
-                    id=request_id, choices=[choice_data], model=model_name
-                )
-                data = chunk.model_dump_json(exclude_unset=True)
-                yield f"data: {data}\n\n"
-
-            async for res in generator:
-                response_json = create_stream_response_json(
-                    index=0,
-                    text=res.response,
-                    finish_reason=res.finish_reason,
-                )
-                yield f"data: {response_json}\n\n"
-        yield "data: [DONE]\n\n"
-
-    # Streaming response
-    if request.stream:
-        return StreamingResponse(
-            completion_stream_generator(), media_type="text/event-stream"
-        )
-
-    # Non-streaming response
-    usage = UsageInfo()
-    choices = []
-
-    async def _inner_call(i, generator):
-        final_res = None
-        text = ""
-        async for res in generator:
-            if await raw_request.is_disconnected():
-                # Abort the request if the client disconnects.
-                VariableInterface.async_engine.stop_session(request.session_id)
-                return create_error_response(
-                    HTTPStatus.BAD_REQUEST, "Client disconnected"
-                )
-            final_res = res
-            text += res.response
-        assert final_res is not None
-        choice_data = CompletionResponseChoice(
-            index=0,
-            text=text,
-            finish_reason=final_res.finish_reason,
-        )
-        choices.append(choice_data)
-
-        total_tokens = sum(
-            [
-                final_res.history_token_len,
-                final_res.input_token_len,
-                final_res.generate_token_len,
-            ]
-        )
-        usage.prompt_tokens += final_res.input_token_len
-        usage.completion_tokens += final_res.generate_token_len
-        usage.total_tokens += total_tokens
-
-    await asyncio.gather(
-        *[_inner_call(i, generators[i]) for i in range(len(generators))]
-    )
-
-    response = CompletionResponse(
-        id=request_id,
-        created=created_time,
-        model=model_name,
-        choices=choices,
-        usage=usage,
-    )
-
-    return response
-
-
-@app.post("/v1/embeddings", tags=["unsupported"])
-async def create_embeddings(request: EmbeddingsRequest, raw_request: Request = None):
-    """Creates embeddings for the text."""
-    return create_error_response(HTTPStatus.BAD_REQUEST, "Unsupported by turbomind.")
-
-
-@app.post("/v1/encode", dependencies=[Depends(check_api_key)])
-async def encode(request: EncodeRequest, raw_request: Request = None):
-    """Encode prompts.
-
-    The request should be a JSON object with the following fields:
-    - input: the prompt to be encoded. In str or List[str] format.
-    - do_preprocess: whether do preprocess or not. Default to False.
-    - add_bos: True when it is the beginning of a conversation. False when it
-        is not. Default to True.
-    """
-
-    def encode(prompt: str, do_preprocess: bool, add_bos: bool):
-        if do_preprocess:
-            prompt = VariableInterface.async_engine.chat_template.get_prompt(
-                prompt, sequence_start=add_bos
-            )
-        input_ids = VariableInterface.async_engine.tokenizer.encode(
-            prompt, add_bos=add_bos
-        )
-        return input_ids
-
-    if isinstance(request.input, str):
-        encoded = encode(request.input, request.do_preprocess, request.add_bos)
-        return EncodeResponse(input_ids=encoded, length=len(encoded))
-    else:
-        encoded, length = [], []
-        for prompt in request.input:
-            ids = encode(prompt, request.do_preprocess, request.add_bos)
-            encoded.append(ids)
-            length.append(len(ids))
-        return EncodeResponse(input_ids=encoded, length=length)
-
-
-@app.post("/v1/chat/interactive", dependencies=[Depends(check_api_key)])
-async def chat_interactive_v1(request: GenerateRequest, raw_request: Request = None):
-    """Generate completion for the request.
-
-    - On interactive mode, the chat history is kept on the server. Please set
-    `interactive_mode = True`.
-    - On normal mode, no chat history is kept on the server. Set
-    `interactive_mode = False`.
-
-    The request should be a JSON object with the following fields:
-    - prompt: the prompt to use for the generation.
-    - session_id: determine which instance will be called. If not specified
-        with a value other than -1, using random value directly.
-    - interactive_mode (bool): turn on interactive mode or not. On interactive
-        mode, session history is kept on the server (and vice versa).
-    - stream: whether to stream the results or not.
-    - stop (str | List[str] | None): To stop generating further
-        tokens. Only accept stop words that's encoded to one token idex.
-    - request_output_len (int): output token nums
-    - top_p (float): If set to float < 1, only the smallest set of most
-        probable tokens with probabilities that add up to top_p or higher
-        are kept for generation.
-    - top_k (int): The number of the highest probability vocabulary
-        tokens to keep for top-k-filtering
-    - temperature (float): to modulate the next token probability
-    - repetition_penalty (float): The parameter for repetition penalty.
-        1.0 means no penalty
-    - ignore_eos (bool): indicator for ignoring eos
-    """
-    if request.cancel and request.session_id != -1:
-        VariableInterface.async_engine.stop_session(request.session_id)
-        return {"text": "", "tokens": 0, "finish_reason": None}
-    if request.session_id == -1:
-        request.session_id = random.randint(10087, 23333)
-
-    async_engine = VariableInterface.async_engine
-    sequence_start = async_engine.id2step.get(str(request.session_id), 0) == 0
-    sequence_end = not request.interactive_mode
-    if isinstance(request.stop, str):
-        request.stop = [request.stop]
-
-    gen_config = GenerationConfig(
-        max_new_tokens=request.request_output_len,
-        top_p=request.top_p,
-        top_k=request.top_k,
-        temperature=request.temperature,
-        repetition_penalty=request.repetition_penalty,
-        ignore_eos=request.ignore_eos,
-        stop_words=request.stop,
-    )
-    generation = async_engine.generate(
-        request.prompt,
-        request.session_id,
-        gen_config=gen_config,
-        stream_response=True,  # always use stream to enable batching
-        sequence_start=sequence_start,
-        sequence_end=sequence_end,
-    )
-
-    # Streaming case
-    async def stream_results() -> AsyncGenerator[bytes, None]:
-        async for out in generation:
-            chunk = GenerateResponse(
-                text=out.response,
-                tokens=out.generate_token_len,
-                finish_reason=out.finish_reason,
-            )
-            data = chunk.model_dump_json()
-            yield f"{data}\n"
-
-    if request.stream:
-        return StreamingResponse(stream_results(), media_type="text/event-stream")
-    else:
-        ret = {}
-        text = ""
-        tokens = 0
-        finish_reason = None
-        async for out in generation:
-            if await raw_request.is_disconnected():
-                # Abort the request if the client disconnects.
-                async_engine.stop_session(request.session_id)
-                return create_error_response(
-                    HTTPStatus.BAD_REQUEST, "Client disconnected"
-                )
-            text += out.response
-            tokens = out.generate_token_len
-            finish_reason = out.finish_reason
-        ret = {"text": text, "tokens": tokens, "finish_reason": finish_reason}
-        return JSONResponse(ret)
-
-
-def serve(
-    model_path: str,
-    model_name: Optional[str] = None,
-    backend: Literal["turbomind", "pytorch"] = "turbomind",
-    backend_config: Optional[Union[PytorchEngineConfig, TurbomindEngineConfig]] = None,
-    chat_template_config: Optional[ChatTemplateConfig] = None,
-    server_name: str = "0.0.0.0",
-    server_port: int = 23333,
-    tp: int = 1,
-    allow_origins: List[str] = ["*"],
-    allow_credentials: bool = True,
-    allow_methods: List[str] = ["*"],
-    allow_headers: List[str] = ["*"],
-    log_level: str = "ERROR",
-    api_keys: Optional[Union[List[str], str]] = None,
-    ssl: bool = False,
-    qos_config_path: str = "",
-    **kwargs,
-):
-    """An example to perform model inference through the command line
-    interface.
-
-    Args:
-        model_path (str): the path of a model.
-            It could be one of the following options:
-                - i) A local directory path of a turbomind model which is
-                    converted by `Swarms convert` command or download from
-                    ii) and iii).
-                - ii) The model_id of a Swarms-quantized model hosted
-                    inside a model repo on huggingface.co, such as
-                    "InternLM/internlm-chat-20b-4bit",
-                    "Swarms/llama2-chat-70b-4bit", etc.
-                - iii) The model_id of a model hosted inside a model repo
-                    on huggingface.co, such as "internlm/internlm-chat-7b",
-                    "Qwen/Qwen-7B-Chat ", "baichuan-inc/Baichuan2-7B-Chat"
-                    and so on.
-        model_name (str): needed when model_path is a pytorch model on
-            huggingface.co, such as "InternLM/internlm-chat-7b"
-        backend (str): either `turbomind` or `pytorch` backend. Default to
-            `turbomind` backend.
-        backend_config (TurbomindEngineConfig | PytorchEngineConfig): beckend
-            config instance. Default to none.
-        chat_template_config (ChatTemplateConfig): chat template configuration.
-            Default to None.
-        server_name (str): host ip for serving
-        server_port (int): server port
-        tp (int): tensor parallel
-        allow_origins (List[str]): a list of allowed origins for CORS
-        allow_credentials (bool): whether to allow credentials for CORS
-        allow_methods (List[str]): a list of allowed HTTP methods for CORS
-        allow_headers (List[str]): a list of allowed HTTP headers for CORS
-        log_level(str): set log level whose value among [CRITICAL, ERROR, WARNING, INFO, DEBUG]
-        api_keys (List[str] | str | None): Optional list of API keys. Accepts string type as
-            a single api_key. Default to None, which means no api key applied.
-        ssl (bool): Enable SSL. Requires OS Environment variables 'SSL_KEYFILE' and 'SSL_CERTFILE'.
-        qos_config_path (str): qos policy config path
-    """  # noqa E501
-    if os.getenv("TM_LOG_LEVEL") is None:
-        os.environ["TM_LOG_LEVEL"] = log_level
-
-    if allow_origins:
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=allow_origins,
-            allow_credentials=allow_credentials,
-            allow_methods=allow_methods,
-            allow_headers=allow_headers,
-        )
-    if api_keys is not None:
-        if isinstance(api_keys, str):
-            api_keys = api_keys.split(",")
-        VariableInterface.api_keys = api_keys
-    ssl_keyfile, ssl_certfile, http_or_https = None, None, "http"
-    if ssl:
-        ssl_keyfile = os.environ["SSL_KEYFILE"]
-        ssl_certfile = os.environ["SSL_CERTFILE"]
-        http_or_https = "https"
-
-    VariableInterface.async_engine = AsyncEngine(
-        model_path=model_path,
-        model_name=model_name,
-        backend=backend,
-        backend_config=backend_config,
-        chat_template_config=chat_template_config,
-        tp=tp,
-        **kwargs,
-    )
-
-    if qos_config_path:
-        try:
-            with open(qos_config_path, "r") as file:
-                qos_config_str = file.read()
-                VariableInterface.qos_engine = QosEngine(
-                    qos_tag=qos_config_str,
-                    engine=VariableInterface.async_engine,
-                    **kwargs,
-                )
-                VariableInterface.qos_engine.start()
-        except FileNotFoundError:
-            VariableInterface.qos_engine = None
-
-    for i in range(3):
-        print(
-            f"HINT:    Please open \033[93m\033[1m{http_or_https}://"
-            f"{server_name}:{server_port}\033[0m in a browser for detailed api"
-            " usage!!!"
-        )
-    uvicorn.run(
-        app=app,
-        host=server_name,
-        port=server_port,
-        log_level="info",
-        ssl_keyfile=ssl_keyfile,
-        ssl_certfile=ssl_certfile,
-    )
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
-    import fire
+    args = _get_args()
 
-    fire.Fire(serve)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.checkpoint_path,
+        trust_remote_code=True,
+        resume_download=True,
+    )
+
+    if args.cpu_only:
+        device_map = "cpu"
+    else:
+        device_map = "auto"
+
+    model = AutoModelForCausalLM.from_pretrained(
+        args.checkpoint_path,
+        device_map=device_map,
+        trust_remote_code=True,
+        resume_download=True,
+    ).eval()
+
+    model.generation_config = GenerationConfig.from_pretrained(
+        args.checkpoint_path,
+        trust_remote_code=True,
+        resume_download=True,
+    )
+
+    uvicorn.run(app, host=args.server_name, port=args.server_port, workers=1)
