@@ -1,3 +1,0 @@
-curl -X POST -H "Content-Type: application/json" -d '{"message": "Hello, world!"}' https://18.207.218.138:8000/v1/completion
-
-

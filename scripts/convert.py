@@ -1,5 +1,7 @@
 import base64
 import requests
+
+
 def download_and_encode_image(image_url):
     """
     Downloads an image from a URL and encodes it into a base64 string.
@@ -20,6 +22,7 @@ def download_and_encode_image(image_url):
         print("Failed to download the image.")
         return None
 
-image_path = 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg'
+
+image_path = "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg"
 encoded_image = download_and_encode_image(image_path)
 print(encoded_image)
