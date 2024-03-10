@@ -2,6 +2,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
+resource "aws_key_pair" "ssh_key" {
+  key_name   = "ec2_ssh_key"
+  public_key = file("cog_rsa.pub") # path to your public key
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -26,6 +31,21 @@ resource "aws_subnet" "main2" {
   availability_zone       = "us-east-1b"
 }
 
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
+
+resource "aws_route_table_association" "public_main" {
+  subnet_id      = aws_subnet.main.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_security_group" "model_api_sg" {
   name        = "model_api_sg"
   description = "Security group for model API EC2 instances"
@@ -38,6 +58,13 @@ resource "aws_security_group" "model_api_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # New ingress rule for SSH access
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Adjust this to a more restricted CIDR block for enhanced security
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -80,28 +107,33 @@ resource "aws_lb" "model_api_lb" {
   security_groups    = [aws_security_group.model_api_sg.id]
   subnets            = [aws_subnet.main.id, aws_subnet.main2.id]
 
-  enable_deletion_protection = false
+  enable_deletion_protection = true
 }
 
 resource "aws_launch_configuration" "model_api_conf" {
   name_prefix          = "model-api-"
-  image_id             = "ami-0c574b811be1b656f"
+  image_id             = "ami-041855406987a648b"
   instance_type        = "p3.2xlarge" # Choose an appropriate instance type
   security_groups      = [aws_security_group.model_api_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ssm.name
+  key_name = aws_key_pair.ssh_key.key_name # Add this line
+
+  root_block_device {
+    volume_size           = 130
+    delete_on_termination = true
+    volume_type           = "gp2" # General Purpose SSD
+  }
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo yum update -y
-              sudo yum install -y docker
-              sudo service docker start
-              sudo usermod -a -G docker ec2-user
-              sudo chkconfig docker on
-              sudo yum install -y git
-              git clone https://github.com/kyegomez/swarms-cloud.git
-              cd swarms-cloud
-              sudo docker build -t cogvlm .
-              sudo docker run -d -p 8000:8000 cogvlm
+              sudo apt-get update -y
+              sudo apt-get install -y containerd
+              sudo apt-get install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker ubuntu
+              sudo docker pull public.ecr.aws/d6u1k1m2/cogvlmpub:latest
+              sudo docker run --gpus all -p 8000:8000 public.ecr.aws/d6u1k1m2/cogvlmpub:latest
               EOF
 
   lifecycle {
@@ -111,9 +143,9 @@ resource "aws_launch_configuration" "model_api_conf" {
 
 resource "aws_autoscaling_group" "model_api_asg" {
   launch_configuration = aws_launch_configuration.model_api_conf.id
-  min_size             = 2
+  min_size             = 1
   max_size             = 10
-  desired_capacity     = 2
+  desired_capacity     = 1
   vpc_zone_identifier  = [aws_subnet.main.id]
 
   target_group_arns = [aws_lb_target_group.model_api_tg.arn]
@@ -131,11 +163,6 @@ resource "aws_lb_target_group" "model_api_tg" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
-  health_check {
-    path     = "/"
-    protocol = "HTTP"
-    matcher  = "200"
-  }
 }
 
 resource "aws_lb_listener" "model_api_listener" {

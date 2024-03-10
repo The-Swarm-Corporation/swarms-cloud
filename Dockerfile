@@ -26,10 +26,10 @@ RUN pip install -r requirements.txt
 
 # Copy the rest of your application's code into the container
 COPY . /swarms_root
-WORKDIR /swarm_root/servers
+WORKDIR /swarms_root/servers
 
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python3.10", "-m", "uvicorn", "main:cogvlm", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3.10", "cogvlm.py"]
