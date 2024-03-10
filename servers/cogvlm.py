@@ -399,7 +399,7 @@ def generate_stream_cogvlm(
 gc.collect()
 torch.cuda.empty_cache()
 
-if __name__ == "__main__":
+def main():
     tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
     if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
@@ -437,5 +437,8 @@ if __name__ == "__main__":
             .float()
             .to(DEVICE)
             .eval()
-        )
+        )    
+
+if __name__ == "__main__":
+    main()
     uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)
