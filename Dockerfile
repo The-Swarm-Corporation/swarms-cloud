@@ -26,7 +26,7 @@ RUN pip install -r requirements.txt
 
 # Copy the rest of your application's code into the container
 # COPY . /swarms_root
-WORKDIR /servers
+WORKDIR ./swarms-cloud/servers
 # WORKDIR /swarm_root/servers
 
 # Expose the port the app runs on
