@@ -22,18 +22,29 @@ image_data = {
 }
 
 # Construct the request data
+# Construct the request data
 request_data = {
-    "model": "cogvlm-chat-17b", # Replace with your model's name
+    "model": "cogvlm-chat-17b",
     "messages": [
         {
-            "role": "user",
-            "content": [image_data] # This could include text and/or other images
+        "role": "user",
+        "content": [
+            {
+            "type": "text",
+            "text": "What’s in this image?"
+            },
+            {
+            "type": "image_url",
+            "url": "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg"
+            }
+        ]
         }
     ],
     "temperature": 0.8,
     "top_p": 0.9,
-    "max_tokens": 1024
+    "max_tokens": 1024,
 }
+
 
 # Specify the URL of your FastAPI application
 url = 'http://18.208.184.237:8000/v1/chat/completions'
