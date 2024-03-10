@@ -21,11 +21,22 @@ from transformers import (
 )
 from PIL import Image
 from io import BytesIO
+from swarms_cloud.supabase_logger import SupabaseLogger
+
+# Supabase logger
+supabase_logger = SupabaseLogger("swarm_cloud_usage")
 
 # Environment variables
 MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+# Torch type
+if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
+    torch_type = torch.bfloat16
+else:
+    torch_type = torch.float16
 
 
 if os.environ.get("QUANT_ENABLED"):
@@ -170,6 +181,9 @@ async def list_models():
 async def create_chat_completion(request: ChatCompletionRequest):
     global model, tokenizer
 
+    # Log the request
+    supabase_logger.log(ChatCompletionRequest)
+
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
 
@@ -193,20 +207,34 @@ async def create_chat_completion(request: ChatCompletionRequest):
         role="assistant",
         content=response["text"],
     )
+
+    # Log to supabase
+    supabase_logger.log(message)
+
     logger.debug(f"==== message ====\n{message}")
     choice_data = ChatCompletionResponseChoice(
         index=0,
         message=message,
     )
+
+    # Log to supabase
+    supabase_logger.log(choice_data)
+
     task_usage = UsageInfo.model_validate(response["usage"])
     for usage_key, usage_value in task_usage.model_dump().items():
         setattr(usage, usage_key, getattr(usage, usage_key) + usage_value)
-    return ChatCompletionResponse(
+
+    out = ChatCompletionResponse(
         model=request.model,
         choices=[choice_data],
         object="chat.completion",
         usage=usage,
     )
+
+    # Log to supabase
+    supabase_logger.log(out)
+
+    return out
 
 
 async def predict(model_id: str, params: dict):
@@ -220,9 +248,17 @@ async def predict(model_id: str, params: dict):
     choice_data = ChatCompletionResponseStreamChoice(
         index=0, delta=DeltaMessage(role="assistant"), finish_reason=None
     )
+
+    # Log to supabase
+    supabase_logger.log(choice_data)
+
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
+
+    # Log to supabase
+    supabase_logger.log(chunk)
+
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     previous_text = ""
@@ -238,17 +274,34 @@ async def predict(model_id: str, params: dict):
             index=0,
             delta=delta,
         )
+
+        # Log to supabase
+        supabase_logger.log(choice_data)
+
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
+
+        # Log to supabase
+        supabase_logger.log(chunk)
+
         yield f"{chunk.model_dump_json(exclude_unset=True)}"
+
     choice_data = ChatCompletionResponseStreamChoice(
         index=0,
         delta=DeltaMessage(),
     )
+
+    # Log to supabase
+    supabase_logger.log(choice_data)
+
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
+
+    # Log to supabase
+    supabase_logger.log(chunk)
+
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
 
@@ -399,8 +452,9 @@ def generate_stream_cogvlm(
 gc.collect()
 torch.cuda.empty_cache()
 
-if __name__ == "__main__":
-    tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
+
+def main():
+    LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
     if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
         torch_type = torch.bfloat16
@@ -411,7 +465,7 @@ if __name__ == "__main__":
 
     if "cuda" in DEVICE:
         if QUANT_ENABLED:
-            model = AutoModelForCausalLM.from_pretrained(
+            AutoModelForCausalLM.from_pretrained(
                 MODEL_PATH,
                 load_in_4bit=True,
                 trust_remote_code=True,
@@ -419,7 +473,7 @@ if __name__ == "__main__":
                 low_cpu_mem_usage=True,
             ).eval()
         else:
-            model = (
+            (
                 AutoModelForCausalLM.from_pretrained(
                     MODEL_PATH,
                     load_in_4bit=False,
@@ -432,10 +486,14 @@ if __name__ == "__main__":
             )
 
     else:
-        model = (
+        (
             AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
             .float()
             .to(DEVICE)
             .eval()
         )
+
+
+if __name__ == "__main__":
+    main()
     uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)

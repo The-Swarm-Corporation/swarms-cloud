@@ -13,7 +13,7 @@ def calculate_pricing(
     rate_img: float = 0.003,
 ):
     """
-    leCalctuple containingg for otal number of  texts based on the number of tokens, sentences, words, characters, and paragraphs.
+    Calculate containtaining for otal number of  texts based on the number of tokens, sentences, words, characters, and paragraphs.
 
     Args:
         texts (list): A list of texts to calculate pricing for.
