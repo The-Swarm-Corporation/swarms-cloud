@@ -1,7 +1,7 @@
 # Use an NVIDIA CUDA base image with Python 3.10
 FROM nvidia/cuda:12.1.1-devel-ubuntu22.04 as builder
 
-# Set environment variables to make Python 3.10 as the default version
+# Set environment variables
 ENV BASE_IMG=nvidia/cuda:12.1.1-devel-ubuntu22.04
 
 # Install Python 3.10 and other necessary system packages
@@ -11,23 +11,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     python3.10 python3.10-dev python3.10-distutils python3-pip python3.10-venv openmpi-bin libopenmpi-dev \
-    libopenmpi-dev \
     && python3.10 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
-
-# Set the working directory
+# Set the working directory to the root
 WORKDIR /
 
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
-# Install Python dependencies from requirements.txt, taking into account the custom PyPI repositories
-RUN pip install -r requirements.txt
+# Install Python dependencies from requirements.txt
+RUN python3.10 -m pip install -r requirements.txt
 
-# Copy the rest of your application's code into the container
-# COPY . /swarms_root
-WORKDIR ./swarms-cloud/servers
-# WORKDIR /swarm_root/servers
+# Adjust the working directory to where your application's code will reside
+WORKDIR /swarms-cloud/servers
+
+# Assuming your application's entire directory structure needs to be copied,
+# Adjust the COPY command to ensure the entire application is available in the container
+COPY . /swarms-cloud
 
 # Expose the port the app runs on
 EXPOSE 8000
