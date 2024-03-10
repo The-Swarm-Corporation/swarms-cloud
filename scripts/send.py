@@ -3,6 +3,7 @@ import base64
 import json
 from PIL import Image
 from io import BytesIO
+from swarms.utils.loguru_logger import logger
 
 # Convert image to Base64
 def image_to_base64(image_path):
@@ -14,44 +15,48 @@ def image_to_base64(image_path):
 
 # Replace 'image.jpg' with the path to your image
 base64_image = image_to_base64('images/3897e80dcb0601c0.jpg')
-image_data = {
-    "type": "image_url",
-    "image_url": {
-        "url": f"data:image/jpeg;base64,{base64_image}"
-    }
-}
 
-# Construct the request data
-request_data = {
-    "model": "cogvlm-chat-17b",
-    "messages": [
-        {
-        "role": "user",
-        "content": [
+try:
+    # Construct the request data
+    request_data = {
+        "model": "cogvlm-chat-17b",
+        "messages": [
             {
-            "type": "text",
-            "text": "What’s in this image?"
-            },
-            {
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{base64_image}"
+            "role": "user",
+            "content": [
+                {
+                "type": "text",
+                "text": "What’s in this image?"
+                },
+                {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}"
+                }
+                }
+            ]
             }
-            }
-        ]
-        }
-    ],
-    "temperature": 0.8,
-    "top_p": 0.9,
-    "max_tokens": 1024,
-}
+        ],
+        "temperature": 0.8,
+        "top_p": 0.9,
+        "max_tokens": 1024,
+    }
+except Exception as error:
+    logger.error(f"Error in sending image to base64: {error}")
+    raise Exception(f"Error in sending image to base64: {error}")
 
 
 # Specify the URL of your FastAPI application
 url = 'http://18.208.184.237:8000/v1/chat/completions'
 
 # Send the request
-response = requests.post(url, json=request_data)
+try:
+    response = requests.post(url, json=request_data)
+except Exception as error:
+    logger.error(f"Error in sending request to the server: {error}")
+    raise Exception(f"Error in sending request to the server: {error}")
 
 # Print the response from the server
 print(response.text)
+logger.info(response)
+logger.info(response.text)
