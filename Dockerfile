@@ -15,18 +15,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set the working directory to the root
 WORKDIR /
 
+# # Set environment variables
+ENV WORLD_SIZE=4
+ENV ARTIFACTS_PATH=/app/artifacts
+ENV STORAGE_PATH=/app/storage
+
+
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
 # Install Python dependencies from requirements.txt
 RUN python3.10 -m pip install -r requirements.txt
-
-ENV WORLD_SIZE=4
-ENV ARTIFACTS_PATH=/app/artifacts
-ENV STORAGE_PATH=/app/storage
-ENV SUPABASE_URL="https://<supabase_url>.supabase.co"
-ENV SUPABASE_KEY=""
-
 
 # Adjust the working directory to where your application's code will reside
 WORKDIR /swarms-cloud/servers
