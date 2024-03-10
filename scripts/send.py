@@ -27,7 +27,7 @@ request_data = {
     "messages": [
         {
             "role": "user",
-            "content": [image_data] # This could include text and/or other images
+            "content": [{"type":"text","text":"Describe the image"},image_data] # This could include text and/or other images
         }
     ],
     "temperature": 0.8,
@@ -36,7 +36,7 @@ request_data = {
 }
 
 # Specify the URL of your FastAPI application
-url = 'http://18.208.184.237:8000/v1/chat/completions'
+url = 'http://ec2-3-83-148-203.compute-1.amazonaws.com:8000/v1/chat/completions'
 
 # Send the request
 response = requests.post(url, json=request_data)

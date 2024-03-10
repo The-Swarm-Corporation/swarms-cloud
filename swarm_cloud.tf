@@ -112,7 +112,7 @@ resource "aws_lb" "model_api_lb" {
 
 resource "aws_launch_configuration" "model_api_conf" {
   name_prefix          = "model-api-"
-  image_id             = "ami-041855406987a648b"
+  image_id             = "ami-048eeb679c8e04a87"
   instance_type        = "p3.2xlarge" # Choose an appropriate instance type
   security_groups      = [aws_security_group.model_api_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ssm.name
@@ -126,14 +126,14 @@ resource "aws_launch_configuration" "model_api_conf" {
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt-get update -y
-              sudo apt-get install -y containerd
-              sudo apt-get install -y docker.io
+              sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+              # Install the latest version of Docker CE and containerd
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io
               sudo systemctl start docker
               sudo systemctl enable docker
               sudo usermod -aG docker ubuntu
               sudo docker pull public.ecr.aws/d6u1k1m2/cogvlmpub:latest
-              sudo docker run --gpus all -p 8000:8000 public.ecr.aws/d6u1k1m2/cogvlmpub:latest
+              sudo docker run --gpus all -d -p 8000:8000 public.ecr.aws/d6u1k1m2/cogvlmpub:latest
               EOF
 
   lifecycle {
