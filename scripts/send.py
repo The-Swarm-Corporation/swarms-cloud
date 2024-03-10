@@ -3,6 +3,7 @@ import base64
 from PIL import Image
 from io import BytesIO
 
+
 # Convert image to Base64
 def image_to_base64(image_path):
     with Image.open(image_path) as image:
@@ -11,35 +12,26 @@ def image_to_base64(image_path):
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return img_str
 
+
 # Replace 'image.jpg' with the path to your image
-base64_image = image_to_base64('images/3897e80dcb0601c0.jpg')
-text_data = {
-    "type": "text",
-    "text": "Describe what is in the image"
-}
+base64_image = image_to_base64("images/3897e80dcb0601c0.jpg")
+text_data = {"type": "text", "text": "Describe what is in the image"}
 image_data = {
     "type": "image_url",
-    "image_url": {
-        "url": f"data:image/jpeg;base64,{base64_image}"
-    }
+    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
 }
 
 # Construct the request data
 request_data = {
     "model": "cogvlm-chat-17b",
-    "messages": [
-        {
-        "role": "user",
-        "content": [text_data, image_data]
-        }
-    ],
+    "messages": [{"role": "user", "content": [text_data, image_data]}],
     "temperature": 0.8,
     "top_p": 0.9,
     "max_tokens": 1024,
 }
 
 # Specify the URL of your FastAPI application
-url = 'https://localhost:8000/v1/chat/completions'
+url = "https://localhost:8000/v1/chat/completions"
 
 # Send the request
 response = requests.post(url, json=request_data)
