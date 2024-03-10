@@ -22,7 +22,6 @@ image_data = {
 }
 
 # Construct the request data
-# Construct the request data
 request_data = {
     "model": "cogvlm-chat-17b",
     "messages": [
@@ -35,7 +34,9 @@ request_data = {
             },
             {
             "type": "image_url",
-            "url": "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg"
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{base64_image}"
+            }
             }
         ]
         }
