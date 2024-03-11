@@ -485,8 +485,8 @@ def main():
                 quantization_config=bnb_config,
             ).eval()
         else:
-            (
-                model = AutoModelForCausalLM.from_pretrained(
+            model = (
+                AutoModelForCausalLM.from_pretrained(
                     MODEL_PATH,
                     load_in_4bit=False,
                     trust_remote_code=True,
