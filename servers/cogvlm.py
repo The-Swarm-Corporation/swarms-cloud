@@ -1,27 +1,28 @@
-import os
-import gc
-import time
 import base64
-
+import gc
+import os
+import time
 from contextlib import asynccontextmanager
-from typing import List, Literal, Union, Tuple, Optional
+from io import BytesIO
+from typing import List, Literal, Optional, Tuple, Union
+
 import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from PIL import Image
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from transformers import (
     AutoModelForCausalLM,
+    BitsAndBytesConfig,
     LlamaTokenizer,
     PreTrainedModel,
     PreTrainedTokenizer,
     TextIteratorStreamer,
-    BitsAndBytesConfig,
 )
-from PIL import Image
-from io import BytesIO
+
 # from swarms_cloud.supabase_logger import SupabaseLogger
 
 # Supabase logger
@@ -53,37 +54,15 @@ quantization_config = {
 
 bnb_config = BitsAndBytesConfig(**quantization_config)
 
-if "cuda" in DEVICE:
-    if QUANT_ENABLED:
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_PATH,
-            load_in_4bit=True,
-            trust_remote_code=True,
-            torch_dtype=torch_type,
-            low_cpu_mem_usage=True,
-            # attn_implementation="flash_attention_2",
-            quantization_config=bnb_config,
-        ).eval()
-    else:
-        model = (
-            AutoModelForCausalLM.from_pretrained(
-                MODEL_PATH,
-                load_in_4bit=False,
-                trust_remote_code=True,
-                torch_dtype=torch_type,
-                low_cpu_mem_usage=True,
-            )
-            .to(DEVICE)
-            .eval()
-        )
-else:
-    model = (
-        AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
-        .float()
-        .to(DEVICE)
-        .eval()
-    )
-
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_PATH,
+    load_in_4bit=True,
+    trust_remote_code=True,
+    torch_dtype=torch_type,
+    low_cpu_mem_usage=True,
+    # attn_implementation="flash_attention_2",
+    quantization_config=bnb_config,
+).eval()
 
 # Torch type
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
