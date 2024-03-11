@@ -61,7 +61,7 @@ if "cuda" in DEVICE:
             trust_remote_code=True,
             torch_dtype=torch_type,
             low_cpu_mem_usage=True,
-            attn_implementation="flash_attention_2",
+            # attn_implementation="flash_attention_2",
             quantization_config=bnb_config,
         ).eval()
     else:
