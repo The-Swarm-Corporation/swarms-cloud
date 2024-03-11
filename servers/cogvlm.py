@@ -455,6 +455,7 @@ torch.cuda.empty_cache()
 
 
 def main():
+    global model, tokenizer
     LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
     if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
@@ -484,7 +485,6 @@ def main():
                 attn_implementation="flash_attention_2",
                 quantization_config=bnb_config,
             ).eval()
-            global model
         else:
             model = (
                 AutoModelForCausalLM.from_pretrained(
