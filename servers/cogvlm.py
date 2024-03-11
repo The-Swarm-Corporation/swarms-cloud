@@ -22,10 +22,10 @@ from transformers import (
 )
 from PIL import Image
 from io import BytesIO
-from swarms_cloud.supabase_logger import SupabaseLogger
+# from swarms_cloud.supabase_logger import SupabaseLogger
 
 # Supabase logger
-supabase_logger = SupabaseLogger("swarm_cloud_usage")
+# supabase_logger = SupabaseLogger("swarm_cloud_usage")
 
 # Environment variables
 MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
