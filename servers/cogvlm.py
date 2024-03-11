@@ -484,6 +484,7 @@ def main():
                 attn_implementation="flash_attention_2",
                 quantization_config=bnb_config,
             ).eval()
+            global model
         else:
             model = (
                 AutoModelForCausalLM.from_pretrained(
