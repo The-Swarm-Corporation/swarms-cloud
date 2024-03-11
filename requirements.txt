@@ -16,3 +16,5 @@ transformers_stream_generator
 bitsandbytes
 peft
 accelerate
+huggingface_hub[hf_transfer]
+huggingface-hub
