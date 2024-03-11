@@ -456,7 +456,7 @@ torch.cuda.empty_cache()
 
 def main():
     global model, tokenizer
-    LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
+    tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
     if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
         torch_type = torch.bfloat16
