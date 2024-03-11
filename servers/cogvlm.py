@@ -221,7 +221,8 @@ async def create_chat_completion(request: ChatCompletionRequest):
     # Log to supabase
     # supabase_logger.log(choice_data)
 
-    task_usage = UsageInfo.model_validate(response["usage"])
+    # task_usage = UsageInfo.model_validate(response["usage"])
+    task_usage = UsageInfo.parse_obj(response["usage"])
     for usage_key, usage_value in task_usage.model_dump().items():
         setattr(usage, usage_key, getattr(usage, usage_key) + usage_value)
 
