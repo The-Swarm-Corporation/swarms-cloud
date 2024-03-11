@@ -13,5 +13,5 @@ stripe
 swarms-cloud
 xformers
 transformers_stream_generator
-bitsandbytesg
+bitsandbytes
 peft
