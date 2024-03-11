@@ -11,4 +11,5 @@ uvicorn
 loguru
 pydantic
 stripe
+swarms-cloud
 xformers

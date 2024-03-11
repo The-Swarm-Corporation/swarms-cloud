@@ -183,7 +183,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
     global model, tokenizer
 
     # Log the request
-    supabase_logger.log(ChatCompletionRequest)
+    # supabase_logger.log(ChatCompletionRequest)
 
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
@@ -210,7 +210,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
     )
 
     # Log to supabase
-    supabase_logger.log(message)
+    # supabase_logger.log(message)
 
     logger.debug(f"==== message ====\n{message}")
     choice_data = ChatCompletionResponseChoice(
@@ -219,7 +219,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
     )
 
     # Log to supabase
-    supabase_logger.log(choice_data)
+    # supabase_logger.log(choice_data)
 
     task_usage = UsageInfo.model_validate(response["usage"])
     for usage_key, usage_value in task_usage.model_dump().items():
@@ -233,7 +233,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
     )
 
     # Log to supabase
-    supabase_logger.log(out)
+    # supabase_logger.log(out)
 
     return out
 
@@ -251,14 +251,14 @@ async def predict(model_id: str, params: dict):
     )
 
     # Log to supabase
-    supabase_logger.log(choice_data)
+    # supabase_logger.log(choice_data)
 
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
 
     # Log to supabase
-    supabase_logger.log(chunk)
+    # supabase_logger.log(chunk)
 
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
@@ -277,14 +277,14 @@ async def predict(model_id: str, params: dict):
         )
 
         # Log to supabase
-        supabase_logger.log(choice_data)
+        # supabase_logger.log(choice_data)
 
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
 
         # Log to supabase
-        supabase_logger.log(chunk)
+        # supabase_logger.log(chunk)
 
         yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
@@ -294,14 +294,14 @@ async def predict(model_id: str, params: dict):
     )
 
     # Log to supabase
-    supabase_logger.log(choice_data)
+    # supabase_logger.log(choice_data)
 
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
 
     # Log to supabase
-    supabase_logger.log(chunk)
+    # supabase_logger.log(chunk)
 
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
