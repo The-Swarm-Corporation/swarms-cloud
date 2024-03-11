@@ -18,6 +18,7 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer,
     TextIteratorStreamer,
+    BitsAndBytesConfig,
 )
 from PIL import Image
 from io import BytesIO
@@ -462,6 +463,15 @@ def main():
         torch_type = torch.float16
 
     print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
+    
+    quantization_config = {
+        "load_in_4bit": QUANT_ENABLED,
+        "bnb_4bit_use_double_quant": True,
+        "bnb_4bit_quant_type": "nf4",
+        "bnb_4bit_compute_dtype": torch_type,
+    }
+    
+    bnb_config = BitsAndBytesConfig(**quantization_config)
 
     if "cuda" in DEVICE:
         if QUANT_ENABLED:
@@ -471,6 +481,8 @@ def main():
                 trust_remote_code=True,
                 torch_dtype=torch_type,
                 low_cpu_mem_usage=True,
+                attn_implementation="flash_attention_2",
+                quantization_config=bnb_config,
             ).eval()
         else:
             (
@@ -484,7 +496,6 @@ def main():
                 .to(DEVICE)
                 .eval()
             )
-
     else:
         (
             AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
