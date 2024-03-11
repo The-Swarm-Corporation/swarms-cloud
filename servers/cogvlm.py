@@ -475,7 +475,7 @@ def main():
 
     if "cuda" in DEVICE:
         if QUANT_ENABLED:
-            AutoModelForCausalLM.from_pretrained(
+            model = AutoModelForCausalLM.from_pretrained(
                 MODEL_PATH,
                 load_in_4bit=True,
                 trust_remote_code=True,
@@ -486,7 +486,7 @@ def main():
             ).eval()
         else:
             (
-                AutoModelForCausalLM.from_pretrained(
+                model = AutoModelForCausalLM.from_pretrained(
                     MODEL_PATH,
                     load_in_4bit=False,
                     trust_remote_code=True,
