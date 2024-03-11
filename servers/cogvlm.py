@@ -56,7 +56,7 @@ bnb_config = BitsAndBytesConfig(**quantization_config)
 
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_PATH,
-    load_in_4bit=True,
+    # load_in_4bit=True,
     trust_remote_code=True,
     torch_dtype=torch_type,
     low_cpu_mem_usage=True,
