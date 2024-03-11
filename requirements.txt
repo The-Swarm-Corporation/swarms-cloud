@@ -1,4 +1,3 @@
-swarms
 skypilot
 fastapi
 supabase
