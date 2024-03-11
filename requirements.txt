@@ -15,3 +15,4 @@ xformers
 transformers_stream_generator
 bitsandbytes
 peft
+accelerate
