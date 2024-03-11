@@ -6,6 +6,7 @@ ENV DOCKER_BUILDKIT=1
 ENV WORLD_SIZE=4
 ENV ARTIFACTS_PATH=/app/artifacts
 ENV STORAGE_PATH=/app/storage
+ENV HF_HUB_ENABLE_HF_TRANSFER=True
 
 # Set the working directory to the root
 WORKDIR /
