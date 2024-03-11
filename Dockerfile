@@ -37,4 +37,4 @@ COPY . /swarms-cloud
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python3.10", "-m", "uvicorn", "cogvlm:main", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3.10", "-m", "uvicorn", "cogvlm:app", "--host", "0.0.0.0", "--port", "8000"]

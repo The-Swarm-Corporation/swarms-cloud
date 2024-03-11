@@ -31,7 +31,7 @@ request_data = {
 }
 
 # Specify the URL of your FastAPI application
-url = "https://localhost:8000/v1/chat/completions"
+url = "https://api.swarms.world:8000/v1/chat/completions"
 
 # Send the request
 response = requests.post(url, json=request_data)
