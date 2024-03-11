@@ -12,3 +12,4 @@ pydantic
 stripe
 swarms-cloud
 xformers
+transformers_stream_generator
