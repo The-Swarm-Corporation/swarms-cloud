@@ -404,7 +404,7 @@ async def predict(
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     current_length = 0
     stop_words_ids = [tokenizer.encode(s) for s in stop_words] if stop_words else None
@@ -430,7 +430,7 @@ async def predict(
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
-        yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+        yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     choice_data = ChatCompletionResponseStreamChoice(
         index=0, delta=DeltaMessage(), finish_reason="stop"
@@ -438,7 +438,7 @@ async def predict(
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
     yield "[DONE]"
 
 
