@@ -1,3 +1,4 @@
+import uvicorn
 import gc
 import os
 import threading
@@ -236,6 +237,29 @@ class ModelList(BaseModel):
 #     return ModelList(data=[model_card])
 
 
+@app.on_event("startup")
+async def startup_event():
+    global model
+
+    # This is where you can initialize resources that your application needs.
+    print("Application startup, initialize resources here.")
+    # For example, loading models into memory if necessary.
+
+    model = WhisperTranscriber(
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        compute_type="float16",
+        hf_token=os.getenv("HF_TOKEN"),
+    )
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("Application shutdown, cleaning up artifacts")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+
 @app.post("/v1/audio/transcriptions", response_model=WhisperTranscriptionResponse)
 async def create_chat_completion(request: WhisperTranscription):
     audio_file: str = request.file
@@ -255,9 +279,6 @@ async def create_chat_completion(request: WhisperTranscription):
     # Log the entry into supabase
 
     transcriber = WhisperTranscriber(
-        device="cuda" if torch.cuda.is_available() else "cpu",
-        compute_type="float16",
-        hf_token=os.getenv("HF_TOKEN"),
         audio_file=audio_file,
     )
 
@@ -266,3 +287,7 @@ async def create_chat_completion(request: WhisperTranscription):
 
     # Response
     return WhisperTranscriptionResponse(task="transcription", text=out["text"]).json()
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)
