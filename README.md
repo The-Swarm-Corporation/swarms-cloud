@@ -56,12 +56,12 @@ print(out)
 # Example
 
 scripts/send_request_to_cogvlm.py
-
+```
 url = "https://api.swarms.world/v1/chat/completions"
 
 response = requests.post(url, json=request_data)
 
 print(response.text)
-
+```
 # License
 MIT
