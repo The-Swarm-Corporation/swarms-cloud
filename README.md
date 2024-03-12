@@ -55,12 +55,11 @@ print(out)
 
 # Example
 
-# Specify the URL of your FastAPI application
+scripts/send_request_to_cogvlm.py
 url = "https://api.swarms.world/v1/chat/completions"
 
-# Send the request
 response = requests.post(url, json=request_data)
-# Print the response from the server
+
 print(response.text)
 
 # License
