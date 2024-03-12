@@ -206,7 +206,7 @@ class WhisperTranscriptionResponse(BaseModel):
     segments: List[str] = []
 
 
-app = FastAPI(debug = True, lifespan=lifespan)
+app = FastAPI(debug=True, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -240,8 +240,22 @@ class ModelList(BaseModel):
 async def create_chat_completion(request: WhisperTranscription):
     audio_file: str = request.file
 
+    # Entry
+    dict(
+        task="transcription",
+        audio_file=audio_file,
+        model=request.model,
+        language=request.language,
+        prompt=request.prompt,
+        response_format=request.response_format,
+        temperature=request.temperature,
+        timestamp_granularities=request.timestamp_granularities,
+    )
+
+    # Log the entry into supabase
+
     transcriber = WhisperTranscriber(
-        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        device="cuda" if torch.cuda.is_available() else "cpu",
         compute_type="float16",
         hf_token=os.getenv("HF_TOKEN"),
         audio_file=audio_file,
@@ -250,7 +264,5 @@ async def create_chat_completion(request: WhisperTranscription):
     # Run the audio processing pipeline
     out = transcriber.run(audio_file)
 
-    return WhisperTranscriptionResponse(
-        task="transcription",
-        text=out["text"],
-    )
+    # Response
+    return WhisperTranscriptionResponse(task="transcription", text=out["text"]).json()
