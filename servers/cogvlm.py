@@ -46,9 +46,8 @@ else:
 print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
 quantization_config = {
-    "load_in_4bit": QUANT_ENABLED,
+    "load_in_4bit": True,
     "bnb_4bit_use_double_quant": True,
-    "bnb_4bit_quant_type": "nf4",
     "bnb_4bit_compute_dtype": torch_type,
 }
 
