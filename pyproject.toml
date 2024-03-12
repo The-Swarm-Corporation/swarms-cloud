@@ -30,7 +30,7 @@ torch = "*"
 einops = "*"
 pydantic = "*"
 stripe = "*"
-sse-starlight = "*"
+sse-starlette = "*" 
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.1.6"
