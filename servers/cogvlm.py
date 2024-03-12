@@ -196,6 +196,14 @@ class ChatCompletionResponse(BaseModel):
     usage: Optional[UsageInfo] = None
 
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("Application shutdown, cleaning up artifacts")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+
 @app.get("/v1/models", response_model=ModelList)
 async def list_models():
     """
