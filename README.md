@@ -9,8 +9,9 @@
 # Install
 `pip install swarms-cloud`
 
-# CogVLM
+# Models
 
+## `CogVLM`
 ```python
 import requests
 import base64
