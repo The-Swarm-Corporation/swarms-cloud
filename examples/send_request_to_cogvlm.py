@@ -14,7 +14,7 @@ def image_to_base64(image_path):
 
 
 # Replace 'image.jpg' with the path to your image
-base64_image = image_to_base64("images/3897e80dcb0601c0.jpg")
+base64_image = image_to_base64("test.jpg")
 text_data = {"type": "text", "text": "Describe what is in the image"}
 image_data = {
     "type": "image_url",
