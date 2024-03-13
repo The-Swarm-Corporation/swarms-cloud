@@ -261,7 +261,7 @@ async def shutdown_event():
 
 
 @app.post("/v1/audio/transcriptions", response_model=WhisperTranscriptionResponse)
-async def create_chat_completion(request: WhisperTranscription):
+async def create_audio_completion(request: WhisperTranscription):
     audio_file: str = request.file
 
     # Entry
