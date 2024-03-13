@@ -9,8 +9,9 @@
 # Install
 `pip install swarms-cloud`
 
-# CogVLM
+# Models
 
+## `CogVLM`
 ```python
 import requests
 import base64
@@ -95,6 +96,7 @@ print(out)
 - TensorRT for inference
 - Docker for cluster management
 - Kubernetes for managing and autoscaling docker containers
+- Terraform
 
 
 # Example
