@@ -13,15 +13,6 @@ def image_to_base64(image_path):
     return img_str
 
 
-def transform_image(image_path):
-    with Image.open(image_path) as image:
-        # Perform image transformation here
-        transformed_image = image.rotate(90)
-        buffered = BytesIO()
-        transformed_image.save(buffered, format="JPEG")
-        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return img_str
-
 # Replace 'image.jpg' with the path to your image
 base64_image = image_to_base64("test.jpg")
 text_data = {"type": "text", "text": "Describe what is in the image"}
