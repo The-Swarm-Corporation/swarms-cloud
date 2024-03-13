@@ -1,12 +1,14 @@
 [![Multi-Modality](agorabanner.png)](https://discord.gg/qUtxnK2NMf)
 
 # Swarms Cloud
+
 - Swarms-as-a-service
 - 100% uptime
 - Bleeding-Edge Performance
 - Production-Grade Reliability
-  
+
 # Install
+
 `pip install swarms-cloud`
 
 # CogVLM
@@ -51,11 +53,10 @@ url = "https://api.swarms.world/v1/chat/completions"
 response = requests.post(url, json=request_data)
 # Print the response from the server
 print(response.text)
-``` 
-
-
+```
 
 ## Calculate Pricing
+
 ```python
 from transformers import AutoTokenizer
 from swarms_cloud import calculate_pricing
@@ -76,8 +77,8 @@ print(f"Total tokens processed: {total_tokens}")
 print(f"Total cost: ${cost:.5f}")
 ```
 
-
 ## Generate an API key
+
 ```python
 from swarms_cloud.api_key_generator import generate_api_key
 
@@ -88,6 +89,7 @@ print(out)
 ```
 
 # Stack
+
 - Backend: FastAPI
 - Skypilot for container management
 - Stripe for payment tracking
@@ -96,16 +98,25 @@ print(out)
 - Docker for cluster management
 - Kubernetes for managing and autoscaling docker containers
 
-
 # Example
 
-scripts/send_request_to_cogvlm.py
+#### Python:
+
+`scripts/send_request_to_cogvlm.py`
+
 ```
 url = "https://api.swarms.world/v1/chat/completions"
 
 response = requests.post(url, json=request_data)
 
 print(response.text)
+
 ```
+
+#### NodeJs:
+
+`scripts/send_request_to_cogvlm.js`
+
 # License
+
 MIT
