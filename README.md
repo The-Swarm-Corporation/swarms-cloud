@@ -96,6 +96,7 @@ print(out)
 - TensorRT for inference
 - Docker for cluster management
 - Kubernetes for managing and autoscaling docker containers
+- Terraform
 
 
 # Example
