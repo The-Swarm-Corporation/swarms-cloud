@@ -27,7 +27,7 @@ COPY requirements.txt .
 RUN python3.10 -m pip install -r requirements.txt
 
 # Adjust the working directory to where your application's code will reside
-WORKDIR /swarms-cloud/servers
+WORKDIR /swarms-cloud/servers/qwen
 
 # Assuming your application's entire directory structure needs to be copied,
 # Adjust the COPY command to ensure the entire application is available in the container
@@ -37,4 +37,4 @@ COPY . /swarms-cloud
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python3.10", "-m", "uvicorn", "cogvlm:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3.10", "-m", "uvicorn", "qwen_api_openai_compatible:app", "--host", "0.0.0.0", "--port", "8000"]
