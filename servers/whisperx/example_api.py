@@ -23,6 +23,6 @@ request_data = WhisperTranscription(
 url = "https://localhost:8000/v1/audio/transcriptions"
 
 # Send the request
-response = requests.post(url, json=request_data.dict())
+response = requests.post(url, json=request_data.dict(), verify=False)
 # Print the response from the server
 print(response.text)
