@@ -5,7 +5,7 @@ import threading
 from typing import List, Optional
 
 import torch
-import whisperx
+import servers.whisperx.whisperx as whisperx
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
@@ -245,11 +245,11 @@ async def startup_event():
     print("Application startup, initialize resources here.")
     # For example, loading models into memory if necessary.
 
-    model = WhisperTranscriber(
-        device="cuda" if torch.cuda.is_available() else "cpu",
-        compute_type="float16",
-        hf_token=os.getenv("HF_TOKEN"),
-    )
+    # model = WhisperTranscriber(
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    #     compute_type="float16",
+    #     hf_token=os.getenv("HF_TOKEN"),
+    # )
 
 
 @app.on_event("shutdown")
