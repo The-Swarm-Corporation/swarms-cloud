@@ -9,6 +9,10 @@ resource "aws_iam_role" "lambda_exec_role" {
 
 # Deploy API Gateway
 resource "aws_api_gateway_deployment" "api_deployment" {
+  depends_on = [
+    aws_api_gateway_method.model_post_method,
+    aws_api_gateway_resource.model_routing_resource
+  ]
   rest_api_id = aws_api_gateway_rest_api.model_routing_api.id
   stage_name  = "prod"
   # Other configurations
