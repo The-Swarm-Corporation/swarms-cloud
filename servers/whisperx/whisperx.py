@@ -5,7 +5,7 @@ import threading
 from typing import List, Optional
 
 import torch
-import servers.whisperx.whisperx as whisperx
+import whisperx
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
