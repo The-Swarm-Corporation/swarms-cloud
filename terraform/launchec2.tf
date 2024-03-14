@@ -41,4 +41,5 @@ resource "aws_instance" "k8s_worker" {
               aws s3 cp s3://swarmskube/k8s-join-command.sh /tmp/k8s-join-command.sh
               chmod +x /tmp/k8s-join-command.sh
               /tmp/k8s-join-command.sh
+              EOF
 }
