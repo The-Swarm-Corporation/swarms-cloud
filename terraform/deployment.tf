@@ -30,13 +30,11 @@ resource "kubernetes_deployment" "cogvlm_deployment" {
           # Define resource requests and limits
           resources {
             limits = {
-              cpu    = "500m"
-              memory = "1024Mi"
+              memory = "25Gi"
             }
 
             requests = {
-              cpu    = "250m"
-              memory = "512Mi"
+              memory = "35Gi"
             }
           }
         }
@@ -76,13 +74,11 @@ resource "kubernetes_deployment" "qwenvl_deployment" {
           # Define resource requests and limits
           resources {
             limits = {
-              cpu    = "500m"
-              memory = "1024Mi"
+              memory = "25Gi"
             }
 
             requests = {
-              cpu    = "250m"
-              memory = "512Mi"
+              memory = "35Gi"
             }
           }
         }
