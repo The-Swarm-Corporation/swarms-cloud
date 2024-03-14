@@ -17,7 +17,6 @@ load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
 
 
-
 class WhisperTranscriber:
     """
     A class for transcribing audio using the Whisper ASR system.
@@ -285,7 +284,7 @@ async def create_audio_completion(request: WhisperTranscription):
     # Log the entry into supabase
 
     transcriber = WhisperTranscriber(
-        device = "cuda" if torch.cuda.is_available() else "cpu",
+        device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
     # Run the audio processing pipeline

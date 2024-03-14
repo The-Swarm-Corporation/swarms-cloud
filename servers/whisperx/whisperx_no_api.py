@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import torch
 import whisperx
-import os 
+import os
 
 from dotenv import load_dotenv
 
@@ -157,8 +157,7 @@ class WhisperTranscriber:
 
 
 # Instantiate the WhisperTranscriber
-model = WhisperTranscriber(
-)
+model = WhisperTranscriber()
 
 # Run the audio processing pipeline
 result = model.run("song.mp3")

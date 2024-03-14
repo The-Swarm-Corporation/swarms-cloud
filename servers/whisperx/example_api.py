@@ -15,9 +15,7 @@ class WhisperTranscription(BaseModel):
 
 
 # Construct the request data
-request_data = WhisperTranscription(
-    file = "song.mp3"
-)
+request_data = WhisperTranscription(file="song.mp3")
 
 # Specify the URL of your FastAPI application
 url = "https://localhost:8000/v1/audio/transcriptions"
