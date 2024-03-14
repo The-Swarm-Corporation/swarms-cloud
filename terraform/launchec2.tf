@@ -1,55 +1,3 @@
-resource "aws_launch_configuration" "model_api_conf" {
-  name_prefix          = "model-api-"
-  image_id             = "ami-048eeb679c8e04a87"
-  instance_type        = "p3.2xlarge" # Choose an appropriate instance type
-  security_groups      = [aws_security_group.model_api_sg.id]
-  iam_instance_profile = aws_iam_instance_profile.ssm.name
-  key_name = aws_key_pair.ssh_key.key_name # Add this line
-
-  root_block_device {
-    volume_size           = 130
-    delete_on_termination = true
-    volume_type           = "gp2" # General Purpose SSD
-  }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-              # Install the latest version of Docker CE and containerd
-              sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              sudo usermod -aG docker ubuntu
-              sudo docker pull public.ecr.aws/d6u1k1m2/cogvlmpub:latest
-              sudo docker run --gpus all -d -p 8000:8000 public.ecr.aws/d6u1k1m2/cogvlmpub:latest
-              EOF
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_launch_template" "k8s_worker_lt" {
-  name_prefix   = "k8s-worker-"
-  image_id      = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
-  instance_type = "t3.medium"
-  key_name      = aws_key_pair.ssh_key.key_name
-
-  user_data = base64encode(<<-EOF
-              #!/bin/bash
-              # Placeholder for worker join commands. This will be replaced dynamically.
-              EOF)
-
-  vpc_security_group_ids = [aws_security_group.k8s_worker_sg.id]
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "KubernetesWorker"
-    }
-  }
-}
-
 resource "aws_instance" "k8s_master" {
   ami           = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "t3.medium"
@@ -68,14 +16,20 @@ resource "aws_instance" "k8s_master" {
               sudo chown $(id -u):$(id -g) $HOME/.kube/config
               # Install Flannel networking
               kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+              # Generate the join command and upload to S3
+              JOIN_COMMAND=$(kubeadm token create --print-join-command)
+              echo "$JOIN_COMMAND" > /tmp/k8s-join-command.sh
+              aws s3 cp /tmp/k8s-join-command.sh s3://swarmskube/k8s-join-command.sh
               EOF
 }
 
 resource "aws_instance" "k8s_worker" {
   count         = 2 # Number of worker nodes
   ami           = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
-  instance_type = "t3.medium"
+  instance_type = "p3.2xlarge"
   key_name      = aws_key_pair.ssh_key.key_name
+
+  vpc_security_group_ids = [aws_security_group.k8s_worker_sg.id]
 
   tags = {
     Name = "KubernetesWorker"
@@ -83,6 +37,8 @@ resource "aws_instance" "k8s_worker" {
 
   user_data = <<-EOF
               #!/bin/bash
-              # Commands to join the worker nodes to the Kubernetes cluster will be executed manually or could be automated with additional scripting
-              EOF
+              # Download and execute the Kubernetes join command securely
+              aws s3 cp s3://swarmskube/k8s-join-command.sh /tmp/k8s-join-command.sh
+              chmod +x /tmp/k8s-join-command.sh
+              /tmp/k8s-join-command.sh
 }

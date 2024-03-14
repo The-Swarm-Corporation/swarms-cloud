@@ -76,6 +76,13 @@ resource "aws_security_group" "k8s_master_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  # New ingress rule for SSH access
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Adjust this to a more restricted CIDR block for enhanced security
+  }
 
   egress {
     from_port   = 0
