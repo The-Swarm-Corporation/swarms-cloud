@@ -1,6 +1,6 @@
 resource "aws_autoscaling_group" "k8s_worker_asg" {
   launch_template {
-    id      = aws_launch_template.k8s_worker_lt.id
+    id      = aws_launch_template.k8s_worker.id
     version = "$Latest"
   }
 

@@ -43,16 +43,17 @@ resource "aws_api_gateway_integration" "model_lambda_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.request_router.invoke_arn
-  integration_http_method = "POST" # Use the POST method for Lambda invocation
 }
 
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
-    aws_api_gateway_integration.lambda_integration
+    aws_api_gateway_integration.lambda_integration,
+    aws_api_gateway_method.model_post_method,
+    aws_api_gateway_resource.model_routing_resource
   ]
 
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  stage_name  = "v1"
+  rest_api_id = aws_api_gateway_rest_api.model_routing_api.id
+  stage_name  = "prod"
 }
 
 resource "aws_lambda_permission" "api_lambda_permission" {

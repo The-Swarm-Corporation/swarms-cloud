@@ -51,3 +51,15 @@ resource "aws_lb" "model_api_lb" {
   enable_deletion_protection = true
 }
 
+
+resource "aws_route53_record" "lb_dns" {
+  zone_id = "Z0629215JQIY0GI18GHF" # Replace with your hosted zone ID
+  name    = "api.swarms.world"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.k8s_nlb.dns_name
+    zone_id                = aws_lb.k8s_nlb.zone_id
+    evaluate_target_health = true
+  }
+}

@@ -1,5 +1,8 @@
 import base64
+import re
 import gc
+import json
+import copy
 import os
 import time
 from contextlib import asynccontextmanager
@@ -16,7 +19,6 @@ from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from transformers import (
     AutoModelForCausalLM,
-    BitsAndBytesConfig,
     PreTrainedModel,
     PreTrainedTokenizer,
     TextIteratorStreamer,
@@ -29,14 +31,11 @@ from transformers import (
 # supabase_logger = SupabaseLogger("swarm_cloud_usage")
 
 # Environment variables
-MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "Qwen/Qwen-VL")
-TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
+MODEL_PATH = os.environ.get("QWENVL_MODEL_PATH", "Qwen/Qwen-VL-Chat-Int4")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
 
-# Model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL", trust_remote_code=True)
 
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
     torch_type = torch.bfloat16
@@ -45,23 +44,15 @@ else:
 
 print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
-quantization_config = {
-    "load_in_4bit": QUANT_ENABLED,
-    "bnb_4bit_use_double_quant": True,
-    "bnb_4bit_quant_type": "nf4",
-    "bnb_4bit_compute_dtype": torch_type,
-}
-
-bnb_config = BitsAndBytesConfig(**quantization_config)
+# Model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True, load_in_4bit=True, torch_dtype=torch_type)
 
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_PATH,
-    load_in_4bit=True,
     trust_remote_code=True,
     torch_dtype=torch_type,
-    low_cpu_mem_usage=True,
+    device_map="cuda",
     # attn_implementation="flash_attention_2",
-    quantization_config=bnb_config,
 ).eval()
 
 # Torch type
@@ -149,9 +140,14 @@ class ChatMessageInput(BaseModel):
     name: Optional[str] = None
 
 
+class DeltaMessage(BaseModel):
+    role: Optional[Literal["user", "assistant", "system"]] = None
+    content: Optional[str] = None
+
+
 class ChatMessageResponse(BaseModel):
     role: Literal["assistant"]
-    content: str = None
+    content: Union[str, dict, list] = None
     name: Optional[str] = None
 
 
@@ -168,12 +164,14 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: Optional[int] = None
     stream: Optional[bool] = False
     # Additional parameters
+    stop: Optional[List[str]] = None
     repetition_penalty: Optional[float] = 1.0
 
 
 class ChatCompletionResponseChoice(BaseModel):
     index: int
     message: ChatMessageResponse
+
 
 
 class ChatCompletionResponseStreamChoice(BaseModel):
@@ -197,6 +195,27 @@ class ChatCompletionResponse(BaseModel):
     usage: Optional[UsageInfo] = None
 
 
+TOOL_DESC = """{name_for_model}: Call this tool to interact with the {name_for_human} API. What is the {name_for_human} API useful for? {description_for_model} Parameters: {parameters}"""
+
+REACT_INSTRUCTION = """Answer the following questions as best you can. You have access to the following APIs:
+
+{tools_text}
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tools_name_text}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can be repeated zero or more times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!"""
+
+_TEXT_COMPLETION_CMD = object()
+
 @app.get("/v1/models", response_model=ModelList)
 async def list_models():
     """
@@ -204,7 +223,7 @@ async def list_models():
     This is useful for clients to query and understand what models are available for use.
     """
     model_card = ModelCard(
-        id="cogvlm-chat-17b"
+        id="Qwen-VL-Chat-Int4"
     )  # can be replaced by your model id like cogagent-chat-18b
     return ModelList(data=[model_card])
 
@@ -233,8 +252,6 @@ async def create_chat_completion(request: ChatCompletionRequest):
         return EventSourceResponse(generate, media_type="text/event-stream")
     response = generate_cogvlm(model, tokenizer, gen_params)
 
-    usage = UsageInfo()
-
     message = ChatMessageResponse(
         role="assistant",
         content=response["text"],
@@ -253,15 +270,10 @@ async def create_chat_completion(request: ChatCompletionRequest):
     # supabase_logger.log(choice_data)
 
     # task_usage = UsageInfo.model_validate(response["usage"])
-    task_usage = UsageInfo.parse_obj(response["usage"])
-    for usage_key, usage_value in task_usage.model_dump().items():
-        setattr(usage, usage_key, getattr(usage, usage_key) + usage_value)
-
     out = ChatCompletionResponse(
         model=request.model,
         choices=[choice_data],
         object="chat.completion",
-        usage=usage,
     )
 
     # Log to supabase
@@ -338,6 +350,28 @@ async def predict(model_id: str, params: dict):
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
 
+# To work around that unpleasant leading-\n tokenization issue!
+def add_extra_stop_words(stop_words):
+    if stop_words:
+        _stop_words = []
+        _stop_words.extend(stop_words)
+        for x in stop_words:
+            s = x.lstrip("\n")
+            if s and (s not in _stop_words):
+                _stop_words.append(s)
+        return _stop_words
+    return stop_words
+
+
+def trim_stop_words(response, stop_words):
+    if stop_words:
+        for stop in stop_words:
+            idx = response.find(stop)
+            if idx != -1:
+                response = response[:idx]
+    return response
+
+
 def generate_cogvlm(
     model: PreTrainedModel, tokenizer: PreTrainedTokenizer, params: dict
 ):
@@ -349,6 +383,97 @@ def generate_cogvlm(
     for response in generate_stream_cogvlm(model, tokenizer, params):
         pass
     return response
+
+
+def parse_messages(messages):
+    if all(m.role != "user" for m in messages):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid request: Expecting at least one user message.",
+        )
+
+    messages = copy.deepcopy(messages)
+    default_system = "You are a helpful assistant."
+    system = ""
+    if messages[0].role == "system":
+        system = messages.pop(0).content.lstrip("\n").rstrip()
+        if system == default_system:
+            system = ""
+
+    dummy_thought = {
+        "en": "\nThought: I now know the final answer.\nFinal answer: ",
+        "zh": "\nThought: 我会作答了。\nFinal answer: ",
+    }
+
+    _messages = messages
+    messages = []
+    for m_idx, m in enumerate(_messages):
+        role, content = m.role, m.content
+        if content:
+            content = content.lstrip("\n").rstrip()
+        if role == "function":
+            if (len(messages) == 0) or (messages[-1].role != "assistant"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid request: Expecting role assistant before role function.",
+                )
+            messages[-1].content += f"\nObservation: {content}"
+            if m_idx == len(_messages) - 1:
+                messages[-1].content += "\nThought:"
+        elif role == "assistant":
+            if len(messages) == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid request: Expecting role user before role assistant.",
+                )
+            last_msg = messages[-1].content
+            last_msg_has_zh = len(re.findall(r"[\u4e00-\u9fff]+", last_msg)) > 0
+            if messages[-1].role == "user":
+                messages.append(
+                    ChatMessageInput(role="assistant", content=content.lstrip("\n").rstrip())
+                )
+            else:
+                messages[-1].content += content
+        elif role == "user":
+            messages.append(
+                ChatMessageInput(role="user", content=content.lstrip("\n").rstrip())
+            )
+        else:
+            raise HTTPException(
+                status_code=400, detail=f"Invalid request: Incorrect role {role}."
+            )
+
+    query = _TEXT_COMPLETION_CMD
+    if messages[-1].role == "user":
+        query = messages[-1].content
+        messages = messages[:-1]
+
+    if len(messages) % 2 != 0:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+    history = []  # [(Q1, A1), (Q2, A2), ..., (Q_last_turn, A_last_turn)]
+    for i in range(0, len(messages), 2):
+        if messages[i].role == "user" and messages[i + 1].role == "assistant":
+            usr_msg = messages[i].content.lstrip("\n").rstrip()
+            bot_msg = messages[i + 1].content.lstrip("\n").rstrip()
+            if system and (i == len(messages) - 2):
+                usr_msg = f"{system}\n\nQuestion: {usr_msg}"
+                system = ""
+            for t in dummy_thought.values():
+                t = t.lstrip("\n")
+                if bot_msg.startswith(t) and ("\nAction: " in bot_msg):
+                    bot_msg = bot_msg[len(t) :]
+            history.append([usr_msg, bot_msg])
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid request: Expecting exactly one user (or function) role before every assistant role.",
+            )
+    if system:
+        assert query is not _TEXT_COMPLETION_CMD
+        query = f"{system}\n\nQuestion: {query}"
+    return query, history
+
 
 
 def process_history_and_images(
@@ -420,30 +545,23 @@ def generate_stream_cogvlm(
     Generates a stream of responses using the CogVLM model in inference mode.
     It's optimized to handle continuous input-output interactions with the model in a streaming manner.
     """
+    
+
     messages = params["messages"]
     temperature = float(params.get("temperature", 1.0))
     repetition_penalty = float(params.get("repetition_penalty", 1.0))
     top_p = float(params.get("top_p", 1.0))
-    max_new_tokens = int(params.get("max_tokens", 256))
+    max_new_tokens = int(params.get("max_tokens", 8192))
     query, history, image_list = process_history_and_images(messages)
-
     logger.debug(f"==== request ====\n{query}")
+    # Save the image temporarily
+    temp_image_path = 'temp_image.jpg'  # Define a temporary file path
+    image_list[0].save(temp_image_path)  # Assuming image_list[0] is a PIL Image object
+    inputs = tokenizer.from_list_format([
+        {"text": query},
+        {"image": temp_image_path},
+    ])
 
-    input_by_model = model.build_conversation_input_ids(
-        tokenizer, query=query, history=history, images=[image_list[-1]]
-    )
-    inputs = {
-        "input_ids": input_by_model["input_ids"].unsqueeze(0).to(DEVICE),
-        "token_type_ids": input_by_model["token_type_ids"].unsqueeze(0).to(DEVICE),
-        "attention_mask": input_by_model["attention_mask"].unsqueeze(0).to(DEVICE),
-        "images": [[input_by_model["images"][0].to(DEVICE).to(torch_type)]],
-    }
-    if "cross_images" in input_by_model and input_by_model["cross_images"]:
-        inputs["cross_images"] = [
-            [input_by_model["cross_images"][0].to(DEVICE).to(torch_type)]
-        ]
-
-    input_echo_len = len(inputs["input_ids"][0])
     streamer = TextIteratorStreamer(
         tokenizer=tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True
     )
@@ -459,25 +577,9 @@ def generate_stream_cogvlm(
 
     total_len = 0
     generated_text = ""
-    with torch.no_grad():
-        model.generate(**inputs, **gen_kwargs)
-        for next_text in streamer:
-            generated_text += next_text
-            yield {
-                "text": generated_text,
-                "usage": {
-                    "prompt_tokens": input_echo_len,
-                    "completion_tokens": total_len - input_echo_len,
-                    "total_tokens": total_len,
-                },
-            }
+    response = model.chat(tokenizer, query=inputs, history=None)
     ret = {
-        "text": generated_text,
-        "usage": {
-            "prompt_tokens": input_echo_len,
-            "completion_tokens": total_len - input_echo_len,
-            "total_tokens": total_len,
-        },
+        "text": item[0] for item in response
     }
     yield ret
 

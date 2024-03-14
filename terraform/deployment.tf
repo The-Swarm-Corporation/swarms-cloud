@@ -68,7 +68,7 @@ resource "kubernetes_deployment" "qwenvl_deployment" {
 
       spec {
         container {
-          image = "public.ecr.aws/d6u1k1m2/qwenvl:latest"
+          image = "public.ecr.aws/d6u1k1m2/qwenvlm:latest"
           name  = "qwenvl"
 
           # Define resource requests and limits
