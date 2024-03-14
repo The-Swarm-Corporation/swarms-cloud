@@ -31,7 +31,7 @@ resource "aws_launch_configuration" "model_api_conf" {
 
 resource "aws_launch_template" "k8s_worker_lt" {
   name_prefix   = "k8s-worker-"
-  image_id      = "ami-0c2b8ca1dad447f8a" # Example AMI, replace with a Kubernetes supported one
+  image_id      = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "t3.medium"
   key_name      = aws_key_pair.ssh_key.key_name
 
@@ -51,7 +51,7 @@ resource "aws_launch_template" "k8s_worker_lt" {
 }
 
 resource "aws_instance" "k8s_master" {
-  ami           = "ami-0c2b8ca1dad447f8a" # Example AMI, replace with a Kubernetes supported one
+  ami           = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "t3.medium"
   key_name      = aws_key_pair.ssh_key.key_name
 
@@ -73,7 +73,7 @@ resource "aws_instance" "k8s_master" {
 
 resource "aws_instance" "k8s_worker" {
   count         = 2 # Number of worker nodes
-  ami           = "ami-0c2b8ca1dad447f8a" # Example AMI, replace with a Kubernetes supported one
+  ami           = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "t3.medium"
   key_name      = aws_key_pair.ssh_key.key_name
 
