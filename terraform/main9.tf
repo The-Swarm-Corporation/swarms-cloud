@@ -1,17 +1,20 @@
 # AWS Lambda function for request routing
 resource "aws_lambda_function" "request_router" {
   function_name = "requestRouter"
-  # other configurations like handler, runtime, and environment variables
-  # Your function's source code would route the requests based on the model name
+  handler       = "index.handler"  # make sure this handler aligns with your code's entry point
+  role          = aws_iam_role.lambda_exec.arn
+  runtime       = "nodejs14.x"  # or whatever runtime you're using
+
+  s3_bucket     = "swarmslambda"
+  s3_key        = "code.zip"
+
   environment {
     variables = {
-      COGVLM_ENDPOINT = "http://model1-service",
-      QWENVL_ENDPOINT = "http://model2-service",
-      // Add more environment variables as necessary
+      COGVLM_ENDPOINT = "http://${aws_lb.cogvlm_service.dns_name}",
+      QWENVL_ENDPOINT = "http://${aws_lb.qwenvl_service.dns_name}",
     }
   }
 }
-
 
 # API Gateway to expose the Lambda Function
 resource "aws_api_gateway_rest_api" "model_routing_api" {
@@ -40,6 +43,29 @@ resource "aws_api_gateway_integration" "model_lambda_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.request_router.invoke_arn
+  integration_http_method = "POST" # Use the POST method for Lambda invocation
 }
 
+resource "aws_api_gateway_deployment" "api_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.lambda_integration
+  ]
 
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = "v1"
+}
+
+resource "aws_lambda_permission" "api_lambda_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_function.function_name
+  principal     = "apigateway.amazonaws.com"
+  # The /*/* allows for all methods and resources
+  source_arn = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+resource "aws_api_gateway_stage" "api_stage" {
+  deployment_id = aws_api_gateway_deployment.api_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.model_routing_api.id
+  stage_name    = "v1"
+}
