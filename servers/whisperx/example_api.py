@@ -21,7 +21,7 @@ request_data = WhisperTranscription(
 
 # Specify the URL of your FastAPI application
 url = "https://localhost:8000/v1/audio/transcriptions"
-g
+
 # Send the request
 response = requests.post(url, json=request_data.dict())
 # Print the response from the server
