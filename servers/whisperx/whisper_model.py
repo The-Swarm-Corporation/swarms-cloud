@@ -36,9 +36,7 @@ class FasterWhisperTranscriber:
         :param audio_file_path: Path to the audio file to be transcribed
         :return: Transcription results
         """
-        segments, info = self.model.transcribe(
-            task, **self.transcribe_options
-        )
+        segments, info = self.model.transcribe(task, **self.transcribe_options)
 
         # Printing language detection information
         print(
