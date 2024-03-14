@@ -1,24 +1,3 @@
-
-resource "aws_lb_target_group" "model_api_tg" {
-  name     = "model-api-tg"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
-
-}
-
-resource "aws_lb_listener" "model_api_listener" {
-  load_balancer_arn = aws_lb.model_api_lb.arn
-  port              = 8000
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.model_api_tg.arn
-  }
-}
-
-
 resource "aws_lb" "k8s_nlb" {
   name               = "k8s-nlb"
   internal           = false
