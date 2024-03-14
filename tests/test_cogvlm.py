@@ -2,7 +2,7 @@
 
 import pytest
 from fastapi import HTTPException
-from servers.cogvlm import (
+from servers.cogvlm.cogvlm import (
     create_chat_completion,
     ChatCompletionRequest,
     ChatMessageRequest,
