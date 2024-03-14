@@ -18,3 +18,4 @@ peft
 accelerate
 huggingface_hub[hf_transfer]
 huggingface-hub
+whisperx

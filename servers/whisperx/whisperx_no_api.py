@@ -1,15 +1,16 @@
-import uvicorn
 import gc
-import os
 import threading
 from typing import List, Optional
 
 import torch
 import whisperx
-from fastapi import FastAPI
-from fastapi.concurrency import asynccontextmanager
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+hf_token = os.getenv("HF_TOKEN")
 
 
 class WhisperTranscriber:
@@ -30,7 +31,7 @@ class WhisperTranscriber:
         device: str = "cuda",
         compute_type: str = "float16",
         batch_size: int = 16,
-        hf_token: Optional[str] = None,
+        hf_token: Optional[str] = hf_token,
         audio_file: Optional[str] = None,
         audio_files: Optional[List[str]] = None,
     ):
@@ -155,139 +156,8 @@ class WhisperTranscriber:
         return self.process_audio(audio_file)
 
 
-def worker(audio_file, transcriber):
-    print(f"Processing {audio_file}")
-    transcriber.process_audio(audio_file)
-    print(f"Done with {audio_file}")
+# Instantiate the WhisperTranscriber
+model = WhisperTranscriber()
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    An asynchronous context manager for managing the lifecycle of the FastAPI app.
-    It ensures that GPU memory is cleared after the app's lifecycle ends, which is essential for efficient resource management in GPU environments.
-    """
-    yield
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-
-
-def batched_transcribe(audio_files: List[str]):
-    transcriber = WhisperTranscriber(batch_size=16, compute_type="float16")
-
-    threads = []
-    for audio_file in audio_files:
-        thread = threading.Thread(target=worker, args=(audio_file, transcriber))
-        thread.start()
-        threads.append(thread)
-
-    for thread in threads:
-        thread.join()
-
-    print("All audio files processed.")
-
-
-class WhisperTranscription(BaseModel):
-    file: Optional[str] = None
-    model: Optional[str] = "whisperx-large-v2"
-    language: Optional[str] = "en"
-    prompt: Optional[str] = None
-    response_format: Optional[str] = "json"
-    temperature: Optional[int] = 0
-    timestamp_granularities: Optional[List[str]] = ["sentence"]
-
-
-# SCHEMA
-class WhisperTranscriptionResponse(BaseModel):
-    task: str = "transcription"
-    duration: str = "0.0"
-    text: str = None
-    words: List[str] = []
-    segments: List[str] = []
-
-
-app = FastAPI(debug=True, lifespan=lifespan)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-class ModelList(BaseModel):
-    models: List[str] = [
-        "whisperx-large-v2",
-        "whisperx-small-v2",
-    ]
-
-
-# @app.get("/v1/models", response_model=ModelList)
-# async def list_models():
-#     """
-#     An endpoint to list available models. It returns a list of model cards.
-#     This is useful for clients to query and understand what models are available for use.
-#     """
-#     model_card = ModelCard(
-#         id="cogvlm-chat-17b"
-#     )  # can be replaced by your model id like cogagent-chat-18b
-#     return ModelList(data=[model_card])
-
-
-@app.on_event("startup")
-async def startup_event():
-    global model
-
-    # This is where you can initialize resources that your application needs.
-    print("Application startup, initialize resources here.")
-    # For example, loading models into memory if necessary.
-
-    model = WhisperTranscriber(
-        device="cuda" if torch.cuda.is_available() else "cpu",
-        compute_type="float16",
-        hf_token=os.getenv("HF_TOKEN"),
-    )
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    print("Application shutdown, cleaning up artifacts")
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-
-
-@app.post("/v1/audio/transcriptions", response_model=WhisperTranscriptionResponse)
-async def create_audio_completion(request: WhisperTranscription):
-    audio_file: str = request.file
-
-    # Entry
-    dict(
-        task="transcription",
-        audio_file=audio_file,
-        model=request.model,
-        language=request.language,
-        prompt=request.prompt,
-        response_format=request.response_format,
-        temperature=request.temperature,
-        timestamp_granularities=request.timestamp_granularities,
-    )
-
-    # Log the entry into supabase
-
-    transcriber = WhisperTranscriber(
-        audio_file=audio_file,
-    )
-
-    # Run the audio processing pipeline
-    out = transcriber.run(audio_file)
-
-    # Response
-    return WhisperTranscriptionResponse(task="transcription", text=out["text"]).json()
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1)
+# Run the audio processing pipeline
+result = model.run("song.mp3")
