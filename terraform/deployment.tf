@@ -2,6 +2,7 @@
 
 # Kubernetes Deployments for each model
 resource "kubernetes_deployment" "cogvlm_deployment" {
+  depends_on = [null_resource.wait_for_k8s]
   metadata {
     name = "cogvlm-deployment"
   }
@@ -46,6 +47,7 @@ resource "kubernetes_deployment" "cogvlm_deployment" {
 
 # Kubernetes Deployments for each model
 resource "kubernetes_deployment" "qwenvl_deployment" {
+  depends_on = [null_resource.wait_for_k8s]
   metadata {
     name = "qwenvl-deployment"
   }
@@ -84,5 +86,14 @@ resource "kubernetes_deployment" "qwenvl_deployment" {
         }
       }
     }
+  }
+}
+
+
+resource "null_resource" "delay" {
+  depends_on = [aws_instance.k8s_master]
+
+  provisioner "local-exec" {
+    command = "sleep 120" # Waits for 2 minutes
   }
 }
