@@ -2,7 +2,7 @@
 resource "aws_lambda_function" "request_router" {
   function_name = "requestRouter"
   handler       = "index.handler"  # make sure this handler aligns with your code's entry point
-  role          = aws_iam_role.lambda_exec.arn
+  role          = aws_iam_role.lambda_exec_role.arn
   runtime       = "nodejs14.x"  # or whatever runtime you're using
 
   s3_bucket     = "swarmslambda"
@@ -10,8 +10,8 @@ resource "aws_lambda_function" "request_router" {
 
   environment {
     variables = {
-      COGVLM_ENDPOINT = "http://${aws_lb.cogvlm_service.dns_name}",
-      QWENVL_ENDPOINT = "http://${aws_lb.qwenvl_service.dns_name}",
+      COGVLM_ENDPOINT = "http://${kubernetes_service.cogvlm_service.status[0].load_balancer[0].ingress[0].hostname}",
+      QWENVL_ENDPOINT = "http://${kubernetes_service.qwenvl_service.status[0].load_balancer[0].ingress[0].hostname}",
     }
   }
 }
@@ -47,7 +47,7 @@ resource "aws_api_gateway_integration" "model_lambda_integration" {
 
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
-    aws_api_gateway_integration.lambda_integration,
+    aws_api_gateway_integration.model_lambda_integration,
     aws_api_gateway_method.model_post_method,
     aws_api_gateway_resource.model_routing_resource
   ]
@@ -59,10 +59,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 resource "aws_lambda_permission" "api_lambda_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda_function.function_name
+  function_name = aws_lambda_function.request_router.function_name
   principal     = "apigateway.amazonaws.com"
-  # The /*/* allows for all methods and resources
-  source_arn = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.model_routing_api.execution_arn}/*/*"
 }
 
 resource "aws_api_gateway_stage" "api_stage" {

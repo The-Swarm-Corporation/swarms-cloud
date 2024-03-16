@@ -27,7 +27,7 @@ COPY requirements.txt .
 RUN python3.10 -m pip install -r requirements.txt
 
 # Adjust the working directory to where your application's code will reside
-WORKDIR /swarms-cloud/servers
+WORKDIR /swarms-cloud/servers/cogvlm
 
 # Assuming your application's entire directory structure needs to be copied,
 # Adjust the COPY command to ensure the entire application is available in the container

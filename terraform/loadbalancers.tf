@@ -32,34 +32,4 @@ resource "aws_lb_target_group" "k8s_tg" {
   }
 }
 
-# Assuming you have EC2 instances tagged as Kubernetes workers
-resource "aws_lb_target_group_attachment" "k8s_tg_attachment" {
-  target_group_arn = aws_lb_target_group.k8s_tg.arn
-  target_id        = aws_instance.k8s_worker.id # You'll need to adjust this based on how you've set up your instances
-  port             = 30000
-}
 
-
-
-resource "aws_lb" "model_api_lb" {
-  name               = "model-api-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.model_api_sg.id]
-  subnets            = [aws_subnet.main.id, aws_subnet.main2.id]
-
-  enable_deletion_protection = true
-}
-
-
-resource "aws_route53_record" "lb_dns" {
-  zone_id = "Z0629215JQIY0GI18GHF" # Replace with your hosted zone ID
-  name    = "api.swarms.world"
-  type    = "A"
-
-  alias {
-    name                   = aws_lb.k8s_nlb.dns_name
-    zone_id                = aws_lb.k8s_nlb.zone_id
-    evaluate_target_health = true
-  }
-}
