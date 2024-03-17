@@ -52,7 +52,74 @@ url = "https://api.swarms.world/v1/chat/completions"
 response = requests.post(url, json=request_data)
 # Print the response from the server
 print(response.text)
-``` 
+```
+
+## CogVLM in Node
+```js
+const fs = require('fs');
+const https = require('https');
+const sharp = require('sharp');
+
+// Convert image to Base64
+async function imageToBase64(imagePath) {
+    try {
+        const imageBuffer = await sharp(imagePath).jpeg().toBuffer();
+        return imageBuffer.toString('base64');
+    } catch (error) {
+        console.error('Error converting image to Base64:', error);
+    }
+}
+
+// Main function to execute the workflow
+async function main() {
+    const base64Image = await imageToBase64("images/3897e80dcb0601c0.jpg");
+    const textData = { type: "text", text: "Describe what is in the image" };
+    const imageData = {
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${base64Image}` },
+    };
+
+    // Construct the request data
+    const requestData = JSON.stringify({
+        model: "cogvlm-chat-17b",
+        messages: [{ role: "user", content: [textData, imageData] }],
+        temperature: 0.8,
+        top_p: 0.9,
+        max_tokens: 1024,
+    });
+
+    const options = {
+        hostname: 'api.swarms.world',
+        path: '/v1/chat/completions',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': requestData.length,
+        },
+    };
+
+    const req = https.request(options, (res) => {
+        let responseBody = '';
+
+        res.on('data', (chunk) => {
+            responseBody += chunk;
+        });
+
+        res.on('end', () => {
+            console.log('Response:', responseBody);
+        });
+    });
+
+    req.on('error', (error) => {
+        console.error(error);
+    });
+
+    req.write(requestData);
+    req.end();
+}
+
+main();
+```
 
 
 
