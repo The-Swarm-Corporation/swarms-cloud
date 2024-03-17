@@ -11,7 +11,6 @@ resource "aws_instance" "k8s_master" {
 
 user_data = base64encode(<<-EOF
   #!/bin/bash
-
   # Log the status of Docker and Kubernetes services
   echo "Checking the status of Docker service..."
   sudo systemctl status docker | sudo tee /var/log/docker-status.log > /dev/null
@@ -25,18 +24,22 @@ user_data = base64encode(<<-EOF
 
   echo "Ensuring kubelet service is running..."
   sudo systemctl enable --now kubelet
-
-  # Log Kubernetes cluster status
-  echo "Logging Kubernetes cluster status..."
-  sudo kubectl cluster-info | sudo tee /var/log/kubectl-cluster-info.log > /dev/null
-
-  # Check for any not running system pods
-  echo "Checking for any not running system pods..."
-  sudo kubectl get pods --all-namespaces | grep -v Running | sudo tee /var/log/kubectl-non-running-pods.log > /dev/null
+  #Initiate the kubernetes network
+  kubeadm init --pod-network-cidr=10.244.0.0/16
+  mkdir -p $HOME/.kube
+  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  chown $(id -u):$(id -g) $HOME/.kube/config
 
   # Apply network plugin if not already applied (idempotent operation)
   echo "Applying Flannel CNI plugin..."
   sudo kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  # Wait for Flannel to be fully up
+  sleep 30
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo add grafana https://grafana.github.io/helm-charts
+  helm repo update
+  helm install prometheus prometheus-community/prometheus --namespace monitoring --create-namespace
+  helm install grafana grafana/grafana --namespace monitoring --create-namespace
   JOIN_COMMAND=$(kubeadm token create --print-join-command)
   echo "$JOIN_COMMAND" > /tmp/k8s-join-command.sh
   aws s3 cp /tmp/k8s-join-command.sh s3://swarmskube/k8s-join-command.sh
