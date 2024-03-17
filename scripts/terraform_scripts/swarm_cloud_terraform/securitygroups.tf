@@ -39,6 +39,21 @@ resource "aws_security_group" "k8s_master_sg" {
     cidr_blocks = ["0.0.0.0/0"]  # Adjust this to a more restricted CIDR block for enhanced security
   }
 
+  # Prometheus
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["199.204.135.66/32"] # Replace <your_ip> with your IP address
+  }
+
+  # Grafana
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["199.204.135.66/32"] # Replace <your_ip> with your IP address
+  }
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -57,7 +72,21 @@ resource "aws_security_group" "k8s_worker_sg" {
   name        = "k8s_worker_sg"
   description = "Security group for Kubernetes workers"
   vpc_id      = aws_vpc.main.id
+  # Prometheus
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["199.204.135.66/32"] # Replace <your_ip> with your IP address
+  }
 
+  # Grafana
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["199.204.135.66/32"] # Replace <your_ip> with your IP address
+  }
   # Allow all internal traffic for Kubernetes communication
   ingress {
     from_port   = 0
