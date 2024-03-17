@@ -11,7 +11,7 @@
 
 # Models
 
-## `CogVLM`
+## Example API Request in Python
 ```python
 import requests
 import base64
@@ -54,7 +54,7 @@ response = requests.post(url, json=request_data)
 print(response.text)
 ```
 
-## CogVLM in Node
+### Example API Request in Node
 ```js
 const fs = require('fs');
 const https = require('https');
@@ -120,6 +120,102 @@ async function main() {
 
 main();
 ```
+
+### Example API Request in Go
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/base64"
+    "encoding/json"
+    "fmt"
+    "image"
+    "image/jpeg"
+    _ "image/png" // Register PNG format
+    "io"
+    "net/http"
+    "os"
+)
+
+// imageToBase64 converts an image to a Base64-encoded string.
+func imageToBase64(imagePath string) (string, error) {
+    file, err := os.Open(imagePath)
+    if err != nil {
+        return "", err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        return "", err
+    }
+
+    buf := new(bytes.Buffer)
+    err = jpeg.Encode(buf, img, nil)
+    if err != nil {
+        return "", err
+    }
+
+    return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+}
+
+// main is the entry point of the program.
+func main() {
+    base64Image, err := imageToBase64("images/3897e80dcb0601c0.jpg")
+    if err != nil {
+        fmt.Println("Error converting image to Base64:", err)
+        return
+    }
+
+    requestData := map[string]interface{}{
+        "model": "cogvlm-chat-17b",
+        "messages": []map[string]interface{}{
+            {
+                "role":    "user",
+                "content": []map[string]string{{"type": "text", "text": "Describe what is in the image"}, {"type": "image_url", "image_url": {"url": fmt.Sprintf("data:image/jpeg;base64,%s", base64Image)}}},
+            },
+        },
+        "temperature": 0.8,
+        "top_p":       0.9,
+        "max_tokens":  1024,
+    }
+
+    requestBody, err := json.Marshal(requestData)
+    if err != nil {
+        fmt.Println("Error marshaling request data:", err)
+        return
+    }
+
+    url := "https://api.swarms.world/v1/chat/completions"
+    request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+    if err != nil {
+        fmt.Println("Error creating request:", err)
+        return
+    }
+
+    request.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    response, err := client.Do(request)
+    if err != nil {
+        fmt.Println("Error sending request:", err)
+        return
+    }
+    defer response.Body.Close()
+
+    responseBody, err := io.ReadAll(response.Body)
+    if err != nil {
+        fmt.Println("Error reading response body:", err)
+        return
+    }
+
+    fmt.Println("Response:", string(responseBody))
+}
+```
+
+
 
 
 
