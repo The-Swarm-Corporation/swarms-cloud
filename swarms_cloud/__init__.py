@@ -1,6 +1,6 @@
-from swarms_cloud.api_key_generator import generate_api_key
+from swarms_cloud.utils.api_key_generator import generate_api_key
 from swarms_cloud.func_api_wrapper import SwarmCloud
-from swarms_cloud.rate_limiter import rate_limiter
+from swarms_cloud.utils.rate_limiter import rate_limiter
 from swarms_cloud.sky_api import SkyInterface
 from swarms_cloud.schema.openai_protocol import (  # noqa: E501
     ChatCompletionRequest,

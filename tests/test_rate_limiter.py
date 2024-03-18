@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 from fastapi import FastAPI, HTTPException
 from time import time
 import logging
-from swarms_cloud.rate_limiter import rate_limiter
+from swarms_cloud.utils.rate_limiter import rate_limiter
 
 
 class MockClient:
