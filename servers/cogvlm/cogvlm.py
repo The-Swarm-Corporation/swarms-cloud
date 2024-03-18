@@ -22,6 +22,7 @@ from transformers import (
     PreTrainedTokenizer,
     TextIteratorStreamer,
 )
+from swarms_cloud.calculate_pricing import calculate_pricing
 
 # from swarms_cloud.supabase_logger import SupabaseLogger
 
@@ -225,6 +226,17 @@ async def create_chat_completion(request: ChatCompletionRequest):
 
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
+
+    # Calculate pricing
+    calculate_pricing(
+        texts=[
+            message.content for message in request.messages if message.role == "user"
+        ],
+        tokenizer=tokenizer,
+        rate_per_million=15.0,
+    )
+
+    print(f"Request: {request}")
 
     gen_params = dict(
         messages=request.messages,
