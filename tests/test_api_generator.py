@@ -1,6 +1,6 @@
 import pytest
 from swarms.structs.agent import Agent
-from swarms_cloud.api_key_generator import generate_api_key
+from swarms_cloud.utils.api_key_generator import generate_api_key
 
 
 # Basic tests
