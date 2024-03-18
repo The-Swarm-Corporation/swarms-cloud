@@ -17,7 +17,7 @@ from lmdeploy.messages import (
 )
 from lmdeploy.model import ChatTemplateConfig
 from lmdeploy.serve.async_engine import AsyncEngine
-from swarms_cloud.openai_protocol import (  # noqa: E501
+from swarms_cloud.schema.openai_protocol import (  # noqa: E501
     ChatCompletionRequest,
     ChatCompletionRequestQos,
     ChatCompletionResponse,

@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 
-from swarms_cloud.openai_protocol import (  # noqa: E501
+from swarms_cloud.schema.openai_protocol import (  # noqa: E501
     ErrorResponse,
 )
 

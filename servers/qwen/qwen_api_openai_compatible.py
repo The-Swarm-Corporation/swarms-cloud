@@ -1,7 +1,6 @@
 import base64
 import re
 import gc
-import json
 import copy
 import os
 import time
@@ -36,7 +35,6 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
 
-
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
     torch_type = torch.bfloat16
 else:
@@ -45,7 +43,12 @@ else:
 print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
 # Model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True, load_in_4bit=True, torch_dtype=torch_type)
+tokenizer = AutoTokenizer.from_pretrained(
+    "Qwen/Qwen-VL-Chat",
+    trust_remote_code=True,
+    load_in_4bit=True,
+    torch_dtype=torch_type,
+)
 
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_PATH,
@@ -173,7 +176,6 @@ class ChatCompletionResponseChoice(BaseModel):
     message: ChatMessageResponse
 
 
-
 class ChatCompletionResponseStreamChoice(BaseModel):
     index: int
     delta: DeltaMessage
@@ -215,6 +217,7 @@ Final Answer: the final answer to the original input question
 Begin!"""
 
 _TEXT_COMPLETION_CMD = object()
+
 
 @app.get("/v1/models", response_model=ModelList)
 async def list_models():
@@ -389,7 +392,7 @@ def parse_messages(messages):
     if all(m.role != "user" for m in messages):
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid request: Expecting at least one user message.",
+            detail="Invalid request: Expecting at least one user message.",
         )
 
     messages = copy.deepcopy(messages)
@@ -415,7 +418,7 @@ def parse_messages(messages):
             if (len(messages) == 0) or (messages[-1].role != "assistant"):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid request: Expecting role assistant before role function.",
+                    detail="Invalid request: Expecting role assistant before role function.",
                 )
             messages[-1].content += f"\nObservation: {content}"
             if m_idx == len(_messages) - 1:
@@ -424,13 +427,15 @@ def parse_messages(messages):
             if len(messages) == 0:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid request: Expecting role user before role assistant.",
+                    detail="Invalid request: Expecting role user before role assistant.",
                 )
             last_msg = messages[-1].content
-            last_msg_has_zh = len(re.findall(r"[\u4e00-\u9fff]+", last_msg)) > 0
+            len(re.findall(r"[\u4e00-\u9fff]+", last_msg)) > 0
             if messages[-1].role == "user":
                 messages.append(
-                    ChatMessageInput(role="assistant", content=content.lstrip("\n").rstrip())
+                    ChatMessageInput(
+                        role="assistant", content=content.lstrip("\n").rstrip()
+                    )
                 )
             else:
                 messages[-1].content += content
@@ -473,7 +478,6 @@ def parse_messages(messages):
         assert query is not _TEXT_COMPLETION_CMD
         query = f"{system}\n\nQuestion: {query}"
     return query, history
-
 
 
 def process_history_and_images(
@@ -545,7 +549,6 @@ def generate_stream_cogvlm(
     Generates a stream of responses using the CogVLM model in inference mode.
     It's optimized to handle continuous input-output interactions with the model in a streaming manner.
     """
-    
 
     messages = params["messages"]
     temperature = float(params.get("temperature", 1.0))
@@ -555,12 +558,14 @@ def generate_stream_cogvlm(
     query, history, image_list = process_history_and_images(messages)
     logger.debug(f"==== request ====\n{query}")
     # Save the image temporarily
-    temp_image_path = 'temp_image.jpg'  # Define a temporary file path
+    temp_image_path = "temp_image.jpg"  # Define a temporary file path
     image_list[0].save(temp_image_path)  # Assuming image_list[0] is a PIL Image object
-    inputs = tokenizer.from_list_format([
-        {"text": query},
-        {"image": temp_image_path},
-    ])
+    inputs = tokenizer.from_list_format(
+        [
+            {"text": query},
+            {"image": temp_image_path},
+        ]
+    )
 
     streamer = TextIteratorStreamer(
         tokenizer=tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True
@@ -575,12 +580,8 @@ def generate_stream_cogvlm(
     if temperature > 1e-5:
         gen_kwargs["temperature"] = temperature
 
-    total_len = 0
-    generated_text = ""
     response = model.chat(tokenizer, query=inputs, history=None)
-    ret = {
-        "text": item[0] for item in response
-    }
+    ret = {"text": item[0] for item in response}
     yield ret
 
 

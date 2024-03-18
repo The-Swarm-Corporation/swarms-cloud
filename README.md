@@ -1,17 +1,15 @@
 [![Multi-Modality](agorabanner.png)](https://discord.gg/qUtxnK2NMf)
 
 # Swarms Cloud
-- Swarms-as-a-service
-- 100% uptime
-- Bleeding-Edge Performance
-- Production-Grade Reliability
-  
+Infrastructure for scalable, reliable, and economical Multi-Modal Model API serving and deployment. We're using terraform to orchestrate infrastructure, FastAPI to host the models. If you're into deploying models for millions of people, join our discord and help contribute.
+
+
 # Install
 `pip install swarms-cloud`
 
-# Models
+# Examples
 
-## Example API Request in Python
+### Example Python
 ```python
 import requests
 import base64
@@ -262,15 +260,5 @@ print(out)
 - Terraform
 
 
-# Example
-
-scripts/send_request_to_cogvlm.py
-```
-url = "https://api.swarms.world/v1/chat/completions"
-
-response = requests.post(url, json=request_data)
-
-print(response.text)
-```
 # License
 MIT
