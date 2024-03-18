@@ -1,12 +1,12 @@
 FROM nvidia/cuda:12.1.1-devel-ubuntu22.04 as builder
 
-# Set environment variables
+# Set fixed environment variables
 ENV BASE_IMG=nvidia/cuda:12.1.1-devel-ubuntu22.04
 ENV DOCKER_BUILDKIT=1
-ENV WORLD_SIZE=4
 ENV ARTIFACTS_PATH=/app/artifacts
 ENV STORAGE_PATH=/app/storage
 ENV HF_HUB_ENABLE_HF_TRANSFER=True
+
 
 # Set the working directory to the root
 WORKDIR /
@@ -29,12 +29,17 @@ RUN python3.10 -m pip install -r requirements.txt
 # Adjust the working directory to where your application's code will reside
 WORKDIR /swarms-cloud/servers/cogvlm
 
-# Assuming your application's entire directory structure needs to be copied,
-# Adjust the COPY command to ensure the entire application is available in the container
+# Copy the application's entire directory structure into the container
 COPY . /swarms-cloud
+
+# Copy the entrypoint script into the container
+COPY scripts/entrypoint.sh /entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 8000
 
-# Command to run the application
-CMD ["python3.10", "-m", "uvicorn", "cogvlm:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use the entrypoint script to configure environment variables and start the application
+ENTRYPOINT ["/entrypoint.sh"]

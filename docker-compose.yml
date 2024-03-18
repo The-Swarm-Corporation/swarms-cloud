@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile # Specify your Dockerfile here. Adjust the filename as necessary.
+      args:
+        BASE_IMG: nvidia/cuda:12.1.1-devel-ubuntu22.04
+    image: cogvlm_api:latest
+    env_file:
+      - .env # Specify your environment file here
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/swarms-cloud
+    entrypoint: "/swarms-cloud/scripts/entrypoint.sh"
