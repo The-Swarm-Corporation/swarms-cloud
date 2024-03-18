@@ -1,6 +1,6 @@
 from transformers import PreTrainedTokenizer
 from PIL import Image
-from types import Any, List
+from typing import Any, List
 
 
 # Function to calculate tokens and pricing
