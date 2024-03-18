@@ -16,7 +16,6 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from sse_starlette.sse import EventSourceResponse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers.generation import GenerationConfig
 
@@ -160,7 +159,7 @@ def parse_messages(messages, functions):
     if all(m.role != "user" for m in messages):
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid request: Expecting at least one user message.",
+            detail="Invalid request: Expecting at least one user message.",
         )
 
     messages = copy.deepcopy(messages)
@@ -214,7 +213,7 @@ def parse_messages(messages, functions):
             if (len(messages) == 0) or (messages[-1].role != "assistant"):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid request: Expecting role assistant before role function.",
+                    detail="Invalid request: Expecting role assistant before role function.",
                 )
             messages[-1].content += f"\nObservation: {content}"
             if m_idx == len(_messages) - 1:
@@ -223,7 +222,7 @@ def parse_messages(messages, functions):
             if len(messages) == 0:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid request: Expecting role user before role assistant.",
+                    detail="Invalid request: Expecting role user before role assistant.",
                 )
             last_msg = messages[-1].content
             last_msg_has_zh = len(re.findall(r"[\u4e00-\u9fff]+", last_msg)) > 0
@@ -368,7 +367,9 @@ async def create_chat_completion(request: ChatCompletionRequest):
             )
         # generate = predict(query, history, request.model, stop_words)
         # return EventSourceResponse(generate, media_type="text/event-stream")
-        raise HTTPException(status_code=400, detail="Stream request is not supported currently.")
+        raise HTTPException(
+            status_code=400, detail="Stream request is not supported currently."
+        )
 
     stop_words_ids = [tokenizer.encode(s) for s in stop_words] if stop_words else None
     if query is _TEXT_COMPLETION_CMD:
@@ -408,7 +409,7 @@ async def predict(
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     current_length = 0
     stop_words_ids = [tokenizer.encode(s) for s in stop_words] if stop_words else None
@@ -434,7 +435,7 @@ async def predict(
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
-        yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+        yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
     choice_data = ChatCompletionResponseStreamChoice(
         index=0, delta=DeltaMessage(), finish_reason="stop"
@@ -442,7 +443,7 @@ async def predict(
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-    yield "{}".format(chunk.model_dump_json(exclude_unset=True))
+    yield f"{chunk.model_dump_json(exclude_unset=True)}"
     yield "[DONE]"
 
 
