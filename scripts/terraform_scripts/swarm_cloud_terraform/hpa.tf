@@ -11,7 +11,7 @@ resource "kubernetes_horizontal_pod_autoscaler" "cogvlm_hpa" {
       kind        = "Deployment"
       name        = kubernetes_deployment.cogvlm_deployment.metadata[0].name
     }
-    metrics {
+    metric {
       type = "Pods"
       pods {
         metric {
@@ -39,7 +39,7 @@ resource "kubernetes_horizontal_pod_autoscaler" "qwenvl_hpa" {
       kind        = "Deployment"
       name        = kubernetes_deployment.qwenvl_deployment.metadata[0].name
     }
-    metrics {
+    metric {
       type = "Pods"
       pods {
         metric {
