@@ -1,10 +1,10 @@
 resource "aws_instance" "k8s_master" {
-  ami           = "ami-0df2ee7e95cf003c5" # Example AMI, replace with a Kubernetes supported one
+  ami           = "ami-05640718ecb83f3c5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "t3.medium"
   key_name      = aws_key_pair.ssh_key.key_name
   subnet_id     = aws_subnet.main.id  # Ensure this is the corrected subnet ID
+  iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
   vpc_security_group_ids = [aws_security_group.k8s_master_sg.id]
-
   tags = {
     Name = "KubernetesMaster"
   }
@@ -43,16 +43,21 @@ user_data = base64encode(<<-EOF
   JOIN_COMMAND=$(kubeadm token create --print-join-command)
   echo "$JOIN_COMMAND" > /tmp/k8s-join-command.sh
   aws s3 cp /tmp/k8s-join-command.sh s3://swarmskube/k8s-join-command.sh
+  aws s3 cp /etc/kubernetes/admin.conf s3://swarmskube/kubeconfig
+
 EOF
 )
 }
 
 resource "aws_launch_template" "k8s_worker" {
   name_prefix = "k8s-worker-"
-  image_id      = "ami-0fb87c49e4c052ef5" # Example AMI, replace with a Kubernetes supported one
+  image_id      = "ami-05640718ecb83f3c5" # Example AMI, replace with a Kubernetes supported one
   instance_type = "p3.2xlarge"
   key_name      = aws_key_pair.ssh_key.key_name
 
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ec2_instance_profile.name
+  }
   vpc_security_group_ids = [aws_security_group.k8s_worker_sg.id]
 
 

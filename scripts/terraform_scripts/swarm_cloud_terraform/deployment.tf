@@ -2,7 +2,7 @@
 
 # Kubernetes Deployments for each model
 resource "kubernetes_deployment" "cogvlm_deployment" {
-  depends_on = [null_resource.wait_for_k8s]
+  depends_on = [null_resource.init_k8s_cluster]
   metadata {
     name = "cogvlm-deployment"
   }
@@ -47,7 +47,7 @@ resource "kubernetes_deployment" "cogvlm_deployment" {
 
 # Kubernetes Deployments for each model
 resource "kubernetes_deployment" "qwenvl_deployment" {
-  depends_on = [null_resource.wait_for_k8s]
+  depends_on = [null_resource.init_k8s_cluster]
   metadata {
     name = "qwenvl-deployment"
   }
