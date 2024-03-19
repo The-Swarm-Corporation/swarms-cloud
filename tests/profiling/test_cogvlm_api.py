@@ -6,11 +6,10 @@ from io import BytesIO
 import pytest
 import requests
 from PIL import Image
-import os 
+import os
 
 
-img = os.environ('TEST_IMG')
-
+img = os.environ("TEST_IMG")
 
 
 # Utility function to convert image to Base64
