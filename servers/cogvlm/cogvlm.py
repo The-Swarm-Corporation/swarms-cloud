@@ -78,7 +78,7 @@ app.add_middleware(
 
 
 # On startup
-@app.on_event("startup")
+@app.on_startup()
 async def load_model():
     global model, tokenizer, torch_type, QUANT_ENABLED
 
@@ -431,7 +431,7 @@ def generate_stream_cogvlm(
     yield ret
 
 
-@app.on_event("shutdown")
+@app.on_shutdown()
 async def shutdown_event():
     print("Application shutdown, cleaning up artifacts")
     try:
