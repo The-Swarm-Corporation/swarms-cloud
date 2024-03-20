@@ -8,7 +8,7 @@ from typing import List, Literal, Optional, Tuple, Union
 
 import torch
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from PIL import Image
@@ -22,7 +22,10 @@ from transformers import (
     PreTrainedTokenizer,
     TextIteratorStreamer,
 )
-from swarms_cloud.calculate_pricing import calculate_pricing
+
+from swarms_cloud.auth_with_swarms_cloud import authenticate_user, fetch_api_key_info
+from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
+from swarms_cloud.log_api_request_to_supabase import ModelAPILogEntry, log_to_supabase
 
 # from swarms_cloud.supabase_logger import SupabaseLogger
 
@@ -218,17 +221,15 @@ async def list_models():
 
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
-async def create_chat_completion(request: ChatCompletionRequest):
-    global model, tokenizer
-
-    # Log the request
-    # supabase_logger.log(ChatCompletionRequest)
-
+async def create_chat_completion(
+    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
+):
+    # global model, tokenizer
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
 
     # Calculate pricing
-    calculate_pricing(
+    out = calculate_pricing(
         texts=[
             message.content for message in request.messages if message.role == "user"
         ],
@@ -250,26 +251,52 @@ async def create_chat_completion(request: ChatCompletionRequest):
     if request.stream:
         generate = predict(request.model, gen_params)
         return EventSourceResponse(generate, media_type="text/event-stream")
+
+    # Generate response
     response = generate_cogvlm(model, tokenizer, gen_params)
 
     usage = UsageInfo()
 
+    # ChatMessageResponse
     message = ChatMessageResponse(
         role="assistant",
         content=response["text"],
     )
 
-    # Log to supabase
-    # supabase_logger.log(message)
+    # Log the entry to supabase
+    entry = ModelAPILogEntry(
+        user_id=fetch_api_key_info(token),
+        model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+        input_tokens=count_tokens(request.messsages, tokenizer, request.model),
+        output_tokens=count_tokens(response["text"], tokenizer, request.model),
+        all_cost=calculate_pricing(
+            texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        ),
+        input_cost=calculate_pricing(
+            texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        ),
+        output_cost=calculate_pricing(
+            texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+        )
+        * 5,
+        messages=request.messages,
+        temperature=request.temperature,
+        top_p=request.top_p,
+        echo=request.echo,
+        stream=request.stream,
+        repetition_penalty=request.repetition_penalty,
+        max_tokens=request.max_tokens,
+    )
 
+    # Log the entry to supabase
+    log_to_supabase(entry=entry)
+
+    # ChatCompletionResponseChoice
     logger.debug(f"==== message ====\n{message}")
     choice_data = ChatCompletionResponseChoice(
         index=0,
         message=message,
     )
-
-    # Log to supabase
-    # supabase_logger.log(choice_data)
 
     # task_usage = UsageInfo.model_validate(response["usage"])
     task_usage = UsageInfo.parse_obj(response["usage"])
@@ -282,9 +309,6 @@ async def create_chat_completion(request: ChatCompletionRequest):
         object="chat.completion",
         usage=usage,
     )
-
-    # Log to supabase
-    # supabase_logger.log(out)
 
     return out
 

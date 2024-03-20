@@ -29,7 +29,7 @@ async def send_request(base64_image):
         "messages": [{"role": "user", "content": [text_data, image_data]}],
         "temperature": 0.8,
         "top_p": 0.9,
-        "max_tokens": 1024,
+        "max_tokens": 7000,
     }
 
     # Specify the URL of your FastAPI application
