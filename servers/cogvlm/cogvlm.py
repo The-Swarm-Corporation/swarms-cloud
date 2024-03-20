@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import base64
 import os
 from contextlib import asynccontextmanager
@@ -38,6 +39,10 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     UsageInfo,
 )
 from swarms_cloud.utils.count_cores_for_workers import calculate_workers
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 # Environment variables
 MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
@@ -96,11 +101,9 @@ async def load_model():
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
-        # load_in_4bit=True,
         trust_remote_code=True,
         torch_dtype=torch_type,
         low_cpu_mem_usage=True,
-        # attn_implementation="flash_attention_2",
         quantization_config=bnb_config,
     ).eval()
 
@@ -138,18 +141,9 @@ async def list_models():
 async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
-    # global model, tokenizer
+    
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
-
-    # Calculate pricing
-    out = calculate_pricing(
-        texts=[
-            message.content for message in request.messages if message.role == "user"
-        ],
-        tokenizer=tokenizer,
-        rate_per_million=15.0,
-    )
 
     print(f"Request: {request}")
 
@@ -179,17 +173,17 @@ async def create_chat_completion(
 
     # Log the entry to supabase
     entry = ModelAPILogEntry(
-        user_id=fetch_api_key_info(token),
+        user_id= await fetch_api_key_info(token),
         model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-        input_tokens=count_tokens(request.messsages, tokenizer, request.model),
-        output_tokens=count_tokens(response["text"], tokenizer, request.model),
-        all_cost=calculate_pricing(
+        input_tokens= await count_tokens(request.messsages, tokenizer, request.model),
+        output_tokens= await count_tokens(response["text"], tokenizer, request.model),
+        all_cost= await calculate_pricing(
             texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
         ),
-        input_cost=calculate_pricing(
+        input_cost = await calculate_pricing(
             texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
         ),
-        output_cost=calculate_pricing(
+        output_cost= await calculate_pricing(
             texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
         )
         * 5,
@@ -203,7 +197,7 @@ async def create_chat_completion(
     )
 
     # Log the entry to supabase
-    log_to_supabase(entry=entry)
+    await log_to_supabase(entry=entry)
 
     # ChatCompletionResponseChoice
     logger.debug(f"==== message ====\n{message}")
@@ -232,8 +226,6 @@ async def predict(model_id: str, params: dict):
     Handle streaming predictions. It continuously generates responses for a given input stream.
     This is particularly useful for real-time, continuous interactions with the model.
     """
-
-    global model, tokenizer
 
     choice_data = ChatCompletionResponseStreamChoice(
         index=0, delta=DeltaMessage(role="assistant"), finish_reason=None

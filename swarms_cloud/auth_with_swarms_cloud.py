@@ -72,7 +72,7 @@ async def fetch_api_key_info(token: str, supabase: Client = supabase_client_init
         return None
 
 
-async def authenticate_user(
+def authenticate_user(
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
 ):
     """
@@ -91,7 +91,7 @@ async def authenticate_user(
     if not is_token_valid(token, supabase_client_init):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Invalid token. Please authenticate with a valid token at https://swarms.world/dashboard",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return token
