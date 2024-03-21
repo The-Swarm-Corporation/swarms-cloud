@@ -21,9 +21,7 @@ from transformers import (
     TextIteratorStreamer,
 )
 
-from swarms_cloud.auth_with_swarms_cloud import authenticate_user, fetch_api_key_info
-from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
-from swarms_cloud.log_api_request_to_supabase import ModelAPILogEntry, log_to_supabase
+from swarms_cloud.auth_with_swarms_cloud import authenticate_user
 from swarms_cloud.schema.cog_vlm_schemas import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -130,83 +128,87 @@ async def create_chat_completion(
 ):
     global model, tokenizer, torch_type, QUANT_ENABLED
 
-    if len(request.messages) < 1 or request.messages[-1].role == "assistant":
-        raise HTTPException(status_code=400, detail="Invalid request")
+    try:
+        if len(request.messages) < 1 or request.messages[-1].role == "assistant":
+            raise HTTPException(status_code=400, detail="Invalid request")
 
-    print(f"Request: {request}")
+        print(f"Request: {request}")
 
-    gen_params = dict(
-        messages=request.messages,
-        temperature=request.temperature,
-        top_p=request.top_p,
-        max_tokens=request.max_tokens or 1024,
-        echo=False,
-        stream=request.stream,
-    )
+        gen_params = dict(
+            messages=request.messages,
+            temperature=request.temperature,
+            top_p=request.top_p,
+            max_tokens=request.max_tokens or 1024,
+            echo=False,
+            stream=request.stream,
+        )
 
-    if request.stream:
-        generate = predict(request.model, gen_params)
-        return EventSourceResponse(generate, media_type="text/event-stream")
+        if request.stream:
+            generate = predict(request.model, gen_params)
+            return EventSourceResponse(generate, media_type="text/event-stream")
 
-    # Generate response
-    response = generate_cogvlm(model, tokenizer, gen_params)
+        # Generate response
+        response = generate_cogvlm(model, tokenizer, gen_params)
 
-    usage = UsageInfo()
+        usage = UsageInfo()
 
-    # ChatMessageResponse
-    message = ChatMessageResponse(
-        role="assistant",
-        content=response["text"],
-    )
+        # ChatMessageResponse
+        message = ChatMessageResponse(
+            role="assistant",
+            content=response["text"],
+        )
 
-    # # Log the entry to supabase
-    # entry = ModelAPILogEntry(
-    #     user_id=await fetch_api_key_info(token),
-    #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-    #     input_tokens=await count_tokens(request.messages, tokenizer, request.model),
-    #     output_tokens=await count_tokens(response["text"], tokenizer, request.model),
-    #     all_cost=await calculate_pricing(
-    #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-    #     ),
-    #     input_cost=await calculate_pricing(
-    #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-    #     ),
-    #     output_cost=await calculate_pricing(
-    #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
-    #     )
-    #     * 5,
-    #     messages=request.messages,
-    #     # temperature=request.temperature,
-    #     top_p=request.top_p,
-    #     # echo=request.echo,
-    #     stream=request.stream,
-    #     repetition_penalty=request.repetition_penalty,
-    #     max_tokens=request.max_tokens,
-    # )
+        # # Log the entry to supabase
+        # entry = ModelAPILogEntry(
+        #     user_id=await fetch_api_key_info(token),
+        #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+        #     input_tokens=await count_tokens(request.messages, tokenizer, request.model),
+        #     output_tokens=await count_tokens(response["text"], tokenizer, request.model),
+        #     all_cost=await calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     input_cost=await calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     output_cost=await calculate_pricing(
+        #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+        #     )
+        #     * 5,
+        #     messages=request.messages,
+        #     # temperature=request.temperature,
+        #     top_p=request.top_p,
+        #     # echo=request.echo,
+        #     stream=request.stream,
+        #     repetition_penalty=request.repetition_penalty,
+        #     max_tokens=request.max_tokens,
+        # )
 
-    # # Log the entry to supabase
-    # await log_to_supabase(entry=entry)
+        # # Log the entry to supabase
+        # await log_to_supabase(entry=entry)
 
-    # ChatCompletionResponseChoice
-    logger.debug(f"==== message ====\n{message}")
-    choice_data = ChatCompletionResponseChoice(
-        index=0,
-        message=message,
-    )
+        # ChatCompletionResponseChoice
+        logger.debug(f"==== message ====\n{message}")
+        choice_data = ChatCompletionResponseChoice(
+            index=0,
+            message=message,
+        )
 
-    # task_usage = UsageInfo.model_validate(response["usage"])
-    task_usage = UsageInfo.parse_obj(response["usage"])
-    for usage_key, usage_value in task_usage.model_dump().items():
-        setattr(usage, usage_key, getattr(usage, usage_key) + usage_value)
+        # task_usage = UsageInfo.model_validate(response["usage"])
+        task_usage = UsageInfo.parse_obj(response["usage"])
+        for usage_key, usage_value in task_usage.dict().items():
+            setattr(usage, usage_key, getattr(usage, usage_key) + usage_value)
 
-    out = ChatCompletionResponse(
-        model=request.model,
-        choices=[choice_data],
-        object="chat.completion",
-        usage=usage,
-    )
+        out = ChatCompletionResponse(
+            model=request.model,
+            choices=[choice_data],
+            object="chat.completion",
+            usage=usage,
+        )
 
-    return out
+        return out
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 async def predict(model_id: str, params: dict):
