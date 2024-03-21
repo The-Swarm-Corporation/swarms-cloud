@@ -47,7 +47,6 @@ TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -126,6 +125,8 @@ async def list_models():
 async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
+    global model, tokenizer, torch_type
+    
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             raise HTTPException(status_code=400, detail="Invalid request")
