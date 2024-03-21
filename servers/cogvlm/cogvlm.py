@@ -77,52 +77,39 @@ app.add_middleware(
 )
 
 
-# On startup
-@app.on_event("startup")
-async def load_model():
-    global model, tokenizer, torch_type, QUANT_ENABLED
+# # On startup
+# @app.on_event("startup")
+# async def load_model():
+tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
-    tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
+if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
+    torch_type = torch.bfloat16
+else:
+    torch_type = torch.float16
 
-    if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
-        torch_type = torch.bfloat16
-    else:
-        torch_type = torch.float16
+print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
-    print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
+quantization_config = {
+    "load_in_4bit": True,
+    "bnb_4bit_use_double_quant": True,
+    "bnb_4bit_compute_dtype": torch_type,
+}
 
-    quantization_config = {
-        "load_in_4bit": True,
-        "bnb_4bit_use_double_quant": True,
-        "bnb_4bit_compute_dtype": torch_type,
-    }
+bnb_config = BitsAndBytesConfig(**quantization_config)
 
-    bnb_config = BitsAndBytesConfig(**quantization_config)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_PATH,
+    trust_remote_code=True,
+    torch_dtype=torch_type,
+    low_cpu_mem_usage=True,
+    quantization_config=bnb_config,
+).eval()
 
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_PATH,
-        trust_remote_code=True,
-        torch_dtype=torch_type,
-        low_cpu_mem_usage=True,
-        quantization_config=bnb_config,
-    ).eval()
-
-    # Torch type
-    if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
-        torch_type = torch.bfloat16
-    else:
-        torch_type = torch.float16
-
-    if os.environ.get("QUANT_ENABLED"):
-        QUANT_ENABLED = True
-    else:
-        with torch.cuda.device(DEVICE):
-            __, total_bytes = torch.cuda.mem_get_info()
-            total_gb = total_bytes / (1 << 30)
-            if total_gb < 40:
-                QUANT_ENABLED = True
-            else:
-                QUANT_ENABLED = False
+# Torch type
+if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
+    torch_type = torch.bfloat16
+else:
+    torch_type = torch.float16
 
 
 @app.get("/v1/models", response_model=ModelList)
@@ -142,7 +129,7 @@ async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
     
-    global model, tokenizer, torch_type, QUANT_ENABLEDg
+    global model, tokenizer, torch_type, QUANT_ENABLED
     
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
