@@ -5,6 +5,9 @@ import time
 import requests
 from dotenv import load_dotenv
 from PIL import Image
+import concurrent.futures 
+import asyncio
+import aiohttp
 
 # Load environment variables
 load_dotenv()
@@ -59,3 +62,33 @@ time_taken = end_time - start_time
 # Print the response from the server
 print(response.text)
 print(f"Time taken: {time_taken} seconds")
+
+print("Asyncio version")
+
+
+# Start the timer
+start_time = time.time()
+
+async def send_request(session, url, headers, data):
+    async with session.post(url, headers=headers, json=data) as response:
+        return await response.text()
+
+async def main():
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for _ in range(30):
+            task = send_request(session, url, headers, request_data)
+            tasks.append(task)
+        responses = await asyncio.gather(*tasks)
+        for response in responses:
+            print(response)
+            
+
+# Run the main function
+asyncio.run(main())
+
+# End time
+end_time = time.time()
+
+# Print the time taken
+print(f"Time taken: {end_time - start_time} seconds")
