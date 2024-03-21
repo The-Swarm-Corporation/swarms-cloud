@@ -122,7 +122,6 @@ async def list_models():
 async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
-    
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             raise HTTPException(status_code=400, detail="Invalid request")
