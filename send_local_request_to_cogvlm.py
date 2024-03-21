@@ -1,7 +1,7 @@
 import base64
 import os
 from io import BytesIO
-
+import time
 import requests
 from dotenv import load_dotenv
 from PIL import Image
@@ -46,7 +46,16 @@ headers = {
 # Specify the URL of your FastAPI application
 url = "http://localhost:8000/v1/chat/completions"
 
+# Start the timer
+start_time = time.time()
+
 # Send the request
 response = requests.post(url, json=request_data, headers=headers)
+
+# Stop the timer
+end_time = time.tim()
+time_taken = end_time - start_time
+
 # Print the response from the server
 print(response.text)
+print(f"Time taken: {time_taken} seconds")
