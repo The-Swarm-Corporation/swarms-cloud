@@ -37,6 +37,9 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     UsageInfo,
 )
 from swarms_cloud.utils.count_cores_for_workers import calculate_workers
+from starlette.middleware import Middleware
+from starlette.middleware.gzip import GZipMiddleware
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -46,6 +49,12 @@ MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
+
+
+# Middleware
+middleware = [
+    Middleware(GZipMiddleware, minimum_size=1000),
+]
 
 
 @asynccontextmanager
@@ -61,7 +70,7 @@ async def lifespan(app: FastAPI):
 
 
 # Create a FastAPI app
-app = FastAPI(lifespan=lifespan, debug=True)
+app = FastAPI(lifespan=lifespan, debug=True, middleware=middleware)
 
 
 # Load the middleware to handle CORS
