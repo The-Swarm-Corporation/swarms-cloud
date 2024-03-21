@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
 
-    dist.destroy_process_group()g
+    dist.destroy_process_group()
 
 
 # Create a FastAPI app
