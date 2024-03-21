@@ -12,6 +12,7 @@ load_dotenv()
 # Swarms Cloud API key
 swarms_cloud_api_key = os.getenv("SWARMS_CLOUD_API_KEY")
 
+
 # Convert image to Base64
 def image_to_base64(image_path):
     with Image.open(image_path) as image:

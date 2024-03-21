@@ -4,7 +4,9 @@ from PIL import Image
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 
-async def count_tokens(texts: List[str], tokenizer: PreTrainedTokenizer, model: str):
+async def count_tokens(
+    texts: List[str], tokenizer: PreTrainedTokenizer, model: str
+) -> int:
     """
     Counts the total number of tokens in a list of texts using a tokenizer.
 
@@ -37,7 +39,7 @@ async def calculate_pricing(
     rate_img: float = 0.003,
     return_cost: bool = True,
     return_tokens: bool = False,
-):
+) -> float:
     """
     Calculate containtaining for otal number of  texts based on the number of tokens, sentences, words, characters, and paragraphs.
 
