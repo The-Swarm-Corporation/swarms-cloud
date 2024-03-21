@@ -24,11 +24,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 swarms = "*"
-fastapi = "*"
+fastapi = "0.110.0"
 skypilot = "*"
 torch = "*"
 einops = "*"
-pydantic = "*"
+pydantic = ">2,<3"
 stripe = "*"
 transformers = "*"
 sse-starlette = "*" 
