@@ -39,7 +39,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.utils.count_cores_for_workers import calculate_workers
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
-
+from torch.nn import DataParallel
 
 # Load environment variables from .env file
 load_dotenv()
@@ -107,6 +107,9 @@ model = AutoModelForCausalLM.from_pretrained(
     low_cpu_mem_usage=True,
     quantization_config=bnb_config,
 ).eval()
+
+model = DataParallel(model)
+
 
 # Torch type
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
