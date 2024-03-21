@@ -179,7 +179,7 @@ async def create_chat_completion(
         messages=request.messages,
         temperature=request.temperature,
         top_p=request.top_p,
-        echo=request.echo,
+        # echo=request.echo,
         stream=request.stream,
         repetition_penalty=request.repetition_penalty,
         max_tokens=request.max_tokens,
