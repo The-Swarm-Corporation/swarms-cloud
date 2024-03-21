@@ -39,9 +39,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.utils.count_cores_for_workers import calculate_workers
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
-from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
-from swarms_cloud.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
 
 
 # Load environment variables from .env file
@@ -69,7 +67,7 @@ async def lifespan(app: FastAPI):
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
 
-    dist.destroy_process_group()
+    dist.destroy_process_group()g
 
 
 # Create a FastAPI app
@@ -111,20 +109,20 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
 ).eval()
 
-model = prepare_model_for_ddp_inference(model)
+# model = prepare_model_for_ddp_inference(model)
 
 
-@app.on_event("startup")
-def setup():
-    rank = int(os.environ.get("RANK", 0))
-    world_size = int(os.environ.get("WORLD_SIZE", 4))
+# @app.on_event("startup")
+# def setup():
+#     rank = int(os.environ.get("RANK", 0))
+#     world_size = int(os.environ.get("WORLD_SIZE", 4))
 
-    # Initialize the process group
-    dist.init_process_group(
-        "nccl",
-        rank=rank,
-        world_size=world_size,
-    )
+#     # Initialize the process group
+#     dist.init_process_group(
+#         "nccl",
+#         rank=rank,
+#         world_size=world_size,
+#     )
 
 
 # Torch type
