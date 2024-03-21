@@ -67,6 +67,7 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
     # Additional parameters
     repetition_penalty: Optional[float] = 1.0
+    echo: Optional[bool] = False
 
 
 class ChatCompletionResponseChoice(BaseModel):
