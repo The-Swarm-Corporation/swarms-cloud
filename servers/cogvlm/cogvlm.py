@@ -109,21 +109,6 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
 ).eval()
 
-# model = prepare_model_for_ddp_inference(model)
-
-
-# @app.on_event("startup")
-# def setup():
-#     rank = int(os.environ.get("RANK", 0))
-#     world_size = int(os.environ.get("WORLD_SIZE", 4))
-
-#     # Initialize the process group
-#     dist.init_process_group(
-#         "nccl",
-#         rank=rank,
-#         world_size=world_size,
-#     )
-
 
 # Torch type
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
