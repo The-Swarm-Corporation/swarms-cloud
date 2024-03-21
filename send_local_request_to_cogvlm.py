@@ -53,7 +53,7 @@ start_time = time.time()
 response = requests.post(url, json=request_data, headers=headers)
 
 # Stop the timer
-end_time = time.tim()
+end_time = time.time()
 time_taken = end_time - start_time
 
 # Print the response from the server
