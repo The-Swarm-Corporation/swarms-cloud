@@ -73,37 +73,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the tokenizer and model
-tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
+@app.on_event("startup")
+async def load_model():
+    global model, tokenizer, torch_type
+    
+    # Load the tokenizer and model
+    tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
-if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
-    torch_type = torch.bfloat16
-else:
-    torch_type = torch.float16
+    if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
+        torch_type = torch.bfloat16
+    else:
+        torch_type = torch.float16
 
-print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
+    print(f"========Use torch type as:{torch_type} with device:{DEVICE}========\n\n")
 
-quantization_config = {
-    "load_in_4bit": True,
-    "bnb_4bit_use_double_quant": True,
-    "bnb_4bit_compute_dtype": torch_type,
-}
+    quantization_config = {
+        "load_in_4bit": True,
+        "bnb_4bit_use_double_quant": True,
+        "bnb_4bit_compute_dtype": torch_type,
+    }
 
-bnb_config = BitsAndBytesConfig(**quantization_config)
+    bnb_config = BitsAndBytesConfig(**quantization_config)
 
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
-    trust_remote_code=True,
-    torch_dtype=torch_type,
-    low_cpu_mem_usage=True,
-    quantization_config=bnb_config,
-).eval()
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_PATH,
+        trust_remote_code=True,
+        torch_dtype=torch_type,
+        low_cpu_mem_usage=True,
+        quantization_config=bnb_config,
+    ).eval()
 
-# Torch type
-if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
-    torch_type = torch.bfloat16
-else:
-    torch_type = torch.float16
+    # Torch type
+    if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
+        torch_type = torch.bfloat16
+    else:
+        torch_type = torch.float16
 
 
 @app.get("/v1/models", response_model=ModelList)
