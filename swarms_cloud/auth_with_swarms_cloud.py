@@ -19,7 +19,7 @@ supabase_client_init: Client = create_client(
 )
 
 
-async def is_token_valid(token: str, supabase: Client = supabase_client_init) -> bool:
+def is_token_valid(token: str, supabase: Client = supabase_client_init) -> bool:
     """
     Check if a token is valid by querying the Supabase database.
 
@@ -44,7 +44,7 @@ async def is_token_valid(token: str, supabase: Client = supabase_client_init) ->
         return False
 
 
-async def fetch_api_key_info(token: str, supabase: Client = supabase_client_init):
+def fetch_api_key_info(token: str, supabase: Client = supabase_client_init):
     """
     Fetch the id and user_id of an API key from the Supabase database.
 

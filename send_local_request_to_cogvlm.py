@@ -1,9 +1,10 @@
-import requests
 import base64
-from PIL import Image
+import os
 from io import BytesIO
-import os 
+
+import requests
 from dotenv import load_dotenv
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
@@ -38,7 +39,7 @@ request_data = {
 }
 
 headers = {
-    "Authorization": f"Bearer {swarms_cloud_api_key}",
+    "Authorization": f"Bearer {str(swarms_cloud_api_key)}",
 }
 
 # Specify the URL of your FastAPI application
