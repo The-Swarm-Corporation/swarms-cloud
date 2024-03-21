@@ -1,12 +1,13 @@
+import asyncio
 import base64
 import os
-from io import BytesIO
 import time
+from io import BytesIO
+
+import aiohttp
 import requests
 from dotenv import load_dotenv
 from PIL import Image
-import asyncio
-import aiohttp
 
 # Load environment variables
 load_dotenv()
