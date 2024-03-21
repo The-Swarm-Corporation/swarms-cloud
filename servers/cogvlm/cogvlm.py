@@ -142,6 +142,8 @@ async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
     
+    global model, tokenizer, torch_type, QUANT_ENABLEDg
+    
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
 
