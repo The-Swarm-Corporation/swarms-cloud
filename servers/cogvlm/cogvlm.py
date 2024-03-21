@@ -41,7 +41,6 @@ from swarms_cloud.utils.count_cores_for_workers import calculate_workers
 # Load environment variables from .env file
 load_dotenv()
 
-
 # Environment variables
 MODEL_PATH = os.environ.get("COGVLM_MODEL_PATH", "THUDM/cogvlm-chat-hf")
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
@@ -126,8 +125,7 @@ async def list_models():
 async def create_chat_completion(
     request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
-    global model, tokenizer, torch_type, QUANT_ENABLED
-
+    
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             raise HTTPException(status_code=400, detail="Invalid request")
@@ -220,9 +218,6 @@ async def predict(model_id: str, params: dict):
     choice_data = ChatCompletionResponseStreamChoice(
         index=0, delta=DeltaMessage(role="assistant"), finish_reason=None
     )
-
-    # Log to supabase
-    # supabase_logger.log(choice_data)
 
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
