@@ -2,7 +2,14 @@ import requests
 import base64
 from PIL import Image
 from io import BytesIO
+import os 
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
+# Swarms Cloud API key
+swarms_cloud_api_key = os.getenv("SWARMS_CLOUD_API_KEY")
 
 # Convert image to Base64
 def image_to_base64(image_path):
@@ -30,10 +37,14 @@ request_data = {
     "max_tokens": 1024,
 }
 
+headers = {
+    "Authorization": f"Bearer {swarms_cloud_api_key}",
+}
+
 # Specify the URL of your FastAPI application
 url = "http://localhost:8000/v1/chat/completions"
 
 # Send the request
-response = requests.post(url, json=request_data)
+response = requests.post(url, json=request_data, headers=headers)
 # Print the response from the server
 print(response.text)
