@@ -39,7 +39,11 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.utils.count_cores_for_workers import calculate_workers
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
-from torch.nn import DataParallel
+from torch.nn.parallel import DataParallel
+from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
+import torch.multiprocessing as mp
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -63,10 +67,12 @@ async def lifespan(app: FastAPI):
     An asynchronous context manager for managing the lifecycle of the FastAPI app.
     It ensures that GPU memory is cleared after the app's lifecycle ends, which is essential for efficient resource management in GPU environments.
     """
-    yield
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    
+    dist.destroy_process_group()
+    
+    
 
 
 # Create a FastAPI app
@@ -108,7 +114,21 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
 ).eval()
 
-model = DataParallel(model)
+model = DDP(model, device_ids=[0], find_unused_parameters=True)
+
+
+
+@app.on_event("startup")
+def setup():
+    rank = int(os.environ.get("RANK", 0))
+    world_size = int(os.environ.get("WORLD_SIZE", 4))
+    
+    # Initialize the process group
+    dist.init_process_group(
+        "gloo",
+        rank=rank,
+        world_size=world_size,
+    )
 
 
 # Torch type
