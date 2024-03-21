@@ -164,7 +164,7 @@ async def create_chat_completion(
     entry = ModelAPILogEntry(
         user_id= await fetch_api_key_info(token),
         model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-        input_tokens= await count_tokens(request.messsages, tokenizer, request.model),
+        input_tokens= await count_tokens(request.messages, tokenizer, request.model),
         output_tokens= await count_tokens(response["text"], tokenizer, request.model),
         all_cost= await calculate_pricing(
             texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
