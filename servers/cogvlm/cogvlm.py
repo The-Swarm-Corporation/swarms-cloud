@@ -73,10 +73,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# # On startup
-# @app.on_event("startup")
-# async def load_model():
+# Load the tokenizer and model
 tokenizer = LlamaTokenizer.from_pretrained(TOKENIZER_PATH, trust_remote_code=True)
 
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
@@ -242,15 +239,9 @@ async def predict(model_id: str, params: dict):
             delta=delta,
         )
 
-        # Log to supabase
-        # supabase_logger.log(choice_data)
-
         chunk = ChatCompletionResponse(
             model=model_id, choices=[choice_data], object="chat.completion.chunk"
         )
-
-        # Log to supabase
-        # supabase_logger.log(chunk)
 
         yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
@@ -259,15 +250,9 @@ async def predict(model_id: str, params: dict):
         delta=DeltaMessage(),
     )
 
-    # Log to supabase
-    # supabase_logger.log(choice_data)
-
     chunk = ChatCompletionResponse(
         model=model_id, choices=[choice_data], object="chat.completion.chunk"
     )
-
-    # Log to supabase
-    # supabase_logger.log(chunk)
 
     yield f"{chunk.model_dump_json(exclude_unset=True)}"
 
