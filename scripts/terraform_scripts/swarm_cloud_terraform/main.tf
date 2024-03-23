@@ -8,7 +8,14 @@ resource "aws_key_pair" "ssh_key" {
 resource "null_resource" "init_k8s_cluster" {
   depends_on = [aws_instance.k8s_master]
 
+  # Before attempting to download the new kubeconfig, ensure any existing file is removed
   provisioner "local-exec" {
+    when    = create
+    command = "rm -f ${path.module}/kubeconfig || true"
+  }
+
+  provisioner "local-exec" {
+    when    = create
     command = <<-EOT
       echo "Waiting for kubeconfig to be uploaded to S3..."
       while ! aws s3 ls "s3://swarmskube/kubeconfig"; do
@@ -29,9 +36,28 @@ resource "null_resource" "init_k8s_cluster" {
       KUBECONFIG         = "${path.module}/kubeconfig"
     }
   }
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+}
+data "local_file" "kubeconfig" {
+  depends_on = [null_resource.init_k8s_cluster]
+  filename   = "${path.module}/kubeconfig"
 }
 
-
 provider "kubernetes" {
-  config_path = "${path.module}/kubeconfig"
+  
+  config_path = data.local_file.kubeconfig.filename
+}
+
+resource "null_resource" "update_lambda_env" {
+  depends_on = [null_resource.init_k8s_cluster]
+
+  provisioner "local-exec" {
+    command = "${path.module}/update_lambda_env.sh"
+  }
+
+  triggers = {
+    always_run = "${timestamp()}"
+  }
 }

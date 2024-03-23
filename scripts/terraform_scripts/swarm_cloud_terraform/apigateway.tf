@@ -49,7 +49,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     aws_api_gateway_integration.model_lambda_integration,
     aws_api_gateway_method.model_post_method,
-    aws_api_gateway_resource.model_routing_resource
+    aws_api_gateway_resource.model_routing_resource,
+    null_resource.update_lambda_env # Ensure API deployment waits for Lambda env vars update
+ 
   ]
 
   rest_api_id = aws_api_gateway_rest_api.model_routing_api.id
