@@ -231,7 +231,7 @@ resource "aws_launch_configuration" "model_api_conf" {
 resource "aws_autoscaling_group" "model_api_asg" {
   launch_configuration = aws_launch_configuration.model_api_conf.id
   min_size             = 1
-  max_size             = 10
+  max_size             = 20
   desired_capacity     = 1
   vpc_zone_identifier  = [aws_subnet.main.id]
 
@@ -279,4 +279,62 @@ resource "aws_lb_listener" "model_api_https_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.model_api_tg.arn
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
+  alarm_name          = "high-request-count"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = 4  # Adjust this threshold based on your needs
+  alarm_description   = "This metric monitors ec2 instance load balancer request count"
+
+  dimensions = {
+    LoadBalancer = aws_lb.model_api_lb.arn
+    TargetGroup  = aws_lb_target_group.model_api_tg.arn
+  }
+
+  actions_enabled     = true
+  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
+  ok_actions          = [aws_autoscaling_policy.scale_in_policy.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
+  alarm_name          = "low-request-count"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = 2  # Adjust this threshold based on your needs
+  alarm_description   = "This metric monitors ec2 instance load balancer request count"
+
+  dimensions = {
+    LoadBalancer = aws_lb.model_api_lb.arn
+    TargetGroup  = aws_lb_target_group.model_api_tg.arn
+  }
+
+  actions_enabled     = true
+  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]
+  ok_actions          = [aws_autoscaling_policy.scale_out_policy.arn]
+}
+
+resource "aws_autoscaling_policy" "scale_out_policy" {
+  name                   = "scale-out-policy"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.model_api_asg.name
+}
+
+resource "aws_autoscaling_policy" "scale_in_policy" {
+  name                   = "scale-in-policy"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.model_api_asg.name
 }
