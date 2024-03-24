@@ -49,7 +49,7 @@ headers = {
 }
 
 # Specify the URL of your FastAPI application
-url = f"http://localhost:{model_api_port}/v1/chat/completions"
+url = f"http://localhost:8100/v1/chat/completions"
 
 # Start the timer
 start_time = time.time()
