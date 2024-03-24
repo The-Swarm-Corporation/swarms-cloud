@@ -117,7 +117,7 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, token: str = Depends(verify_token)
+    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
