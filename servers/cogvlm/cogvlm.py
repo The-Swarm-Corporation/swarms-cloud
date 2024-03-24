@@ -404,17 +404,6 @@ def generate_stream_cogvlm(
     yield ret
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    print("Application shutdown, cleaning up artifacts")
-    try:
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.ipc_collect()
-    except Exception as e:
-        print(f"Error during shutdown: {e}")
-
-
 if __name__ == "__main__":
     uvicorn.run(
         app,
