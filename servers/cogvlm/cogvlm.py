@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import base64
 import os
-from contextlib import asynccontextmanager
 from io import BytesIO
 from typing import List, Optional, Tuple
 
@@ -36,9 +35,12 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     TextContent,
     UsageInfo,
 )
+from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
+from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
+from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
 
-from exa import calculate_workers
-import torch.distributed as dist
+# from exa import calculate_workers
+# import torch.distributed as dist
 
 
 # Load environment variables from .env file
@@ -50,21 +52,8 @@ TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    An asynchronous context manager for managing the lifecycle of the FastAPI app.
-    It ensures that GPU memory is cleared after the app's lifecycle ends, which is essential for efficient resource management in GPU environments.
-    """
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
-
-    dist.destroy_process_group()
-
-
 # Create a FastAPI app
-app = FastAPI(lifespan=lifespan, debug=True)
+app = FastAPI(debug=True)
 
 
 # Load the middleware to handle CORS
@@ -157,32 +146,32 @@ async def create_chat_completion(
         )
 
         # # Log the entry to supabase
-        # entry = ModelAPILogEntry(
-        #     user_id=await fetch_api_key_info(token),
-        #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-        #     input_tokens=await count_tokens(request.messages, tokenizer, request.model),
-        #     output_tokens=await count_tokens(response["text"], tokenizer, request.model),
-        #     all_cost=await calculate_pricing(
-        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-        #     ),
-        #     input_cost=await calculate_pricing(
-        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-        #     ),
-        #     output_cost=await calculate_pricing(
-        #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
-        #     )
-        #     * 5,
-        #     messages=request.messages,
-        #     # temperature=request.temperature,
-        #     top_p=request.top_p,
-        #     # echo=request.echo,
-        #     stream=request.stream,
-        #     repetition_penalty=request.repetition_penalty,
-        #     max_tokens=request.max_tokens,
-        # )
+        entry = ModelAPILogEntry(
+            user_id=fetch_api_key_info(token),
+            model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+            input_tokens=count_tokens(request.messages, tokenizer, request.model),
+            output_tokens=count_tokens(response["text"], tokenizer, request.model),
+            all_cost=calculate_pricing(
+                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+            ),
+            input_cost=calculate_pricing(
+                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+            ),
+            output_cost=calculate_pricing(
+                texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+            )
+            * 5,
+            messages=request.messages,
+            # temperature=request.temperature,
+            top_p=request.top_p,
+            # echo=request.echo,
+            stream=request.stream,
+            repetition_penalty=request.repetition_penalty,
+            max_tokens=request.max_tokens,
+        )
 
-        # # Log the entry to supabase
-        # await log_to_supabase(entry=entry)
+        # Log the entry to supabase
+        log_to_supabase(entry=entry)
 
         # ChatCompletionResponseChoice
         logger.debug(f"==== message ====\n{message}")
@@ -404,23 +393,12 @@ def generate_stream_cogvlm(
     yield ret
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    print("Application shutdown, cleaning up artifacts")
-    try:
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.ipc_collect()
-    except Exception as e:
-        print(f"Error during shutdown: {e}")
-
-
 if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
         port=os.environ.get("MODEL_API_PORT", 8000),
-        workers=calculate_workers(),
+        workers=5,
         log_level="info",
         use_colors=True,
     )

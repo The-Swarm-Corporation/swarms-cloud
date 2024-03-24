@@ -4,7 +4,7 @@ from PIL import Image
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 
-async def count_tokens(
+def count_tokens(
     texts: List[str], tokenizer: PreTrainedTokenizer, model: str
 ) -> int:
     """
@@ -30,7 +30,7 @@ async def count_tokens(
 
 
 # Function to calculate tokens and pricing
-async def calculate_pricing(
+def calculate_pricing(
     texts: List[str] = None,
     tokenizer: PreTrainedTokenizer = None,
     images: List[str] = None,
