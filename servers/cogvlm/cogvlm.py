@@ -36,7 +36,8 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     TextContent,
     UsageInfo,
 )
-from swarms_cloud.utils.count_cores_for_workers import calculate_workers
+
+from exa import calculate_workers
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
 import torch.distributed as dist
