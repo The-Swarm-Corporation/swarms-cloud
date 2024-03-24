@@ -88,6 +88,8 @@ def authenticate_user(
         HTTPException: If the token is invalid.
     """
     token = credentials.credentials
+    token = token.split("Bearer ")[1]
+    token = token.strip()
     print(token)
     valid = is_token_valid(token)
     print(valid)
