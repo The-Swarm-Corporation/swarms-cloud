@@ -38,7 +38,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 )
 
 from exa import calculate_workers
-import torch.distributed as dist
+# import torch.distributed as dist
 
 
 # Load environment variables from .env file
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
 
-    dist.destroy_process_group()
+    # dist.destroy_process_group()
 
 
 # Create a FastAPI app
