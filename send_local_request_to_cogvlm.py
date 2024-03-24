@@ -15,7 +15,7 @@ load_dotenv()
 # Swarms Cloud API key
 swarms_cloud_api_key = os.getenv("SWARMS_CLOUD_API_KEY")
 MODEL_API_PORT = os.getenv("MODEL_API_PORT")
-model_api_port = int(MODEL_API_PORT)
+model_api_port = str(MODEL_API_PORT)
 
 
 # Convert image to Base64
