@@ -401,4 +401,5 @@ if __name__ == "__main__":
         workers=5,
         log_level="info",
         use_colors=True,
+        reload=True,
     )
