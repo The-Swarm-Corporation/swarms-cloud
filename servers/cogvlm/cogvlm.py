@@ -397,7 +397,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=os.environ.get("MODEL_API_PORT", 8000),
+        port=int(os.environ.get("MODEL_API_PORT", 8000)),
         # workers=5,
         log_level="info",
         use_colors=True,
