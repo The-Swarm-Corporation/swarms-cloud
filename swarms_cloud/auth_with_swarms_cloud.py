@@ -102,7 +102,6 @@ def authenticate_user(
     return token
 
 
-
 def verify_token(req: Request):
     token = req.headers["Authorization"]
     # Here your code for verifying the token or whatever you use
@@ -110,8 +109,5 @@ def verify_token(req: Request):
     token = token.strip()
     valid = is_token_valid(token)
     if valid is False:
-        raise HTTPException(
-            status_code=401,
-            detail="Unauthorized"
-        )
+        raise HTTPException(status_code=401, detail="Unauthorized")
     return True
