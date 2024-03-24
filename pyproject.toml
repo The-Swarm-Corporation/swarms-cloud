@@ -31,10 +31,11 @@ einops = "*"
 pydantic = ">2,<3"
 stripe = "*"
 transformers = "*"
-sse-starlette = "*" 
+sse-starlette = "2.0.0" 
 uvicorn = "*"
 shortuuid = "*"
 xformers = "*"
+exxa = "*"
 
 [tool.poetry.group.lint.dependencies]
 ruff = ">=0.1.6,<0.4.0"
