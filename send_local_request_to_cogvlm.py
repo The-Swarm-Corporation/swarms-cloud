@@ -15,6 +15,7 @@ load_dotenv()
 # Swarms Cloud API key
 swarms_cloud_api_key = os.getenv("SWARMS_CLOUD_API_KEY")
 MODEL_API_PORT = os.getenv("MODEL_API_PORT")
+model_api_port = int(MODEL_API_PORT)
 
 
 # Convert image to Base64
@@ -48,7 +49,7 @@ headers = {
 }
 
 # Specify the URL of your FastAPI application
-url = f"http://localhost:{MODEL_API_PORT}/v1/chat/completions"
+url = f"http://localhost:{model_api_port}/v1/chat/completions"
 
 # Start the timer
 start_time = time.time()
