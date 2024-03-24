@@ -19,7 +19,7 @@ supabase_client_init: Client = create_client(
 )
 
 
-def is_token_valid(token: str, supabase: Client = supabase_client_init) -> bool:
+def is_token_valid(token: str = None, supabase: Client = supabase_client_init) -> bool:
     """
     Check if a token is valid by querying the Supabase database.
 
@@ -44,7 +44,7 @@ def is_token_valid(token: str, supabase: Client = supabase_client_init) -> bool:
         return False
 
 
-def fetch_api_key_info(token: str, supabase: Client = supabase_client_init):
+def fetch_api_key_info(token: str = None, supabase: Client = supabase_client_init):
     """
     Fetch the id and user_id of an API key from the Supabase database.
 
@@ -88,7 +88,9 @@ def authenticate_user(
         HTTPException: If the token is invalid.
     """
     token = credentials.credentials
-    if not is_token_valid(token, supabase_client_init):
+    valid = is_token_valid(token)
+    print(valid)
+    if not is_token_valid(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token. Please authenticate with a valid token at https://swarms.world/dashboard",
