@@ -38,7 +38,6 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
 from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
-from swarms_cloud import verify_token
 
 # from exa import calculate_workers
 # import torch.distributed as dist
@@ -117,7 +116,7 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, token: str = Depends(verify_token)
+    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
