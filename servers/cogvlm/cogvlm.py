@@ -38,6 +38,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
 from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
+from swarms_cloud.auth_with_swarms_cloud import valid_token
 
 # from exa import calculate_workers
 # import torch.distributed as dist
@@ -54,6 +55,9 @@ QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
 # Create a FastAPI app
 app = FastAPI(debug=True)
+
+
+## Verify the API key
 
 
 # Load the middleware to handle CORS
@@ -113,7 +117,7 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
+    request: ChatCompletionRequest, token: str = Depends(valid_token)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":

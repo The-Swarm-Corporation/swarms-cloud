@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
 
@@ -97,3 +97,18 @@ def authenticate_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return token
+
+
+
+def verify_token(req: Request):
+    token = req.headers["Authorization"]
+    # Here your code for verifying the token or whatever you use
+    token = token.split("Bearer ")[1]
+    token = token.strip()
+    valid = is_token_valid(token)
+    if valid is False:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
+    return True
