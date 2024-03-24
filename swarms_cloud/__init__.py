@@ -49,6 +49,7 @@ from swarms_cloud.schema.openai_spec import (
 from swarms_cloud.sky_api import SkyInterface
 from swarms_cloud.utils.api_key_generator import generate_api_key
 from swarms_cloud.utils.rate_limiter import rate_limiter
+from swarms_cloud.auth_with_swarms_cloud import verify_token
 
 __all__ = [
     "generate_api_key",
@@ -96,4 +97,5 @@ __all__ = [
     "ModelAPILogEntry",
     "log_to_supabase",
     "fetch_api_key_info",
+    "verify_token",
 ]
