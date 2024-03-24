@@ -1,11 +1,11 @@
 skypilot
-fastapi
+fastapi==0.110.0
 supabase
 pytest 
 torch 
 einops
 tiktoken
-sse-starlette
+sse-starlette==2.0.0
 uvicorn
 loguru
 pydantic
@@ -18,8 +18,8 @@ peft
 accelerate
 transformers==4.37.2
 huggingface_hub[hf_transfer]
-huggingface-hub
 optimum
 auto-gptq
 whisperx
 shortuuid
+exxa
