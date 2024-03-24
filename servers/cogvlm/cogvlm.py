@@ -38,7 +38,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
 from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
 from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
-from swarms_cloud.auth_with_swarms_cloud import valid_token
+from swarms_cloud import valid_token
 
 # from exa import calculate_workers
 # import torch.distributed as dist
