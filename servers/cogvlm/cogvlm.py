@@ -37,7 +37,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     UsageInfo,
 )
 
-from exa import calculate_workers
+# from exa import calculate_workers
 # import torch.distributed as dist
 
 
@@ -50,21 +50,8 @@ TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH", "lmsys/vicuna-7b-v1.5")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    An asynchronous context manager for managing the lifecycle of the FastAPI app.
-    It ensures that GPU memory is cleared after the app's lifecycle ends, which is essential for efficient resource management in GPU environments.
-    """
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
-
-    # dist.destroy_process_group()
-
-
 # Create a FastAPI app
-app = FastAPI(lifespan=lifespan, debug=True)
+app = FastAPI(debug=True)
 
 
 # Load the middleware to handle CORS
@@ -409,7 +396,7 @@ if __name__ == "__main__":
         app,
         host="0.0.0.0",
         port=os.environ.get("MODEL_API_PORT", 8000),
-        workers=calculate_workers(),
+        workers=5,
         log_level="info",
         use_colors=True,
     )
