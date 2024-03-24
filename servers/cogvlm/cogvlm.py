@@ -35,6 +35,9 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     TextContent,
     UsageInfo,
 )
+from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
+from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
+from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
 
 # from exa import calculate_workers
 # import torch.distributed as dist
@@ -143,32 +146,32 @@ async def create_chat_completion(
         )
 
         # # Log the entry to supabase
-        # entry = ModelAPILogEntry(
-        #     user_id=await fetch_api_key_info(token),
-        #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-        #     input_tokens=await count_tokens(request.messages, tokenizer, request.model),
-        #     output_tokens=await count_tokens(response["text"], tokenizer, request.model),
-        #     all_cost=await calculate_pricing(
-        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-        #     ),
-        #     input_cost=await calculate_pricing(
-        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-        #     ),
-        #     output_cost=await calculate_pricing(
-        #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
-        #     )
-        #     * 5,
-        #     messages=request.messages,
-        #     # temperature=request.temperature,
-        #     top_p=request.top_p,
-        #     # echo=request.echo,
-        #     stream=request.stream,
-        #     repetition_penalty=request.repetition_penalty,
-        #     max_tokens=request.max_tokens,
-        # )
+        entry = ModelAPILogEntry(
+            user_id=fetch_api_key_info(token),
+            model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+            input_tokens=count_tokens(request.messages, tokenizer, request.model),
+            output_tokens=count_tokens(response["text"], tokenizer, request.model),
+            all_cost=calculate_pricing(
+                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+            ),
+            input_cost=calculate_pricing(
+                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+            ),
+            output_cost=calculate_pricing(
+                texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+            )
+            * 5,
+            messages=request.messages,
+            # temperature=request.temperature,
+            top_p=request.top_p,
+            # echo=request.echo,
+            stream=request.stream,
+            repetition_penalty=request.repetition_penalty,
+            max_tokens=request.max_tokens,
+        )
 
-        # # Log the entry to supabase
-        # await log_to_supabase(entry=entry)
+        # Log the entry to supabase
+        log_to_supabase(entry=entry)
 
         # ChatCompletionResponseChoice
         logger.debug(f"==== message ====\n{message}")
