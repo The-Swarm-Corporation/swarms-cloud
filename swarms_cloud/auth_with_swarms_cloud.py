@@ -58,7 +58,7 @@ def fetch_api_key_info(token: str, supabase: Client = supabase_client_init):
     # Query the Supabase database to check if the token exists in the 'keys' column of the 'swarms_cloud_api_key' table
     try:
         response = (
-            supabase.table("swarms_cloud_api_key")
+            supabase.table("swarms_cloud_api_keys")
             .select("id", "user_id", "key")
             .filter("key", "eq", token)
             .execute()
