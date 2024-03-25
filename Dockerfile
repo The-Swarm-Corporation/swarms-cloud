@@ -33,13 +33,13 @@ WORKDIR /swarms-cloud/servers/cogvlm
 COPY . /swarms-cloud
 
 # Copy the entrypoint script into the container
-COPY scripts/entrypoint.sh /entrypoint.sh
+COPY scripts/entry_point.sh /entry_point.sh
 
 # Make the entrypoint script executable
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entry_point.sh
 
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Use the entrypoint script to configure environment variables and start the application
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entry_point.sh"]
