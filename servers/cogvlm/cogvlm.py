@@ -89,7 +89,7 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch_type,
     low_cpu_mem_usage=True,
     quantization_config=bnb_config,
-)#.eval()
+)  # .eval()
 
 model = prepare_model_for_ddp_inference(model)
 
