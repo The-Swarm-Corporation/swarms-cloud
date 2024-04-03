@@ -1,0 +1,37 @@
+:44:32 provisioner.py:553] Successfully provisioned cluster: sky-serve-controller-ae4a2732
+I 04-03 08:44:34 cloud_vm_ray_backend.py:4275] Processing file mounts.
+I 04-03 08:44:35 cloud_vm_ray_backend.py:4307] To view detailed progress: tail -n100 -f ~/sky_logs/sky-2024-04-03-08-42-09-730566/file_mounts.log
+I 04-03 08:44:35 backend_utils.py:1272] Syncing (to 1 node): /var/folders/zl/0vgkvtm52vjcs1skpnlqnssw0000gn/T/service-task-sky-service-d178-tn3qr06v -> ~/.sky/serve/sky_service_d178/task.yaml.tmp
+I 04-03 08:44:36 cloud_vm_ray_backend.py:3085] Running setup on 1 node.
+I 04-03 08:44:58 cloud_vm_ray_backend.py:3098] Setup completed.
+I 04-03 08:45:05 cloud_vm_ray_backend.py:3180] Job submitted with Job ID: 1
+
+Service name: sky-service-d178
+Endpoint URL: 44.203.140.214:30001
+To see detailed info:           sky serve status sky-service-d178 [--endpoint]
+To teardown the service:        sky serve down sky-service-d178
+
+To see logs of a replica:       sky serve logs sky-service-d178 [REPLICA_ID]
+To see logs of load balancer:   sky serve logs --load-balancer sky-service-d178
+To see logs of controller:      sky serve logs --controller sky-service-d178
+
+To monitor replica status:      watch -n10 sky serve status sky-service-d178
+To send a test request:         curl -L 44.203.140.214:30001
+
+
+sky-service-d178  1   1        -   -         -          PROVISIONING  -       
+defalt@owl swarms-cloud % sky serve -h 
+Usage: sky serve [OPTIONS] COMMAND [ARGS]...
+
+  SkyServe CLI (multi-region, multi-cloud serving).
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  up      Launch a SkyServe service.
+  update  Update a SkyServe service.
+  status  Show statuses of SkyServe services.
+  down    Teardown service(s).
+  logs    Tail the log of a service.
+defalt@owl swarms-cloud % 
