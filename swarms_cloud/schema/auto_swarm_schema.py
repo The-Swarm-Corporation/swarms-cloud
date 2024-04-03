@@ -57,6 +57,7 @@ class AutoSwarmResponse(BaseModel):
         stopping_token (Optional[List[str]]): The stopping token(s) for each task (optional).
         number_of_choices (Optional[int]): The number of choices to generate for each task (optional, default: 1).
     """
+
     id: str
     swarm_name: Optional[str] = None
     num_of_agents: Optional[int] = None
