@@ -3,7 +3,7 @@ envs:
   HF_TOKEN: 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
 
 resources:
-  accelerators: {L4:1, A10G:1, A10:1, A100:1, A100-80GB:1}
+  accelerators: {A1000}
   ports:
     - 8000
 
