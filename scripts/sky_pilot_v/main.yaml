@@ -92,12 +92,13 @@ kubernetes:
 resources:
   ports: 8000
   disk_tier: best
-  accelerators: {L4:8, A10g:8, A100:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  # accelerators: {L4:8, A10g:8, A100:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  accelerators: {A100:1, H100:1, A10:1, A100-80GB:1}
 
 workdir: ~/swarms-cloud
 
 setup: |
-  echo export WANDB_API_KEY=
+  # echo export WANDB_API_KEY=
   docker build -t swarms_cloud:cogvlm
 
 run: |
