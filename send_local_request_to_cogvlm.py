@@ -55,7 +55,7 @@ url = "http://44.203.140.214:30001:8000/v1/chat/completions"
 start_time = time.time()
 
 # Send the request
-response = requests.post(url, json=request_data) # headers=headers)
+response = requests.post(url, json=request_data)  # headers=headers)
 
 # Stop the timer
 end_time = time.time()
