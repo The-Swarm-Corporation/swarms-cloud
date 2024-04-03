@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 
 import torch
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from PIL import Image
@@ -20,7 +20,6 @@ from transformers import (
     TextIteratorStreamer,
 )
 
-from swarms_cloud.auth_with_swarms_cloud import authenticate_user
 from swarms_cloud.schema.cog_vlm_schemas import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -35,10 +34,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     TextContent,
     UsageInfo,
 )
-from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
-from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
-from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
-from exa.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
+# from exa.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
 
 # Load environment variables from .env file
 load_dotenv()
@@ -89,9 +85,9 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch_type,
     low_cpu_mem_usage=True,
     quantization_config=bnb_config,
-)  # .eval()
+).eval()
 
-model = prepare_model_for_ddp_inference(model)
+# model = prepare_model_for_ddp_inference(model)
 
 # Torch type
 if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8:
@@ -114,13 +110,13 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
+    request: ChatCompletionRequest, # token: str = Depends(authenticate_user)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             raise HTTPException(status_code=400, detail="Invalid request")
 
-        print(f"Request: {request}")
+        # print(f"Request: {request}")
 
         gen_params = dict(
             messages=request.messages,
@@ -146,33 +142,33 @@ async def create_chat_completion(
             content=response["text"],
         )
 
-        # # Log the entry to supabase
-        entry = ModelAPILogEntry(
-            user_id=fetch_api_key_info(token),
-            model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-            input_tokens=count_tokens(request.messages, tokenizer, request.model),
-            output_tokens=count_tokens(response["text"], tokenizer, request.model),
-            all_cost=calculate_pricing(
-                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-            ),
-            input_cost=calculate_pricing(
-                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-            ),
-            output_cost=calculate_pricing(
-                texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
-            )
-            * 5,
-            messages=request.messages,
-            # temperature=request.temperature,
-            top_p=request.top_p,
-            # echo=request.echo,
-            stream=request.stream,
-            repetition_penalty=request.repetition_penalty,
-            max_tokens=request.max_tokens,
-        )
+        # # # Log the entry to supabase
+        # entry = ModelAPILogEntry(
+        #     user_id=fetch_api_key_info(token),
+        #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+        #     input_tokens=count_tokens(request.messages, tokenizer, request.model),
+        #     output_tokens=count_tokens(response["text"], tokenizer, request.model),
+        #     all_cost=calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     input_cost=calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     output_cost=calculate_pricing(
+        #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+        #     )
+        #     * 5,
+        #     messages=request.messages,
+        #     # temperature=request.temperature,
+        #     top_p=request.top_p,
+        #     # echo=request.echo,
+        #     stream=request.stream,
+        #     repetition_penalty=request.repetition_penalty,
+        #     max_tokens=request.max_tokens,
+        # )
 
-        # Log the entry to supabase
-        log_to_supabase(entry=entry)
+        # # Log the entry to supabase
+        # log_to_supabase(entry=entry)
 
         # ChatCompletionResponseChoice
         logger.debug(f"==== message ====\n{message}")
