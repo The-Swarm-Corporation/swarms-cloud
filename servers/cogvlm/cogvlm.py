@@ -34,6 +34,7 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     TextContent,
     UsageInfo,
 )
+
 # from exa.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
 
 # Load environment variables from .env file
@@ -110,7 +111,7 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, # token: str = Depends(authenticate_user)
+    request: ChatCompletionRequest,  # token: str = Depends(authenticate_user)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
