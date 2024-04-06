@@ -6,7 +6,15 @@ envs:
 
 # service.yaml
 service:
-  readiness_probe: /v1/models
+  # An actual request for readiness probe.
+  readiness_probe:
+    path: /v1/chat/completions
+    post_data:
+      model: $MODEL_NAME
+      messages:
+        - role: user
+          content: Hello! What is your name?
+      max_tokens: 1
   replica_policy:
     min_replicas: 2
     max_replicas: 10
