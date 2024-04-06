@@ -112,7 +112,6 @@ resources:
   ports: 8000  # Expose to internet traffic.
 
 setup: |
-  # echo export WANDB_API_KEY=
   docker build -t swarms_cloud:cogvlm
 
 run: |
