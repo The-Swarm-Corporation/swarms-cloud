@@ -19,7 +19,6 @@ service:
     min_replicas: 2
     max_replicas: 10
     target_qps_per_replica: 2.5
-    min_replicas: 1 # change to 0 if want to save costs
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200
 
