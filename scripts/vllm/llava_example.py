@@ -39,7 +39,7 @@ def run_llava_image_features():
         gpu_memory_utilization=1,
         image_input_type="image_features",
         image_token_id=32000,
-        max_model_len=496,
+        max_model_len=4096,
         image_input_shape="1,576,1024",
         image_feature_size=576,
     )
@@ -63,7 +63,6 @@ def main(args):
         run_llava_pixel_values()
     else:
         run_llava_image_features()
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Demo on Llava")
