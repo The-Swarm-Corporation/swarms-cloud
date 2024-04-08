@@ -24,7 +24,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 swarms = "*"
-fastapi = "0.110.0"
+fastapi = "0.110.1"
 skypilot = "*"
 torch = "*"
 einops = "*"
