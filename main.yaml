@@ -112,7 +112,6 @@ resources:
   ports: 8000  # Expose to internet traffic.
 
 setup: |
-  docker build -t swarms_cloud:cogvlm
-
+  docker build -t cogvlm_api:latest . 
 run: |
-  docker run --gpus all swarms_cloud:cogvlm
+  docker run --gpus all cogvlm_api::latest 
