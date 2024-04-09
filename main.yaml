@@ -1,6 +1,5 @@
 envs:
-  # MODEL_NAME: databricks/dbrx-instruct
-  # HF_TOKEN: <your-huggingface-token>  # Change to your own huggingface token, or use --env to pass.
+  MODEL_NAME: cogvlm-chat-17b
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
@@ -102,7 +101,7 @@ service:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
   cpus: 32+
   memory: 512+
   use_spot: True
