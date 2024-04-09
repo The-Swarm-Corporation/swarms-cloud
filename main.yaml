@@ -1,7 +1,7 @@
-envs:
-  # MODEL_NAME: databricks/dbrx-instruct
-  # HF_TOKEN: <your-huggingface-token>  # Change to your own huggingface token, or use --env to pass.
-  HF_HUB_ENABLE_HF_TRANSFER: True
+# envs:
+#   MODEL_NAME: TheBloke/stable-code-3b-GPTQ
+#   HF_TOKEN: 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
+#   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
 # service.yaml
@@ -16,10 +16,10 @@ service:
           content: Hello! What is your name?
       max_tokens: 1
   replica_policy:
-    min_replicas: 2
-    max_replicas: 10
+    min_replicas: 0
+    max_replicas: 2
     target_qps_per_replica: 2.5
-    min_replicas: 1 # change to 0 if want to save costs
+    # min_replicas: 1 # change to 0 if want to save costs
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200
 
@@ -103,15 +103,15 @@ service:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
-  cpus: 32+
-  memory: 512+
-  use_spot: True
-  disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
-  disk_tier: best
+  accelerators: {L4:1, A100-80GB:1, A100:1, A100:1, A100:1, A100-80GB:1, A100-80GB:1, A100-80GB:1}
+  # cpus: 4+
+  # memory: 246+
+  use_spot: False
+  # disk_size: 246
+  # disk_tier: best
   ports: 8000  # Expose to internet traffic.
 
-setup: |
-  docker build -t cogvlm_api:latest . 
 run: |
-  docker run --gpus all cogvlm_api::latest 
+  docker run --gpus all --shm-size 1g -v ~/data:/data \
+    ghcr.io/huggingface/text-generation-inference \
+    --model-id lmsys/vicuna-13b-v1.5
