@@ -15,7 +15,7 @@ service:
 
 resources:
   ports: 8081
-  accelerators: A100:1
+  accelerators: {L4:1, A100-80GB:1, A100:1, A100:1, A100:1, A100-80GB:1, A100-80GB:1, A100-80GB:1}
 
 setup: |
   conda activate chatbot
