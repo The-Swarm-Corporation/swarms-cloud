@@ -109,12 +109,6 @@ resources:
   disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
   disk_tier: best
   ports: 8080  # Expose to internet traffic.
-  # spot_recovery: none
-  any_of:
-    - cloud: azure
-      # accelerators: {L4:8, A10g:8, A100-80GB:2, A100-80GB:4}
-
-
 # workdir: ~/swarms-cloud/servers/cogvlm
 
 setup: |
