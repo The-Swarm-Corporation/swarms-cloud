@@ -11,7 +11,7 @@ data = {
     "style": "example_style",
     "n": 1,
     "output_type": ".gif",
-    "output_path": "animate",
+    "output_path": "animate.gif",
 }
 
 response = requests.post(url, headers=headers, data=json.dumps(data))
