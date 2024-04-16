@@ -139,7 +139,7 @@ async def create_chat_completion(
         #     error=None,
         # )
 
-        logger.info(f"Response: {out}")
+        # logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
         out = FileResponse(
             path=response,
