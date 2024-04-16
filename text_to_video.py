@@ -11,10 +11,11 @@ from diffusers.utils import export_to_gif
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from huggingface_hub import hf_hub_download
 from loguru import logger
 from safetensors.torch import load_file
-from fastapi.responses import JSONResponse
+
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
 # Load environment variables from .env file
@@ -127,9 +128,6 @@ async def create_chat_completion(
         # try:
         response = text_to_video(**gen_params)
         logger.info(f"Response: {response}")
-        # except Exception as e:
-        #     logger.error(f"Error: {e}")
-        #     raise HTTPException(status_code=500, detail="Internal Server Error")
 
         log = TextToVideoResponse(
             status="success",
