@@ -33,7 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 def text_to_video(
     task: str,
     model_name: str = "ByteDance/AnimateDiff-Lightning",
@@ -55,43 +54,56 @@ def text_to_video(
     Returns:
         str: The path to the exported GIF file.
     """
+    try:
+        
+        device = "cuda"
+        dtype = torch.float16
 
-    device = "cuda"
-    dtype = torch.float16
+        repo = model_name
+        ckpt = f"animatediff_lightning_{inference_steps}step_diffusers.safetensors"
+        base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
+        adapter = MotionAdapter().to(device, dtype)
+        adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
+        
+        pipe = AnimateDiffPipeline.from_pretrained(
+            base, motion_adapter=adapter, torch_dtype=dtype
+        ).to(device)
+        
+        logger.info(f"Initialized Model: {model_name}")
+        
+        
+        pipe.scheduler = EulerDiscreteScheduler.from_config(
+            pipe.scheduler.config,
+            timestep_spacing="trailing",
+            beta_schedule="linear",
+        )
 
-    repo = model_name
-    ckpt = f"animatediff_lightning_{inference_steps}step_diffusers.safetensors"
-    base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
-    adapter = MotionAdapter().to(device, dtype)
-    adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
+        # outputs = []
+        # for i in range(n):
+        #     output = pipe(
+        #         prompt=task,
+        #         guidance_scale=guidance_scale,
+        #         num_inference_steps=inference_steps,
+        #     )
+        #     outputs.append(output)
+        #     out = export_to_gif([output], f"{output_path}_{i}.gif")
+            # else:
+            #     out = export_to_video([output], f"{output_path}_{i}.mp4")
+        output = pipe(
+            prompt = task,
+            guidance_scale = guidance_scale,
+            num_inference_steps = inference_steps
+        )
+        
+        logger.info(f"Output ready: {output}")
+        
+        out = export_to_gif(output.frames[0], output_path)
+        logger.info(f"Exported to GIF: {out}")
+        return out
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None
 
-    pipe = AnimateDiffPipeline.from_pretrained(
-        base, motion_adapter=adapter, torch_dtype=dtype
-    ).to(device)
-
-    pipe.scheduler = EulerDiscreteScheduler.from_config(
-        pipe.scheduler.config,
-        timestep_spacing="trailing",
-        beta_schedule="linear",
-    )
-
-    # outputs = []
-    # for i in range(n):
-    #     output = pipe(
-    #         prompt=task,
-    #         guidance_scale=guidance_scale,
-    #         num_inference_steps=inference_steps,
-    #     )
-    #     outputs.append(output)
-    #     if output_type == ".gif":
-    #         out = export_to_gif([output], f"{output_path}_{i}.gif")
-    #     else:
-    #         out = export_to_video([output], f"{output_path}_{i}.mp4")
-    output = pipe(
-        prompt=task, guidance_scale=guidance_scale, num_inference_steps=inference_steps
-    )
-    output = export_to_gif(output.frames[0], output_path)
-    return output
 
 
 @app.post("/v1/chat/completions", response_model=TextToVideoResponse)
