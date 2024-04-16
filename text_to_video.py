@@ -134,8 +134,7 @@ async def create_chat_completion(
         log = TextToVideoResponse(
             status="success",
             request_details=request,
-            video_url=response,
-            error=None,
+            output_path=response,
         )
 
         # logger.info(f"Response: {out}")
