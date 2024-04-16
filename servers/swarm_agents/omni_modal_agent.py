@@ -33,14 +33,17 @@ def text_to_video(task: str):
     base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
 
     adapter = MotionAdapter().to(device, dtype)
-    adapter.load_state_dict(load_file(hf_hub_download(repo ,ckpt), device=device))
-    pipe = AnimateDiffPipeline.from_pretrained(base, motion_adapter=adapter, torch_dtype=dtype).to(device)
-    pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config, timestep_spacing="trailing", beta_schedule="linear")
+    adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
+    pipe = AnimateDiffPipeline.from_pretrained(
+        base, motion_adapter=adapter, torch_dtype=dtype
+    ).to(device)
+    pipe.scheduler = EulerDiscreteScheduler.from_config(
+        pipe.scheduler.config, timestep_spacing="trailing", beta_schedule="linear"
+    )
 
     output = pipe(prompt=task, guidance_scale=1.0, num_inference_steps=step)
     out = export_to_gif(output.frames[0], "animation.gif")
     return out
-
 
 
 # Agent
