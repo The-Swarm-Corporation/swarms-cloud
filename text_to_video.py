@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from huggingface_hub import hf_hub_download
 from loguru import logger
 from safetensors.torch import load_file
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
 # Load environment variables from .env file
@@ -139,7 +139,7 @@ async def create_chat_completion(
 
         # logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
-        
+
         out = JSONResponse(content=log.model_dump(), status_code=200)
         return out
     except Exception as e:
