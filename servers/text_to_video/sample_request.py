@@ -11,7 +11,7 @@ data = {
     "style": "example_style",
     "n": 1,
     "output_type": "mp4",
-    "output_path": "example_output_path"
+    "output_path": "example_output_path",
 }
 
 response = requests.post(url, headers=headers, data=json.dumps(data))

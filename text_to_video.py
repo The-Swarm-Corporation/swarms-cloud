@@ -7,11 +7,10 @@ from diffusers import (
     EulerDiscreteScheduler,
     MotionAdapter,
 )
-from diffusers.utils import export_to_gif, export_to_video
+from diffusers.utils import export_to_gif
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from huggingface_hub import hf_hub_download
 from loguru import logger
 from safetensors.torch import load_file
@@ -65,12 +64,11 @@ def text_to_video(
     base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
     adapter = MotionAdapter().to(device, dtype)
     adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
-    
+
     pipe = AnimateDiffPipeline.from_pretrained(
         base, motion_adapter=adapter, torch_dtype=dtype
     ).to(device)
-    
-    
+
     pipe.scheduler = EulerDiscreteScheduler.from_config(
         pipe.scheduler.config,
         timestep_spacing="trailing",
@@ -90,9 +88,7 @@ def text_to_video(
     #     else:
     #         out = export_to_video([output], f"{output_path}_{i}.mp4")
     output = pipe(
-        prompt = task,
-        guidance_scale = guidance_scale,
-        num_inference_steps = inference_steps
+        prompt=task, guidance_scale=guidance_scale, num_inference_steps=inference_steps
     )
     output = export_to_gif(output.frames[0], output_path)
     return output
@@ -104,7 +100,7 @@ async def create_chat_completion(
 ):
     try:
         logger.info(f"Request: {request}")
-        
+
         gen_params = dict(
             model_name=request.model_name,
             task=request.task,
@@ -117,7 +113,7 @@ async def create_chat_completion(
         )
 
         logger.info(f"Running text_to_video model with params: {gen_params}")
-        
+
         # try:
         response = text_to_video(**gen_params)
         logger.info(f"Response: {response}")
