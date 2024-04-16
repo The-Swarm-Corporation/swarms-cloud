@@ -148,8 +148,6 @@ async def create_chat_completion(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-
-
 if __name__ == "__main__":
     uvicorn.run(
         app,
