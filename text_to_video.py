@@ -1,11 +1,20 @@
-from dotenv import load_dotenv
 import os
 
+import torch
 import uvicorn
+from diffusers import (
+    AnimateDiffPipeline,
+    EulerDiscreteScheduler,
+    MotionAdapter,
+)
+from diffusers.utils import export_to_gif, export_to_video
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from loguru import logger
 from fastapi.responses import FileResponse
+from huggingface_hub import hf_hub_download
+from loguru import logger
+from safetensors.torch import load_file
 
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
@@ -49,15 +58,6 @@ def text_to_video(
     Returns:
         str: The path to the exported GIF file.
     """
-    import torch
-    from diffusers import (
-        AnimateDiffPipeline,
-        MotionAdapter,
-        EulerDiscreteScheduler,
-    )
-    from diffusers.utils import export_to_gif, export_to_video
-    from huggingface_hub import hf_hub_download
-    from safetensors.torch import load_file
 
     device = "cuda"
     dtype = torch.float16
@@ -100,27 +100,6 @@ async def create_chat_completion(
     try:
         logger.info(f"Request: {request}")
         
-        
-        # Validate input parameters
-        # if not isinstance(request.model_name, str) or not request.model_name:
-        #     raise HTTPException(status_code=400, detail="Invalid model_name")
-        # if not isinstance(request.task, str) or not request.task:
-        #     raise HTTPException(status_code=400, detail="Invalid task")
-        # if not isinstance(request.resolution, int) or request.resolution <= 0:
-        #     raise HTTPException(status_code=400, detail="Invalid resolution")
-        # if not isinstance(request.length, int) or request.length <= 0:
-        #     raise HTTPException(status_code=400, detail="Invalid length")
-        # if not isinstance(request.style, str) or not request.style:
-        #     raise HTTPException(status_code=400, detail="Invalid style")
-        # if not isinstance(request.n, int) or request.n <= 0:
-        #     raise HTTPException(status_code=400, detail="Invalid n")
-        # if not isinstance(request.output_type, str) or not request.output_type:
-        #     raise HTTPException(status_code=400, detail="Invalid output_type")
-        # if not isinstance(request.output_path, str) or not request.output_path:
-        #     raise HTTPException(status_code=400, detail="Invalid output_path")
-
-        # print(f"Request: {request}")
-
         gen_params = dict(
             model_name=request.model_name,
             task=request.task,
@@ -143,15 +122,14 @@ async def create_chat_completion(
         )
 
         logger.info(f"Response: {out}")
-
         logger.info(f"Downloading the file: {response}")
-        download_save = FileResponse(
+        FileResponse(
             path=response,
             filename=request.output_path,
             media_type="application/octet-stream",
         )
 
-        return out, download_save
+        return out
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

@@ -3,7 +3,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 -d '{
     "model_name": "ByteDance/AnimateDiff-Lightning",
     "task": "Beautiful girl studying with hijab",
-    "resolution": 720,
+    "resolution": "720",
     "length": 60,
     "style": "example_style",
     "n": 1,
