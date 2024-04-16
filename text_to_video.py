@@ -134,11 +134,11 @@ async def create_chat_completion(
 
         logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
-        out = FileResponse(
-            path=response,
-            filename=request.output_path,
-            media_type="application/octet-stream",
-        )
+        # out = FileResponse(
+        #     path=response,
+        #     filename=request.output_path,
+        #     media_type="application/octet-stream",
+        # )
 
         return out
     except Exception as e:
