@@ -12,7 +12,10 @@ from swarms_cloud.auth_with_swarms_cloud import (
 )
 from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.func_api_wrapper import SwarmCloud
-from swarms_cloud.log_api_request_to_supabase import ModelAPILogEntry, log_to_supabase
+from swarms_cloud.loggers.log_api_request_to_supabase import (
+    ModelAPILogEntry,
+    log_to_supabase,
+)
 from swarms_cloud.schema.openai_protocol import (  # noqa: E501
     ChatCompletionRequest,
     ChatCompletionRequestQos,
