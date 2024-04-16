@@ -118,11 +118,12 @@ async def create_chat_completion(
 
         logger.info(f"Running text_to_video model with params: {gen_params}")
         
-        try:
-            response = text_to_video(**gen_params)
-        except Exception as e:
-            logger.error(f"Error: {e}")
-            raise HTTPException(status_code=500, detail="Internal Server Error")
+        # try:
+        response = text_to_video(**gen_params)
+        logger.info(f"Response: {response}")
+        # except Exception as e:
+        #     logger.error(f"Error: {e}")
+        #     raise HTTPException(status_code=500, detail="Internal Server Error")
 
         out = TextToVideoResponse(
             status="success",
