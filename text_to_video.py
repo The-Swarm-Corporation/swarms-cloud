@@ -148,7 +148,7 @@ async def create_chat_completion(
             headers={"Content-Disposition": "attachment; filename=" + request.output_path},
         )
 
-        return JSONResponse(content=log.dict(), status_code=200)
+        return JSONResponse(content=log.model_dump(), status_code=200)
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
