@@ -141,12 +141,6 @@ async def create_chat_completion(
         # logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
         
-        # FileResponse(
-        #     path=response,
-        #     filename=request.output_path,
-        #     media_type="image/gif",  # Use the correct media type for GIFs
-        #     headers={"Content-Disposition": "attachment; filename=" + request.output_path},
-        # )
 
         return JSONResponse(content=log.model_dump(), status_code=200)
     except Exception as e:
