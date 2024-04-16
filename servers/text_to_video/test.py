@@ -1,4 +1,3 @@
-
 import torch
 from diffusers import (
     AnimateDiffPipeline,
@@ -37,7 +36,6 @@ def text_to_video(
         str: The path to the exported GIF file.
     """
     try:
-        
         device = "cuda"
         dtype = torch.float16
 
@@ -46,14 +44,13 @@ def text_to_video(
         base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
         adapter = MotionAdapter().to(device, dtype)
         adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
-        
+
         pipe = AnimateDiffPipeline.from_pretrained(
             base, motion_adapter=adapter, torch_dtype=dtype
         ).to(device)
-        
+
         logger.info(f"Initialized Model: {model_name}")
-        
-        
+
         pipe.scheduler = EulerDiscreteScheduler.from_config(
             pipe.scheduler.config,
             timestep_spacing="trailing",
@@ -69,12 +66,12 @@ def text_to_video(
         #     )
         #     outputs.append(output)
         #     out = export_to_gif([output], f"{output_path}_{i}.gif")
-            # else:
-            #     out = export_to_video([output], f"{output_path}_{i}.mp4")
+        # else:
+        #     out = export_to_video([output], f"{output_path}_{i}.mp4")
         output = pipe(
-            prompt = task,
-            guidance_scale = guidance_scale,
-            num_inference_steps = inference_steps
+            prompt=task,
+            guidance_scale=guidance_scale,
+            num_inference_steps=inference_steps,
         )
         out = export_to_gif(output.frames[0], output_path)
         return out
