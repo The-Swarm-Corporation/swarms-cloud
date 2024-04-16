@@ -77,20 +77,25 @@ def text_to_video(
         beta_schedule="linear",
     )
 
-    outputs = []
-    for i in range(n):
-        output = pipe(
-            prompt=task,
-            guidance_scale=guidance_scale,
-            num_inference_steps=inference_steps,
-        )
-        outputs.append(output)
-        if output_type == ".gif":
-            out = export_to_gif([output], f"{output_path}_{i}.gif")
-        else:
-            out = export_to_video([output], f"{output_path}_{i}.mp4")
-
-    return out
+    # outputs = []
+    # for i in range(n):
+    #     output = pipe(
+    #         prompt=task,
+    #         guidance_scale=guidance_scale,
+    #         num_inference_steps=inference_steps,
+    #     )
+    #     outputs.append(output)
+    #     if output_type == ".gif":
+    #         out = export_to_gif([output], f"{output_path}_{i}.gif")
+    #     else:
+    #         out = export_to_video([output], f"{output_path}_{i}.mp4")
+    output = pipe(
+        prompt = task,
+        guidance_scale = guidance_scale,
+        num_inference_steps = inference_steps
+    )
+    output = export_to_gif(output.frames[0], output_path)
+    return output
 
 
 @app.post("/v1/chat/completions", response_model=TextToVideoResponse)
