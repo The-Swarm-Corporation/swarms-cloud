@@ -65,9 +65,12 @@ def text_to_video(
     base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
     adapter = MotionAdapter().to(device, dtype)
     adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
+    
     pipe = AnimateDiffPipeline.from_pretrained(
         base, motion_adapter=adapter, torch_dtype=dtype
     ).to(device)
+    
+    
     pipe.scheduler = EulerDiscreteScheduler.from_config(
         pipe.scheduler.config,
         timestep_spacing="trailing",
@@ -109,7 +112,12 @@ async def create_chat_completion(
         )
 
         logger.info(f"Running text_to_video model with params: {gen_params}")
-        response = text_to_video(**gen_params)
+        
+        try:
+            response = text_to_video(**gen_params)
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 
         out = TextToVideoResponse(
             status="success",
