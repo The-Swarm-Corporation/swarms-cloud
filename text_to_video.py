@@ -140,9 +140,8 @@ async def create_chat_completion(
         # logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
         
-        # out = JSONResponse(content=log.model_dump(), status_code=200)
-        saved_file = FileResponse(response, media_type="image/gif", filename=request.output_path)
-        return saved_file
+        out = JSONResponse(content=log.model_dump(), status_code=200)
+        return out
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
