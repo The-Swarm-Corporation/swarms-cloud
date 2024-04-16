@@ -18,8 +18,6 @@ from safetensors.torch import load_file
 
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
-# from exa.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
-
 # Load environment variables from .env file
 load_dotenv()
 
@@ -65,7 +63,6 @@ def text_to_video(
     repo = model_name
     ckpt = f"animatediff_lightning_{inference_steps}step_diffusers.safetensors"
     base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
-
     adapter = MotionAdapter().to(device, dtype)
     adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
     pipe = AnimateDiffPipeline.from_pretrained(
@@ -123,11 +120,11 @@ async def create_chat_completion(
 
         logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
-        FileResponse(
-            path=response,
-            filename=request.output_path,
-            media_type="application/octet-stream",
-        )
+        # FileResponse(
+        #     path=response,
+        #     filename=request.output_path,
+        #     media_type="application/octet-stream",
+        # )
 
         return out
     except Exception as e:
