@@ -145,6 +145,7 @@ async def create_chat_completion(
             path=response,
             filename=request.output_path,
             media_type="image/gif",  # Use the correct media type for GIFs
+            headers={"Content-Disposition": "attachment; filename=" + request.output_path},
         )
 
         return out
