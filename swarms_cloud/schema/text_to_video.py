@@ -31,7 +31,7 @@ class TextToVideoRequest(BaseModel):
     )
     output_path: str = Field(
         None,
-        example="/path/to/output/video.mp4",
+        example="animate.gif",
         description="Path to save the output video",
     )
 
@@ -48,11 +48,11 @@ class TextToVideoResponse(BaseModel):
     request_details: TextToVideoRequest = Field(
         ..., description="Details of the initial request"
     )
-    video_url: HttpUrl = Field(
+    output_path: str = Field(
         None,
-        example="http://example.com/generated_video.mp4",
+        example="animate.gif",
         description="URL where the generated video can be accessed",
     )
-    error: ErrorResponse = Field(
-        None, description="Error details if the status is 'error'"
-    )
+    # error: ErrorResponse = Field(
+    #     None, description="Error details if the status is 'error'"
+    # )
