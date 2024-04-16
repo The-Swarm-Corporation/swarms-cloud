@@ -51,7 +51,6 @@ from swarms_cloud.schema.openai_spec import (
     OpenAIAPIWrapper,
     OutputOpenAISpec,
 )
-from swarms_cloud.sky_api import SkyInterface
 from swarms_cloud.utils.api_key_generator import generate_api_key
 from swarms_cloud.utils.rate_limiter import rate_limiter
 from swarms_cloud.auth_with_swarms_cloud import verify_token
@@ -98,7 +97,6 @@ __all__ = [
     "InputOpenAISpec",
     "OpenAIAPIWrapper",
     "OutputOpenAISpec",
-    "SkyInterface",
     "generate_api_key",
     "rate_limiter",
     "verify_token",
