@@ -25,8 +25,8 @@ class TextToVideoRequest(BaseModel):
     )
     n: int = Field(default=1, example=1, description="Number of videos to generate")
     output_type: str = Field(
-        default=".gif",
-        example=".gif",
+        default="gif",
+        example="gif",
         description="Type of output to be generated, e.g. video, gif, etc.",
     )
     output_path: str = Field(
