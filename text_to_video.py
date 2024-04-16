@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from huggingface_hub import hf_hub_download
 from loguru import logger
 from safetensors.torch import load_file
+from fastapi.responses import FileResponse
 
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 def text_to_video(
     task: str,
@@ -55,7 +57,6 @@ def text_to_video(
         str: The path to the exported GIF file.
     """
     try:
-        
         device = "cuda"
         dtype = torch.float16
 
@@ -64,14 +65,13 @@ def text_to_video(
         base = "emilianJR/epiCRealism"  # Choose to your favorite base model.
         adapter = MotionAdapter().to(device, dtype)
         adapter.load_state_dict(load_file(hf_hub_download(repo, ckpt), device=device))
-        
+
         pipe = AnimateDiffPipeline.from_pretrained(
             base, motion_adapter=adapter, torch_dtype=dtype
         ).to(device)
-        
+
         logger.info(f"Initialized Model: {model_name}")
-        
-        
+
         pipe.scheduler = EulerDiscreteScheduler.from_config(
             pipe.scheduler.config,
             timestep_spacing="trailing",
@@ -87,23 +87,22 @@ def text_to_video(
         #     )
         #     outputs.append(output)
         #     out = export_to_gif([output], f"{output_path}_{i}.gif")
-            # else:
-            #     out = export_to_video([output], f"{output_path}_{i}.mp4")
+        # else:
+        #     out = export_to_video([output], f"{output_path}_{i}.mp4")
         output = pipe(
-            prompt = task,
-            guidance_scale = guidance_scale,
-            num_inference_steps = inference_steps
+            prompt=task,
+            guidance_scale=guidance_scale,
+            num_inference_steps=inference_steps,
         )
-        
+
         logger.info(f"Output ready: {output}")
-        
+
         out = export_to_gif(output.frames[0], output_path)
         logger.info(f"Exported to GIF: {out}")
         return out
     except Exception as e:
         logger.error(f"Error: {e}")
         return None
-
 
 
 @app.post("/v1/chat/completions", response_model=TextToVideoResponse)
@@ -133,20 +132,20 @@ async def create_chat_completion(
         #     logger.error(f"Error: {e}")
         #     raise HTTPException(status_code=500, detail="Internal Server Error")
 
-        out = TextToVideoResponse(
-            status="success",
-            request_details=request,
-            video_url=response,
-            error=None,
-        )
+        # out = TextToVideoResponse(
+        #     status="success",
+        #     request_details=request,
+        #     video_url=response,
+        #     error=None,
+        # )
 
         logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
-        # out = FileResponse(
-        #     path=response,
-        #     filename=request.output_path,
-        #     media_type="application/octet-stream",
-        # )
+        out = FileResponse(
+            path=response,
+            filename=request.output_path,
+            media_type="image/gif",  # Use the correct media type for GIFs
+        )
 
         return out
     except Exception as e:
