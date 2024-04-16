@@ -93,7 +93,6 @@ def text_to_video(
     return out
 
 
-
 @app.post("/v1/chat/completions", response_model=TextToVideoResponse)
 async def create_chat_completion(
     request: TextToVideoRequest,  # token: str = Depends(authenticate_user)
