@@ -99,27 +99,25 @@ async def create_chat_completion(
 ):
     try:
         logger.info(f"Request: {request}")
-
-        if len(request.messages) < 1 or request.messages[-1].role == "assistant":
-            raise HTTPException(status_code=400, detail="Invalid request")
-
+        
+        
         # Validate input parameters
-        if not isinstance(request.model_name, str) or not request.model_name:
-            raise HTTPException(status_code=400, detail="Invalid model_name")
-        if not isinstance(request.task, str) or not request.task:
-            raise HTTPException(status_code=400, detail="Invalid task")
-        if not isinstance(request.resolution, int) or request.resolution <= 0:
-            raise HTTPException(status_code=400, detail="Invalid resolution")
-        if not isinstance(request.length, int) or request.length <= 0:
-            raise HTTPException(status_code=400, detail="Invalid length")
-        if not isinstance(request.style, str) or not request.style:
-            raise HTTPException(status_code=400, detail="Invalid style")
-        if not isinstance(request.n, int) or request.n <= 0:
-            raise HTTPException(status_code=400, detail="Invalid n")
-        if not isinstance(request.output_type, str) or not request.output_type:
-            raise HTTPException(status_code=400, detail="Invalid output_type")
-        if not isinstance(request.output_path, str) or not request.output_path:
-            raise HTTPException(status_code=400, detail="Invalid output_path")
+        # if not isinstance(request.model_name, str) or not request.model_name:
+        #     raise HTTPException(status_code=400, detail="Invalid model_name")
+        # if not isinstance(request.task, str) or not request.task:
+        #     raise HTTPException(status_code=400, detail="Invalid task")
+        # if not isinstance(request.resolution, int) or request.resolution <= 0:
+        #     raise HTTPException(status_code=400, detail="Invalid resolution")
+        # if not isinstance(request.length, int) or request.length <= 0:
+        #     raise HTTPException(status_code=400, detail="Invalid length")
+        # if not isinstance(request.style, str) or not request.style:
+        #     raise HTTPException(status_code=400, detail="Invalid style")
+        # if not isinstance(request.n, int) or request.n <= 0:
+        #     raise HTTPException(status_code=400, detail="Invalid n")
+        # if not isinstance(request.output_type, str) or not request.output_type:
+        #     raise HTTPException(status_code=400, detail="Invalid output_type")
+        # if not isinstance(request.output_path, str) or not request.output_path:
+        #     raise HTTPException(status_code=400, detail="Invalid output_path")
 
         # print(f"Request: {request}")
 
