@@ -14,8 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from huggingface_hub import hf_hub_download
 from loguru import logger
 from safetensors.torch import load_file
-from fastapi.responses import FileResponse
-
+from fastapi.responses import FileResponse, JSONResponse
 from swarms_cloud.schema.text_to_video import TextToVideoRequest, TextToVideoResponse
 
 # Load environment variables from .env file
@@ -132,23 +131,24 @@ async def create_chat_completion(
         #     logger.error(f"Error: {e}")
         #     raise HTTPException(status_code=500, detail="Internal Server Error")
 
-        # out = TextToVideoResponse(
-        #     status="success",
-        #     request_details=request,
-        #     video_url=response,
-        #     error=None,
-        # )
+        log = TextToVideoResponse(
+            status="success",
+            request_details=request,
+            video_url=response,
+            error=None,
+        )
 
         # logger.info(f"Response: {out}")
         logger.info(f"Downloading the file: {response}")
-        out = FileResponse(
+        
+        FileResponse(
             path=response,
             filename=request.output_path,
             media_type="image/gif",  # Use the correct media type for GIFs
             headers={"Content-Disposition": "attachment; filename=" + request.output_path},
         )
 
-        return out
+        return JSONResponse(content=log.dict(), status_code=200)
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
