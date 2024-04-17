@@ -7,7 +7,6 @@ ENV ARTIFACTS_PATH=/app/artifacts
 ENV STORAGE_PATH=/app/storage
 ENV HF_HUB_ENABLE_HF_TRANSFER=True
 
-
 # Set the working directory to the root
 WORKDIR /
 
@@ -26,20 +25,14 @@ COPY requirements.txt .
 # Install Python dependencies from requirements.txt
 RUN python3.10 -m pip install -r requirements.txt
 
-# Adjust the working directory to where your application's code will reside
-WORKDIR /swarms-cloud/servers/cogvlm
-
 # Copy the application's entire directory structure into the container
 COPY . /swarms-cloud
 
-# Copy the entrypoint script into the container
-COPY scripts/entry_point.sh /entry_point.sh
-
-# Make the entrypoint script executable
-RUN chmod +x /entry_point.sh
+# Set the working directory to the cogvlm directory
+WORKDIR /swarms-cloud/servers/cogvlm
 
 # Expose the port the app runs on
 EXPOSE 8000
 
-# Use the entrypoint script to configure environment variables and start the application
-ENTRYPOINT ["/entry_point.sh"]
+# Run the cogvlm.py file as a Uvicorn server on port 8000
+CMD ["uvicorn", "cogvlm:app", "--host", "0.0.0.0", "--port", "8000"]
