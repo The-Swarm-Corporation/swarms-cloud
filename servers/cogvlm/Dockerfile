@@ -24,6 +24,7 @@ COPY requirements.txt .
 
 # Install Python dependencies from requirements.txt
 RUN python3.10 -m pip install -r requirements.txt
+RUN python3.10 -m pip install uvicorn
 
 # Copy the application's entire directory structure into the container
 COPY . /swarms-cloud
