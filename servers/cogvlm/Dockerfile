@@ -27,6 +27,7 @@ RUN python3.10 -m pip install -r requirements.txt
 RUN python3.10 -m pip install uvicorn
 RUN python3.10 -m pip install python-dotenv
 RUN python3.10 -m pip install torch
+RUN python3.10 -m pip install hf_transfer
 
 # Copy the application's entire directory structure into the container
 COPY . /swarms-cloud
