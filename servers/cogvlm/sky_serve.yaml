@@ -112,7 +112,7 @@ resources:
 # workdir: ~/swarms-cloud/servers/cogvlm
 
 setup: |
-  docker build -t cogvlm
+  docker build -t cogvlm .
 
 run: |
   docker run --gpus all cogvlm
