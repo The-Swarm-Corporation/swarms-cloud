@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from supabase import create_client, Client
+from supabase import create_client
 
 
 # Load environment variables
@@ -12,14 +12,10 @@ load_dotenv()
 http_bearer = HTTPBearer()
 
 
-# Supabase client
-supabase_client_init: Client = create_client(
-    supabase_url=os.getenv("SUPABASE_URL"),
-    supabase_key=os.getenv("SUPABASE_KEY"),
-)
-
-
-def is_token_valid(token: str = None, supabase: Client = supabase_client_init) -> bool:
+def is_token_valid(
+    token: str = None,
+    #    supabase: Client = supabase_client_init
+) -> bool:
     """
     Check if a token is valid by querying the Supabase database.
 
@@ -30,6 +26,12 @@ def is_token_valid(token: str = None, supabase: Client = supabase_client_init) -
     Returns:
         bool: True if the token is valid, False otherwise.
     """
+    # Supabase client
+    supabase = create_client(
+        supabase_url=os.getenv("SUPABASE_URL"),
+        supabase_key=os.getenv("SUPABASE_KEY"),
+    )
+
     try:
         # Query the Supabase database to check if the token exists in the 'keys' column of the 'swarms_cloud_api_key' table
         response = (
@@ -44,7 +46,10 @@ def is_token_valid(token: str = None, supabase: Client = supabase_client_init) -
         return False
 
 
-def fetch_api_key_info(token: str = None, supabase: Client = supabase_client_init):
+def fetch_api_key_info(
+    token: str = None,
+    # supabase: Client = supabase_client_init
+):
     """
     Fetch the id and user_id of an API key from the Supabase database.
 
@@ -55,6 +60,11 @@ def fetch_api_key_info(token: str = None, supabase: Client = supabase_client_ini
     Returns:
         dict: A dictionary containing the id and user_id if the API key is valid, None otherwise.
     """
+    # Supabase client
+    supabase = create_client(
+        supabase_url=os.getenv("SUPABASE_URL"),
+        supabase_key=os.getenv("SUPABASE_KEY"),
+    )
     # Query the Supabase database to check if the token exists in the 'keys' column of the 'swarms_cloud_api_key' table
     try:
         response = (

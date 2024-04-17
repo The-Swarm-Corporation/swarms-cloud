@@ -1,8 +1,10 @@
+import os
 from pydantic import BaseModel
 from typing import Optional, Dict
 from uuid import UUID
-from supabase import Client
-from swarms_cloud.auth_with_swarms_cloud import supabase_client_init
+from supabase import create_client
+
+# from swarms_cloud.auth_with_swarms_cloud import supabase_client_init
 
 
 class ModelAPILogEntry(BaseModel):
@@ -29,7 +31,7 @@ class ModelAPILogEntry(BaseModel):
 async def log_to_supabase(
     table_name: str = "swarms_cloud_api_key_activities",
     entry: ModelAPILogEntry = None,
-    supabase: Client = supabase_client_init,
+    # supabase: Client = supabase_client_init,
 ):
     """
     Logs an entry to Supabase.
@@ -42,6 +44,11 @@ async def log_to_supabase(
     Returns:
         dict: The response from the Supabase insert operation, or an error message if an exception occurs.
     """
+    # Supabase client
+    supabase = create_client(
+        supabase_url=os.getenv("SUPABASE_URL"),
+        supabase_key=os.getenv("SUPABASE_KEY"),
+    )
     try:
         response = supabase.table(table_name).insert(entry.model_dump()).execute()
         return response

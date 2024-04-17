@@ -49,7 +49,7 @@ headers = {
 }
 
 # Specify the URL of your FastAPI application
-url = "http://44.203.140.214:30001:8000/v1/chat/completions"
+url = "http://199.204.135.66:8000/v1/chat/completions"
 
 # Start the timer
 start_time = time.time()

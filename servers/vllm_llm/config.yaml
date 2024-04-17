@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ttv-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ttv
+  template:
+    metadata:
+      labels:
+        app: ttv
+    spec:
+      containers:
+      - name: ttv
+        image: ttv
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+  autoscale:
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80

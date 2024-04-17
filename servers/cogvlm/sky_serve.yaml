@@ -1,7 +1,6 @@
-# envs:
-#   MODEL_NAME: TheBloke/stable-code-3b-GPTQ
-#   HF_TOKEN: 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
-#   HF_HUB_ENABLE_HF_TRANSFER: True
+envs:
+  MODEL_NAME: cogvlm-chat-17b
+  HF_HUB_ENABLE_HF_TRANSFER: True
 
 
 # service.yaml
@@ -15,20 +14,21 @@ service:
         - role: user
           content: Hello! What is your name?
       max_tokens: 1
+  readiness_probe: /health
   replica_policy:
     min_replicas: 0
     max_replicas: 2
     target_qps_per_replica: 2.5
-    # min_replicas: 1 # change to 0 if want to save costs
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200
 
-# # Advanced Kubernetes configurations (optional).
+# # # Advanced Kubernetes configurations (optional).
 # kubernetes:
 #   # The networking mode for accessing SSH jump pod (optional).
 #   #
 #   # This must be either: 'nodeport' or 'portforward'. If not specified,
 #   # defaults to 'portforward'.
+
 #   #
 #   # nodeport: Exposes the jump pod SSH service on a static port number on each
 #   # Node, allowing external access to using <NodeIP>:<NodePort>. Using this
@@ -62,11 +62,11 @@ service:
 #   #
 #   # Since metadata is applied to all all objects created by SkyPilot,
 #   # specifying 'name' and 'namespace' fields here is not allowed.
-#   custom_metadata:
-#     labels:
-#       mylabel: myvalue
-#     annotations:
-#       myannotation: myvalue
+#   # custom_metadata:
+#   #   labels:
+#   #     mylabel: myvalue
+#   #   annotations:
+#   #     myannotation: myvalue
 
 #   # Additional fields to override the pod fields used by SkyPilot (optional)
 #   #
@@ -75,11 +75,8 @@ service:
 #   # in the Kubernetes API:
 #   # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#pod-v1-core
 #   #
-#   # Some example use cases are shown below. All fields are optional.
+#   # # Some example use cases are shown below. All fields are optional.
 #   # pod_config:
-#   #   metadata:
-#   #     labels:
-#   #       my-label: my-value    # Custom labels to SkyPilot pods
 #   #   spec:
 #   #     runtimeClassName: nvidia    # Custom runtimeClassName for GPU pods.
 #   #     containers:
@@ -88,14 +85,14 @@ service:
 #   #           value: http://proxy-host:3128
 #   #         volumeMounts:       # Custom volume mounts for the pod
 #   #           - mountPath: /foo
-#   #             name: example-volume
+#   #             name: swarms
 #   #             readOnly: true
 #   #     volumes:
-#   #       - name: example-volume
+#   #       - name: swarms
 #   #         hostPath:
 #   #           path: /tmp
 #   #           type: Directory
-#   #       - name: dshm          # Use this to modify the /dev/shm volume mounted by SkyPilot
+#   #       - name: swarms          # Use this to modify the /dev/shm volume mounted by SkyPilot
 #   #         emptyDir:
 #   #           medium: Memory
 #   #           sizeLimit: 3Gi    # Set a size limit for the /dev/shm volume
@@ -103,15 +100,19 @@ service:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:1, A100-80GB:1, A100:1, A100:1, A100:1, A100-80GB:1, A100-80GB:1, A100-80GB:1}
-  # cpus: 4+
-  # memory: 246+
-  use_spot: False
-  # disk_size: 246
-  # disk_tier: best
+  accelerators: V100:100
+  cpus: 32+
+  memory: 512+
+  use_spot: True
+  disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
+  disk_tier: best
   ports: 8000  # Expose to internet traffic.
+  # spot_recovery: none
+
+# workdir: ~/swarms-cloud/servers/cogvlm
+
+setup: |
+  docker build -t cogvlm
 
 run: |
-  docker run --gpus all --shm-size 1g -v ~/data:/data \
-    ghcr.io/huggingface/text-generation-inference \
-    --model-id lmsys/vicuna-13b-v1.5
+  docker run --gpus all cogvlm
