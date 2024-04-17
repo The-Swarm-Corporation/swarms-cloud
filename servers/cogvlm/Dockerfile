@@ -27,10 +27,10 @@ RUN python3.10 -m pip install -r requirements.txt
 RUN python3.10 -m pip install uvicorn
 
 # Copy the application's entire directory structure into the container
-# COPY . /swarms-cloud
+COPY . /swarms-cloud
 
-# Set the working directory to the cogvlm directory
-# WORKDIR /swarms-cloud/servers/cogvlm
+# Set the working directory to the swarms-cloud directory
+WORKDIR /swarms-cloud
 
 # Expose the port the app runs on
 EXPOSE 8000
