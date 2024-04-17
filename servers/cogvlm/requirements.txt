@@ -24,3 +24,4 @@ auto-gptq
 whisperx
 shortuuid
 exxa
+hf_transfergit 
