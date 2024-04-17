@@ -1,5 +1,4 @@
 envs:
-  MODEL_NAME: mistralai/Mixtral-8x7B-Instruct-v0.1
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
@@ -9,13 +8,9 @@ service:
   readiness_probe:
     path: /v1/chat/completions
     post_data:
-      model: $MODEL_NAME
-      messages:
-        - role: user
-          content: Hello! What is your name?
+      task: "Create a woman studying with hijab"
       max_tokens: 1
   readiness_probe: /health
-  readiness_probe: /v1/models
   replica_policy:
     min_replicas: 2
     max_replicas: 10
@@ -108,6 +103,7 @@ resources:
   # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
   # disk_tier: best
   ports: 8000  # Expose to internet traffic.
+  # spot_recovery: none
 
 # workdir: ~/swarms-cloud/servers/cogvlm
 
@@ -115,4 +111,4 @@ setup: |
   docker build -t ttv .
 
 run: |
-  docker run ttv
+  docker run --gpus all ttv
