@@ -3,12 +3,11 @@ import os
 
 import torch
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from sse_starlette.sse import EventSourceResponse
 
-from swarms_cloud.auth_with_swarms_cloud import authenticate_user
 from swarms_cloud.schema.cog_vlm_schemas import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -18,9 +17,8 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     ModelList,
     UsageInfo,
 )
-from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
-from swarms_cloud.auth_with_swarms_cloud import fetch_api_key_info
-from swarms_cloud.log_api_request_to_supabase import log_to_supabase, ModelAPILogEntry
+
+# from exa.structs.parallelize_models_gpus import prepare_model_for_ddp_inference
 
 # Load environment variables from .env file
 load_dotenv()
@@ -32,7 +30,12 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 QUANT_ENABLED = os.environ.get("QUANT_ENABLED", True)
 
 # Create a FastAPI app
-app = FastAPI(debug=True)
+app = FastAPI(
+    title="Swarms Cloud API",
+    description="A simple API server for Swarms Cloud",
+    debug=True,
+    version="1.0",
+)
 
 
 # Load the middleware to handle CORS
@@ -59,15 +62,14 @@ async def list_models():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(
-    request: ChatCompletionRequest, token: str = Depends(authenticate_user)
+    request: ChatCompletionRequest,  # token: str = Depends(authenticate_user)
 ):
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             raise HTTPException(status_code=400, detail="Invalid request")
 
-        print(f"Request: {request}")
-
-        gen_params = dict(
+        # print(f"Request: {request}")
+        dict(
             messages=request.messages,
             temperature=request.temperature,
             top_p=request.top_p,
@@ -77,11 +79,13 @@ async def create_chat_completion(
         )
 
         if request.stream:
-            generate = predict(request.model, gen_params)
+            # generate = predict(request.model, gen_params)
+            generate = None
             return EventSourceResponse(generate, media_type="text/event-stream")
 
         # Generate response
-        response = generate_cogvlm(model, tokenizer, gen_params)
+        # response = generate_cogvlm(model, tokenizer, gen_params)
+        response = None
 
         usage = UsageInfo()
 
@@ -91,33 +95,33 @@ async def create_chat_completion(
             content=response["text"],
         )
 
-        # # Log the entry to supabase
-        entry = ModelAPILogEntry(
-            user_id=fetch_api_key_info(token),
-            model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
-            input_tokens=count_tokens(request.messages, tokenizer, request.model),
-            output_tokens=count_tokens(response["text"], tokenizer, request.model),
-            all_cost=calculate_pricing(
-                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-            ),
-            input_cost=calculate_pricing(
-                texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
-            ),
-            output_cost=calculate_pricing(
-                texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
-            )
-            * 5,
-            messages=request.messages,
-            # temperature=request.temperature,
-            top_p=request.top_p,
-            # echo=request.echo,
-            stream=request.stream,
-            repetition_penalty=request.repetition_penalty,
-            max_tokens=request.max_tokens,
-        )
+        # # # Log the entry to supabase
+        # entry = ModelAPILogEntry(
+        #     user_id=fetch_api_key_info(token),
+        #     model_id="41a2869c-5f8d-403f-83bb-1f06c56bad47",
+        #     input_tokens=count_tokens(request.messages, tokenizer, request.model),
+        #     output_tokens=count_tokens(response["text"], tokenizer, request.model),
+        #     all_cost=calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     input_cost=calculate_pricing(
+        #         texts=[message.content], tokenizer=tokenizer, rate_per_million=15.0
+        #     ),
+        #     output_cost=calculate_pricing(
+        #         texts=response["text"], tokenizer=tokenizer, rate_per_million=15.0
+        #     )
+        #     * 5,
+        #     messages=request.messages,
+        #     # temperature=request.temperature,
+        #     top_p=request.top_p,
+        #     # echo=request.echo,
+        #     stream=request.stream,
+        #     repetition_penalty=request.repetition_penalty,
+        #     max_tokens=request.max_tokens,
+        # )
 
-        # Log the entry to supabase
-        log_to_supabase(entry=entry)
+        # # Log the entry to supabase
+        # log_to_supabase(entry=entry)
 
         # ChatCompletionResponseChoice
         logger.debug(f"==== message ====\n{message}")
@@ -148,9 +152,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=int(os.environ.get("MODEL_API_PORT", 8000)),
-        # workers=5,
+        port=int(os.environ.get("SWARM_AGENT_API_PORT", 8000)),
         log_level="info",
         use_colors=True,
-        # reload=True,
     )
