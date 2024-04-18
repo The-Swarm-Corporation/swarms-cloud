@@ -128,10 +128,10 @@ workdir: .
 setup: |
   git clone https://github.com/kyegomez/swarms-cloud && \
   cd swarms-cloud/servers/cogvlm && \
-  docker build -t cogvlm .
+  docker build .
 run: |
-  until [ -d "swarms-cloud/servers/cogvlm" ]; do sleep 1; done; \
-  docker run -p 8000:8000 cogvlm:latest
+  docker run --gpus all cogvlm_api:latest
+
 # service.yaml
 service:
   # An actual request for readiness probe.
