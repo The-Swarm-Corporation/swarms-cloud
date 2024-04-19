@@ -126,7 +126,7 @@ resources:
 workdir: .
 
 setup: |
-  git clone https://github.com/ZackBradshaw/swarms-cloud/tree/kye-main && \
+  git clone https://github.com/ZackBradshaw/swarms-cloud/tree/main && \
   cd swarms-cloud/servers/cogvlm && \
   docker build -t cogvlm_api:latest .
 run: |
