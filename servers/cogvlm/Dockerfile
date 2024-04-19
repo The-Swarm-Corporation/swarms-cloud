@@ -1,5 +1,6 @@
 # Use the NVIDIA CUDA base image
 FROM nvidia/cuda:12.1.1-devel-ubuntu22.04 as builder
+# FROM nvcr.io/nvidia/pytorch:23.10-py3
 
 # Set environment variables
 ENV ARTIFACTS_PATH=/app/artifacts
