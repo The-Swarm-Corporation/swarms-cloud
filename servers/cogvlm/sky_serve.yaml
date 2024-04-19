@@ -130,10 +130,8 @@ setup: |
   cd swarms-cloud/servers/cogvlm && \
   docker build -t cogvlm_api:latest .
 run: |
-  docker run cogvlm_api:latest --gpus all --rm -p 8000:8000
-
-  docker run --rm --runtime=nvidia \
-    -e NVIDIA_VISIBLE_DEVICES=all nvidia/cuda nvidia-smi
+  docker run cogvlm_api:latest --gpus all  --rm --runtime=nvidia \
+    -e NVIDIA_VISIBLE_DEVICES=all nvidia/cuda nvidia-smi -p 8000:8000
 # service.yaml
 service:
   # An actual request for readiness probe.
