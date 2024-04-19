@@ -82,7 +82,7 @@ envs:
 
 # Fields below describe each replica.
 resources:
-  cloud: azure
+  cloud: aws
   accelerators: {
   #  K80:1,
   #  K80:8,
@@ -155,8 +155,8 @@ service:
       max_tokens: 1
   readiness_probe: /health
   replica_policy:
-    min_replicas: 0
-    max_replicas: 2
+    min_replicas: 1
+    max_replicas: 30
     target_qps_per_replica: 2.5
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200

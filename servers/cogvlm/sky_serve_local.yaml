@@ -1,0 +1,48 @@
+
+# Header for cluster specific data.
+cluster:
+  # List of IPS/hostnames in the cluster. The first element is the head node.
+  ips: [199.204.135.66]
+  name: my-local-cluster
+
+# How the system admin authenticates into the local cluster.
+auth:
+  ssh_user: ubuntu
+  ssh_private_key: ~/.ssh/ubuntu.pem
+
+setup: |
+  git clone https://github.com/ZackBradshaw/swarms-cloud && \
+  cd swarms-cloud/servers/cogvlm && \
+  sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+  sudo gpg --no-default-keyring --keyring /usr/share/keyrings/cuda-archive-keyring.gpg --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC && \
+  echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list && \
+  curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-runtime-archive-keyring.gpg && \
+  distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && \
+  # echo "deb [signed-by=/usr/share/keyrings/nvidia-container-runtime-archive-keyring.gpg] https://nvidia.github.io/nvidia-container-runtime/$distribution/ /" | sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list && \
+  sudo apt-get update && \
+  sudo apt-get install -y nvidia-container-runtime && \
+  sudo systemctl restart docker && \
+  sudo docker build -t cogvlm_api:latest .
+
+
+run: |
+  sudo docker run --gpus all --rm -e NVIDIA_VISIBLE_DEVICES=all -p 8000:8000 cogvlm_api:latest
+
+# service.yaml
+service:
+  # An actual request for readiness probe.
+  readiness_probe:
+    path: /v1/chat/completions
+    post_data:
+      model: $MODEL_NAME
+      messages:
+        - role: user
+          content: Hello! What is your name?
+      max_tokens: 1
+  readiness_probe: /health
+  replica_policy:
+    min_replicas: 1
+    max_replicas: 30
+    target_qps_per_replica: 2.5
+    upscale_delay_seconds: 300
+    downscale_delay_seconds: 1200
