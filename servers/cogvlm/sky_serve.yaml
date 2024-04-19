@@ -82,6 +82,7 @@ envs:
 
 # Fields below describe each replica.
 resources:
+  cloud: azure
   accelerators: {
   #  K80:1,
   #  K80:8,
