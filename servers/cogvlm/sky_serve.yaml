@@ -126,11 +126,11 @@ resources:
 workdir: .
 
 setup: |
-  git clone https://github.com/kyegomez/swarms-cloud && \
+  git clone https://github.com/ZackBradshaw/swarms-cloud/tree/kye-main && \
   cd swarms-cloud/servers/cogvlm && \
-  docker build .
+  docker build -t cogvlm_api:latest .
 run: |
-  docker run --gpus all cogvlm_api:latest
+  docker run cogvlm_api:latest --gpus all --rm -p 8000:8000
 
 # service.yaml
 service:
