@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     python3.10 python3.10-dev python3.10-distutils python3-pip python3.10-venv openmpi-bin libopenmpi-dev \
-    && python3.10 -m pip install --no-cache-dir --upgrade pip setuptools wheel \
-
+    && python3.10 -m pip install --no-cache-dir --upgrade pip setuptools wheel 
+    
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
