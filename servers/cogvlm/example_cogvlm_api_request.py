@@ -31,7 +31,7 @@ request_data = {
 }
 
 # Specify the URL of your FastAPI application
-url = "54.88.140.186:8000"
+url = "40.87.83.103:30001"
 
 # Send the request
 response = requests.post(url, json=request_data)
