@@ -1,5 +1,5 @@
 envs:
-  MODEL_NAME: mistralai/Mixtral-8x7B-Instruct-v0.1
+  MODEL_NAME: meta-llama/Meta-Llama-3-8B
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
@@ -17,7 +17,7 @@ service:
   readiness_probe: /health
   readiness_probe: /v1/models
   replica_policy:
-    min_replicas: 2
+    min_replicas: 1
     max_replicas: 10
     target_qps_per_replica: 2.5
     upscale_delay_seconds: 300
@@ -101,7 +101,7 @@ service:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  accelerators: {T4:1, L4:4, A10g:8, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
   # cpus: 32+
   # memory: 512+
   # use_spot: True
@@ -112,7 +112,13 @@ resources:
 # workdir: ~/swarms-cloud/servers/cogvlm
 
 setup: |
-  docker build -t ttv .
+  docker pull vllm/vllm-openai:latest
 
 run: |
-  docker run ttv
+  docker run --runtime nvidia --gpus all \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=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" \
+    -p 8000:8000 \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model $MODEL_NAME
