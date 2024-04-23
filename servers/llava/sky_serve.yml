@@ -1,13 +1,12 @@
 ###### Llava served with vllm openai enpoint ######## 
 envs:
   MODEL_NAME: cjpais/llava-v1.6-34B-gguf/llava-v1.6-34b.Q4_K_M.gguf
-  MODEL_NAME: 
-
+  # MODEL_NAME: llava-hf/llava-v1.6-mistral-7b-hf
   HF_HUB_ENABLE_HF_TRANSFER: True
-# Fields below describe each replica.
 
 resources:
-  accelerators: {L4:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
+  # accelerators: {L4, A100, A100, A100-80GB, T4, M60,} ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -32,6 +31,7 @@ run: |
       --host 0.0.0.0 --port 8080 \
       --max-model-len 32768
 
+# Fields below describe each replica.
 # service.yaml
 service:
   # An actual request for readiness probe.

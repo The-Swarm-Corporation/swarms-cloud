@@ -7,8 +7,9 @@ envs:
 # Fields below describe each replica.
 
 resources:
-  accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
-  # accelerators: {L4, A100, A100, A100-80GB, T4, M60,} ## Small models
+  resources:
+  # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
+  accelerators: [L4, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -54,9 +55,7 @@ docker run --runtime nvidia --gpus all \
   # --prompt-template llama3_chat \
   # --image $IMAGE_PATH
 
-# service.yaml
 service:
-  # An actual request for readiness probe.
   readiness_probe:
     path: /v1/chat/completions
     post_data:
@@ -67,10 +66,10 @@ service:
       max_tokens: 1
   readiness_probe: /health
   readiness_probe: /v1/models
- azure replica_policy:
-    min_replicas: 1
-    max_replicas: 10
-    target_qps_per_replica: 2.5
-    upscale_delay_seconds: 300
-    downscale_delay_seconds: 1200
+replica_policy:
+  min_replicas: 1
+  max_replicas: 10
+  target_qps_per_replica: 2.5
+  upscale_delay_seconds: 300
+  downscale_delay_seconds: 1200
     
