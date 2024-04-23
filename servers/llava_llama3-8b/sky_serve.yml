@@ -1,6 +1,7 @@
 ###### Llava served with vllm openai enpoint ######## 
 envs:
   MODEL_NAME: xtuner/llava-llama-3-8b-v1_1 
+  HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN}
   IMAGE_PATH: .
 
   HF_HUB_ENABLE_HF_TRANSFER: True
