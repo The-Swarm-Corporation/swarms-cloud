@@ -2,13 +2,13 @@
 envs:
   MODEL_NAME: xtuner/llava-llama-3-8b-v1_1 
   HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN}
-  IMAGE_PATH: .
-
+  IMAGE_PATH: ${IMAGE_PATH}
   HF_HUB_ENABLE_HF_TRANSFER: True
 # Fields below describe each replica.
 
 resources:
-  accelerators: {L4:1, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
+  # accelerators: {L4, A100, A100, A100-80GB, T4, M60,} ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -27,8 +27,16 @@ docker pull openmmlab/lmdeploy:latest
 # pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
 
 # pip install lmdeploy[serve]
+
 run: |
+
+#### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
+
 # lmdeploy serve gradio {$MODEL_NAME}
+
+# Serve using CLI
+# pip install lmdeploy
+# lmdeploy serve api_server internlm/internlm2-chat-7b --server-port 23333
 
 # Serve With Docker 
 docker run --runtime nvidia --gpus all \
@@ -45,12 +53,6 @@ docker run --runtime nvidia --gpus all \
   # --llava xtuner/llava-llama-3-8b-v1_1 \
   # --prompt-template llama3_chat \
   # --image $IMAGE_PATH
-
-#### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
-
-# Serve using CLI
-# pip install lmdeploy
-# lmdeploy serve api_server internlm/internlm2-chat-7b --server-port 23333
 
 # service.yaml
 service:
