@@ -10,8 +10,7 @@ services:
     image: /apacai/cogvlm
     # env_file:
     #   - .env # Specify your environment file here
-      - "8000:8000"
-    ports:
+    # ports:- "8000:8000"
     volumes:
       - .:/swarms-cloud
     entrypoint: "/swarms-cloud/scripts/entrypoint.sh"
