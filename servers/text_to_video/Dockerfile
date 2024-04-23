@@ -32,7 +32,7 @@ RUN python3 -m pip install -r requirements.txt
 RUN echo "Python dependencies installed"
 
 # Adjust the working directory to where your application's code will reside
-WORKDIR /swarms-cloud
+# WORKDIR /swarms-cloud
 
 # Copy the application's entire directory structure into the container
 COPY . .

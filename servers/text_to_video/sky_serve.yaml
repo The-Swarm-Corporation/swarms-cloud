@@ -1,5 +1,4 @@
 envs:
-  MODEL_NAME: mistralai/Mixtral-8x7B-Instruct-v0.1
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
@@ -9,13 +8,9 @@ service:
   readiness_probe:
     path: /v1/chat/completions
     post_data:
-      model: $MODEL_NAME
-      messages:
-        - role: user
-          content: Hello! What is your name?
+      task: "Create a woman studying with hijab"
       max_tokens: 1
   readiness_probe: /health
-  readiness_probe: /v1/models
   replica_policy:
     min_replicas: 2
     max_replicas: 10
@@ -23,80 +18,6 @@ service:
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200
 
-# # # Advanced Kubernetes configurations (optional).
-# kubernetes:
-#   # The networking mode for accessing SSH jump pod (optional).
-#   #
-#   # This must be either: 'nodeport' or 'portforward'. If not specified,
-#   # defaults to 'portforward'.
-
-#   #
-#   # nodeport: Exposes the jump pod SSH service on a static port number on each
-#   # Node, allowing external access to using <NodeIP>:<NodePort>. Using this
-#   # mode requires opening multiple ports on nodes in the Kubernetes cluster.
-#   #
-#   # portforward: Uses `kubectl port-forward` to create a tunnel and directly
-#   # access the jump pod SSH service in the Kubernetes cluster. Does not
-#   # require opening ports the cluster nodes and is more secure. 'portforward'
-#   # is used as default if 'networking' is not specified.
-#   networking: portforward
-
-#   # The mode to use for opening ports on Kubernetes
-#   #
-#   # This must be either: 'ingress' or 'loadbalancer'. If not specified,
-#   # defaults to 'loadbalancer'.
-#   #
-#   # loadbalancer: Creates services of type `LoadBalancer` to expose ports.
-#   # See https://skypilot.readthedocs.io/en/latest/reference/kubernetes/kubernetes-setup.html#loadbalancer-service.
-#   # This mode is supported out of the box on most cloud managed Kubernetes
-#   # environments (e.g., GKE, EKS).
-#   #
-#   # ingress: Creates an ingress and a ClusterIP service for each port opened.
-#   # Requires an Nginx ingress controller to be configured on the Kubernetes cluster.
-#   # Refer to https://skypilot.readthedocs.io/en/latest/reference/kubernetes/kubernetes-setup.html#nginx-ingress
-#   # for details on deploying the NGINX ingress controller.
-#   ports: loadbalancer
-
-#   # Attach custom metadata to Kubernetes objects created by SkyPilot
-#   #
-#   # Uses the same schema as Kubernetes metadata object: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta
-#   #
-#   # Since metadata is applied to all all objects created by SkyPilot,
-#   # specifying 'name' and 'namespace' fields here is not allowed.
-#   # custom_metadata:
-#   #   labels:
-#   #     mylabel: myvalue
-#   #   annotations:
-#   #     myannotation: myvalue
-
-#   # Additional fields to override the pod fields used by SkyPilot (optional)
-#   #
-#   # Any key:value pairs added here would get added to the pod spec used to
-#   # create SkyPilot pods. The schema follows the same schema for a Pod object
-#   # in the Kubernetes API:
-#   # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#pod-v1-core
-#   #
-#   # # Some example use cases are shown below. All fields are optional.
-#   # pod_config:
-#   #   spec:
-#   #     runtimeClassName: nvidia    # Custom runtimeClassName for GPU pods.
-#   #     containers:
-#   #       - env:                # Custom environment variables for the pod, e.g., for proxy
-#   #         - name: HTTP_PROXY
-#   #           value: http://proxy-host:3128
-#   #         volumeMounts:       # Custom volume mounts for the pod
-#   #           - mountPath: /foo
-#   #             name: swarms
-#   #             readOnly: true
-#   #     volumes:
-#   #       - name: swarms
-#   #         hostPath:
-#   #           path: /tmp
-#   #           type: Directory
-#   #       - name: swarms          # Use this to modify the /dev/shm volume mounted by SkyPilot
-#   #         emptyDir:
-#   #           medium: Memory
-#   #           sizeLimit: 3Gi    # Set a size limit for the /dev/shm volume
 
 
 # Fields below describe each replica.
@@ -108,6 +29,7 @@ resources:
   # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
   # disk_tier: best
   ports: 8000  # Expose to internet traffic.
+  # spot_recovery: none
 
 # workdir: ~/swarms-cloud/servers/cogvlm
 
@@ -115,4 +37,4 @@ setup: |
   docker build -t ttv .
 
 run: |
-  docker run ttv
+  docker run --gpus all ttv

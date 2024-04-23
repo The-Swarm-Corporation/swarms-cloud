@@ -82,49 +82,12 @@ envs:
 
 # Fields below describe each replica.
 resources:
-  # cloud: aws
-  accelerators: {
-   A10:1,
-  #  A10:2,
-  #  P100:1,
-  #  P100:2,
-  #  P100:4,
-  #  K80:1,
-  #  K80:8,
-  #  K80:16,
-   L4:1,
-  #  L4:4,
-  #  L4:8,
-  #  A10G:1,
-  #  A10G:4,
-  #  A10G:8,
-  #  A100:4,
-  #  A100:8,
-  #  A100-80GB:2,
-  #  A100-80GB:4,
-  #  A100-80GB:8,
-  #  H100:8,
-  #  M60:1,
-  #  M60:4,
-  #  T4:1,
-  #  T4:4,
-  #  T4:8,
-  #  V100:1,
-  #  V100:4,
-  #  V100:8,
-  #  V100-32GB:8,
-  #  Gaudi HL-205:8,
-  #  Radeon Pro V520:1,
-   T4g:1,
-  #  T4g:2
-  }
-
+  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2}
   # cpus: 32+
-  # memory: 128+
+  # memory: 512+
   # use_spot: True
   # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
   # disk_tier: best
-  # region: us-east-2 
   ports: 8000  # Expose to internet traffic.
   # spot_recovery: none
 
@@ -135,7 +98,6 @@ setup: |
   # sudo apt-get install -y nvidia-container-runtime && \
   # sudo systemctl restart docker && \
   sudo docker build -t cogvlm_api:latest .
-
  
 run: |
   docker run --gpus all --rm -e NVIDIA_VISIBLE_DEVICES=all -p 8000:8000 cogvlm_api:latest
