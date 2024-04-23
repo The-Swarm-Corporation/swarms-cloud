@@ -19,7 +19,15 @@ setup: |
 docker pull openmmlab/lmdeploy:latest
 
 # pip install 'git+https://github.com/InternLM/xtuner.git#egg=xtuner[deepspeed]'
+
+#  Enable if using cuda 11.0 or later #
+# export LMDEPLOY_VERSION=0.3.0
+# export PYTHON_VERSION=38
+# pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
+
+# pip install lmdeploy[serve]
 run: |
+# lmdeploy serve gradio {$MODEL_NAME}
 
 # Serve With Docker 
 docker run --runtime nvidia --gpus all \
@@ -28,7 +36,7 @@ docker run --runtime nvidia --gpus all \
     -p 23333:23333 \
     --ipc=host \
     openmmlab/lmdeploy:latest \
-    lmdeploy serve api_server internlm/internlm2-chat-7b
+    lmdeploy serve api_server $MODEL_NAME
 
 #Deploy with xtuner chat only no api 
 # xtuner chat xtuner/llava-llama-3-8b-v1_1 \
@@ -38,11 +46,6 @@ docker run --runtime nvidia --gpus all \
   # --image $IMAGE_PATH
 
 #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
-
-#  Enable if using cuda 11.0 or later #
-# export LMDEPLOY_VERSION=0.3.0
-# export PYTHON_VERSION=38
-# pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
 
 # Serve using CLI
 # pip install lmdeploy
