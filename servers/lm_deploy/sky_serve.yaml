@@ -1,8 +1,8 @@
 ### Deploy With LM_Deploy ######## 
 envs:
 
-  # MODEL_NAME: meta-llama/Meta-Llama-2-70B-Instruct 
-  MODEL_NAME: meta-llama/Meta-Llama-2-8B-Instruct 
+  # MODEL_NAME: meta-llama/Meta-Llama-3-70B-Instruct 
+  MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct 
   MODEL_ARCH: llama
 
   # MODEL_NAME: xtuner/llava-llama-3-8b-v1_1
@@ -11,13 +11,13 @@ envs:
   # MODEL_NAME: internlm/internlm-xcomposer2-4khd-7b
   # MODEL_ARCH: internlm
 
-  HUGGING_FACE_HUB_TOKEN: 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
+  # HUGGING_FACE_HUB_TOKEN: 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
   # IMAGE_PATH: ${IMAGE_PATH}
   
 
 resources:
   # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
-  accelerators: [L4:2, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -34,7 +34,7 @@ service:
         - role: user
           content: Hello! What is your name?
       max_tokens: 1
-  # readiness_probe: /v1/models
+  readiness_probe: /v1/models
   replica_policy:
     min_replicas: 1
     max_replicas: 10
@@ -62,12 +62,12 @@ run: | #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/ge
   # lmdeploy serve gradio {$MODEL_NAME}
 
   # Serve using CLI
-  # lmdeploy serve api_server $MODEL_NAME --model-name $MODEL_ARCH --server-port 8080
-  
+  # lmdeploy serve api_server internlm/internlm2-chat-7b --server-port 23333
+
   # Serve With Docker
-  docker run --runtime nvidia --gpus all \
+  docker run -d --runtime nvidia --gpus all \
       -v ~/.cache/huggingface:/root/.cache/huggingface \
-      --env "HUGGING_FACE_HUB_TOKEN=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"\
+      --env "HUGGING_FACE_HUB_TOKEN=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"\
       -p 8080:8080 \
       --ipc=host \
       openmmlab/lmdeploy:latest \
