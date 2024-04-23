@@ -64,6 +64,10 @@ def main(args):
     else:
         run_llava_image_features()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> faad463 (feat: add llava)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Demo on Llava")
     parser.add_argument("--type",
