@@ -1,14 +1,16 @@
 from openai import OpenAI
 
 openai_api_key = "EMPTY"
-openai_api_base = "http://localhost:8000/v1"
+openai_api_base = "https://34.201.45.48:30001/v1"
+# model = "davinci"
+model = "xtuner/llava-llama-3-8b-v1_1"
 client = OpenAI(
     api_key=openai_api_key,
     base_url=openai_api_base,
 )
 # Note that this model expects the image to come before the main text
 chat_response = client.chat.completions.create(
-    model="llava-hf/llava-1.5-7b-hf",
+    model=model,
     messages=[{
         "role": "user",
         "content": [
