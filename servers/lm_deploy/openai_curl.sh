@@ -9,10 +9,10 @@ fi
 MODEL=$MODEL
 
 # First run curl on v1/models to get available models
-curl http://$OPENAI_API_BASE:8080/v1/models
+curl http://34.201.45.48:30002:8080/v1/models
 
 # Run curl on v1/chat/completions with the specified model
-curl http://$OPENAI_API_BASE:8080/v1/chat/completions \
+curl http://34.201.45.48:30002/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "'$MODEL'",

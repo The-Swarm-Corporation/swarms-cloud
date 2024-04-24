@@ -22,7 +22,7 @@ service:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8}
+  accelerators: {L4, A10g, A10, L40, A40, A100, A100-80GB} # We can use cheaper accelerators for 8B model.
   # cpus: 32+
   # memory: 512+
   # use_spot: True
@@ -31,10 +31,12 @@ resources:
   ports: 8000  # Expose to internet traffic.
   # spot_recovery: none
 
-# workdir: ~/swarms-cloud/servers/cogvlm
 
 setup: |
-  docker build -t ttv .
+  git clone https://github.com/kyegomez/swarms-cloud.git && \
+  cd swarms-cloud/servers/text_to_video && \
+  python3 -m pip install -r requirements.txt
+
 
 run: |
-  docker run --gpus all ttv
+  python3 text_to_video.py

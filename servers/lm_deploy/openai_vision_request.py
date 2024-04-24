@@ -13,17 +13,19 @@ client = OpenAI(
 # Note that this model expects the image to come before the main text
 chat_response = client.chat.completions.create(
     model=model,
-    messages=[{
-        "role": "user",
-        "content": [
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                    },
                 },
-            },
-            {"type": "text", "text": "What's in this image?"},
-        ],
-    }],
+                {"type": "text", "text": "What's in this image?"},
+            ],
+        }
+    ],
 )
 print("Chat response:", chat_response)

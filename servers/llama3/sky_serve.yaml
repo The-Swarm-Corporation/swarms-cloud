@@ -1,5 +1,5 @@
-#  Serving Meta Llama-3 on your own infra.
-
+# Serving Meta Llama-3 on your own infra.
+#
 # Usage:
 #
 #  HF_TOKEN=xxx sky launch llama3.yaml -c llama3 --env HF_TOKEN
@@ -10,7 +10,6 @@
 #  
 #   # We need to manually specify the stop_token_ids to make sure the model finish
 #   # on <|eot_id|>.
-
 #   curl http://$ENDPOINT/v1/chat/completions \
 #     -H "Content-Type: application/json" \
 #     -d '{
@@ -56,10 +55,12 @@
 #       ]
 #     }'
 
+
 envs:
   # MODEL_NAME: meta-llama/Meta-Llama-3-70B-Instruct
   MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct
   HF_TOKEN: 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  # Change to your own huggingface token, or use --env to pass.
+  HF_HUB_ENABLE_HF_TRANSFER: True
 
 service:
   replicas: 2
@@ -95,6 +96,7 @@ setup: |
   # Install Gradio for web UI.
   pip install gradio openai
   pip install flash-attn==2.5.7
+  pip install hf_transfer
 
 run: |
   # Serve VLM

@@ -1,13 +1,22 @@
+import os
+
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv()
 openai_api_key = "EMPTY"
-openai_api_base = "http://localhost:8000/v1"
+
+openai_api_base = os.getenv("OPENAI_API_BASE", "http://34.201.45.48:30002/v1")
+model = os.getenv("MODEL", "llava")
+
 client = OpenAI(
-    api_key=openai_api_key,
+    api_key="sk-23232323",
     base_url=openai_api_base,
+    timeout=500
 )
 # Note that this model expects the image to come before the main text
 chat_response = client.chat.completions.create(
-    model="llava-hf/llava-1.5-7b-hf",
+    model=model,
     messages=[{
         "role": "user",
         "content": [

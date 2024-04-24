@@ -2,8 +2,7 @@ import logging
 
 import stripe
 from pydantic import BaseModel
-
-stripe.api_key = "your_stripe_api_key"
+import os
 
 
 class StripeInterface(BaseModel):
@@ -13,6 +12,8 @@ class StripeInterface(BaseModel):
 
 
 def bill_customer(customer_id: str, amount: float, description: str):
+    stripe.api_key = os.getenv("STRIPE_API_KEY")
+
     try:
         stripe.Charge.create(
             customer=customer_id,

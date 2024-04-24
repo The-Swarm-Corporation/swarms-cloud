@@ -338,7 +338,6 @@ def generate_stream_cogvlm(
     query, history, image_list = process_history_and_images(messages)
     logger.debug(f"==== request ====\n{query}")
 
-
     input_by_model = model.build_conversation_input_ids(
         tokenizer, query=query, history=history, images=[image_list[-1]]
     )
