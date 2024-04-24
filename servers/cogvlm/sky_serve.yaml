@@ -3,24 +3,6 @@ envs:
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 
-# service.yaml
-service:
-  # An actual request for readiness probe.
-  readiness_probe:
-    path: /v1/chat/completions
-    post_data:
-      model: $MODEL_NAME
-      messages:
-        - role: user
-          content: Hello! What is your name?
-      max_tokens: 1
-  readiness_probe: /health
-  replica_policy:
-    min_replicas: 2
-    max_replicas: 10
-    target_qps_per_replica: 2.5
-    upscale_delay_seconds: 300
-    downscale_delay_seconds: 1200
 
 # # # Advanced Kubernetes configurations (optional).
 # kubernetes:
@@ -109,10 +91,25 @@ resources:
   ports: 8000  # Expose to internet traffic.
   # spot_recovery: none
 
-# workdir: ~/swarms-cloud/servers/cogvlm
-
 setup: |
-  docker build -t cogvlm .
-
+  git clone https://github.com/ZackBradshaw/swarms-cloud && \
+  cd swarms-cloud/servers/cogvlm && \
+  # sudo apt-get update && \
+  # sudo apt-get install -y nvidia-container-runtime && \
+  # sudo systemctl restart docker && \
+  sudo docker build -t cogvlm_api:latest .
+ 
 run: |
-  docker run --gpus all cogvlm
+  docker run --gpus all --rm -e NVIDIA_VISIBLE_DEVICES=all -p 8000:8000 cogvlm_api:latest
+
+# service.yaml
+service:
+  # An actual request for readiness probe.
+  readiness_probe:
+    path: /v1/models
+  replica_policy:
+    min_replicas: 1
+    max_replicas: 30
+    target_qps_per_replica: 2.5
+    upscale_delay_seconds: 300
+    downscale_delay_seconds: 1200
