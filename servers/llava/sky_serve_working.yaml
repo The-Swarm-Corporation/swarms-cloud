@@ -1,0 +1,93 @@
+### Deploy With LM_Deploy ######## 
+envs:
+
+  # # MODEL_NAME: meta-llama/Meta-Llama-3-70B-Instruct 
+  # MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct 
+  # MODEL_ARCH: llama
+
+  MODEL_NAME: xtuner/llava-llama-3-8b-v1_1
+  MODEL_ARCH: llava
+
+  # MODEL_NAME: internlm/internlm-xcomposer2-4khd-7b
+  # MODEL_ARCH: internlm
+
+  # HUGGING_FACE_HUB_TOKEN: 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
+  # IMAGE_PATH: ${IMAGE_PATH}
+  
+
+resources:
+  # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
+  # cpus: 32+
+  memory: 32+
+  # use_spot: True
+  # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
+  # disk_tier: best
+  ports: 8080  # Expose to internet traffic.
+
+service:
+  readiness_probe:
+    path: /v1/chat/completions
+    post_data:
+      model: $MODEL_NAME
+      messages:
+        - role: user
+          content: Hello! What is your name?
+      max_tokens: 1
+  readiness_probe: /v1/models
+  replica_policy:
+    min_replicas: 1
+    max_replicas: 10
+    target_qps_per_replica: 2.5
+    upscale_delay_seconds: 300
+    downscale_delay_seconds: 1200
+
+setup: |
+
+  docker pull openmmlab/lmdeploy:latest
+
+  # pip install lmdeploy
+
+  # pip install 'git+https://github.com/InternLM/xtuner.git#egg=xtuner[deepspeed]'
+
+  #  Enable if using cuda 11.0 or later #
+  # export LMDEPLOY_VERSION=0.3.0
+  # export PYTHON_VERSION=38
+  # pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
+
+  # pip install lmdeploy[serve]
+
+run: | #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
+
+  # lmdeploy serve gradio {$MODEL_NAME}
+
+  # Serve using CLI
+  # lmdeploy serve api_server internlm/internlm2-chat-7b --server-port 23333
+
+  # Serve With Docker
+  docker run -d --runtime nvidia --gpus all \
+      -v ~/.cache/huggingface:/root/.cache/huggingface \
+      --env "HUGGING_FACE_HUB_TOKEN=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"\
+      -p 8080:8080 \
+      --ipc=host \
+      openmmlab/lmdeploy:latest \
+    lmdeploy serve api_server $MODEL_NAME --model-name $MODEL_ARCH --server-port 8080
+
+  #Deploy with xtuner for finetuning
+  # xtuner chat $MODEL_NAME \
+    # --visual-encoder openai/clip-vit-large-patch14-336 \
+    # --llava $MODEL_NAME \
+    # --prompt-template llama3_chat \
+    # --image $IMAGE_PATH
+
+  #Quantize with AWQ
+  # export HF_MODEL=$MODEL_NAME
+  # export WORK_DIR= $MODEL_NAME
+  # lmdeploy lite auto_awq \
+  #   $HF_MODEL \
+  #   --calib-dataset 'ptb' \
+  #   --calib-samples 128 \
+  #   --calib-seqlen 2048 \
+  #   --w-bits 4 \
+  #   --w-group-size 128 \
+  #   --work-dir $WORK_DIR  
