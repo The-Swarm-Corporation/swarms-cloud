@@ -82,7 +82,7 @@ envs:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2}
+  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2, V100:1} #V100:4, V100:8, H100:1, T4:1, A10:1 }
   # cpus: 32+
   # memory: 512+
   # use_spot: True
