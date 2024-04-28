@@ -1,10 +1,13 @@
 from typing import Any, List
-
 from PIL import Image
 from transformers import AutoTokenizer, PreTrainedTokenizer
+from fastapi import FastAPI, HTTPException
+from calculate_pricing import calculate_pricing
 
+app = FastAPI()
 
-def count_tokens(texts: List[str], tokenizer: PreTrainedTokenizer, model: str) -> int:
+@app.post("/calculate_pricing")
+async def count_tokens(texts: List[str], tokenizer: PreTrainedTokenizer, model: str) -> int:
     """
     Counts the total number of tokens in a list of texts using a tokenizer.
 
@@ -27,24 +30,24 @@ def count_tokens(texts: List[str], tokenizer: PreTrainedTokenizer, model: str) -
         return e
 
 
-# Function to calculate tokens and pricing
 def calculate_pricing(
+    model_id: str,
     texts: List[str] = None,
     tokenizer: PreTrainedTokenizer = None,
     images: List[str] = None,
-    rate_per_million: float = 0.01,
-    img_model: Any = None,
-    rate_img: float = 0.003,
     return_cost: bool = True,
     return_tokens: bool = False,
 ) -> float:
-    """
-    Calculate containtaining for otal number of  texts based on the number of tokens, sentences, words, characters, and paragraphs.
+"""
+    Fetch model pricing details from the database
+    Use the `model_id` to get `per_1k_input_price` and `per_1k_output_price`
+    Calculate the cost based on the fetched pricing and the tokens
 
     Args:
         texts (list): A list of texts to calculate pricing for.
         tokenizer (PreTrainedTokenizer): A pre-trained tokenizer object used to tokenize the texts.
         rate_per_million (float, optional): The rate per million tokens used to calculate the cost. Defaults to 0.01.
+        model_id (str): The model id to use to fetch the pricing details.
 
     Returns:
         tuple: A tuple containing the total number of tokens, sentences, words, characters, paragraphs, and the calculated cost.
