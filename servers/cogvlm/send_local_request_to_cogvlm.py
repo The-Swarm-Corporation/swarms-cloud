@@ -1,6 +1,5 @@
 import asyncio
 import base64
-import os
 import time
 from io import BytesIO
 
@@ -13,9 +12,7 @@ from PIL import Image
 load_dotenv()
 
 # Swarms Cloud API key
-swarms_cloud_api_key = os.getenv("SWARMS_CLOUD_API_KEY")
-MODEL_API_PORT = os.getenv("MODEL_API_PORT")
-model_api_port = str(MODEL_API_PORT)
+swarms_cloud_api_key = ""
 
 
 # Convert image to Base64
@@ -28,8 +25,11 @@ def image_to_base64(image_path):
 
 
 # Replace 'image.jpg' with the path to your image
-base64_image = image_to_base64("test.jpg")
-text_data = {"type": "text", "text": "Describe what is in the image"}
+base64_image = image_to_base64("trump.jpeg")
+text_data = {
+    "type": "text",
+    "text": "Describe who is in the image, what is his name exactly?",
+}
 image_data = {
     "type": "image_url",
     "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
@@ -39,23 +39,25 @@ image_data = {
 request_data = {
     "model": "cogvlm-chat-17b",
     "messages": [{"role": "user", "content": [text_data, image_data]}],
-    "temperature": 0.8,
+    "temperature": 0.2,
     "top_p": 0.9,
-    "max_tokens": 1024,
+    "max_tokens": 8000,
 }
 
 headers = {
     "Authorization": f"Bearer {str(swarms_cloud_api_key)}",
+    "Content-Type": "application/json",
 }
 
 # Specify the URL of your FastAPI application
-url = "http://199.204.135.66:8000/v1/chat/completions"
+# url = "http://34.227.161.100:30001/v1/chat/completions"
+url = "https://api.swarms.world/v1/chat/completions"
 
 # Start the timer
 start_time = time.time()
 
 # Send the request
-response = requests.post(url, json=request_data)  # headers=headers)
+response = requests.post(url, json=request_data, headers=headers)  # headers=headers)
 
 # Stop the timer
 end_time = time.time()

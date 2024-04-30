@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 swarms = "*"
 fastapi = "0.110.0"
 skypilot = "*"

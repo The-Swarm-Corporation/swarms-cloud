@@ -82,7 +82,7 @@ envs:
 
 # Fields below describe each replica.
 resources:
-  accelerators: {L4:8, A10g:8, A100:4, A100:8, A100-80GB:2, V100:1} #V100:4, V100:8, H100:1, T4:1, A10:1 }
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   # memory: 512+
   # use_spot: True
@@ -92,7 +92,7 @@ resources:
   # spot_recovery: none
 
 setup: |
-  git clone https://github.com/ZackBradshaw/swarms-cloud && \
+  git clone https://github.com/kyegomez/swarms-cloud && \
   cd swarms-cloud/servers/cogvlm && \
   # sudo apt-get update && \
   # sudo apt-get install -y nvidia-container-runtime && \
@@ -110,6 +110,6 @@ service:
   replica_policy:
     min_replicas: 1
     max_replicas: 30
-    target_qps_per_replica: 2.5
+    target_qps_per_replica: 1.5
     upscale_delay_seconds: 300
     downscale_delay_seconds: 1200
