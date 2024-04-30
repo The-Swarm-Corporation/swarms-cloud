@@ -6,10 +6,10 @@ from openai import OpenAI
 load_dotenv()
 openai_api_key = "EMPTY"
 
-openai_api_base = os.getenv("OPENAI_API_BASE", "http://52.202.36.64:30001/v1")
+openai_api_base = os.getenv("OPENAI_API_BASE", "http://34.227.161.100:30001/v1")
 model = os.getenv("MODEL", "internlm")
 
-client = OpenAI(api_key="sk-23232323", base_url=openai_api_base, timeout=500)
+client = OpenAI(api_key="sk-23232323", base_url=openai_api_base, timeout=1000)
 # Note that this model expects the image to come before the main text
 chat_response = client.chat.completions.create(
     model=model,

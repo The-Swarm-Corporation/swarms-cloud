@@ -31,7 +31,7 @@ request_data = {
 }
 
 # Specify the URL of your FastAPI application
-url = "40.87.83.103:30001"
+url = "http://34.227.161.100:30001/v1/chat/completions"
 
 # Send the request
 response = requests.post(url, json=request_data)
