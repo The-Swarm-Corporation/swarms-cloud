@@ -1,12 +1,20 @@
 ### Deploy With LM_Deploy ######## 
 envs:
+
+  # # MODEL_NAME: meta-llama/Meta-Llama-3-70B-Instruct 
+  # MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct 
+  # MODEL_ARCH: llama
+
   # MODEL_NAME: xtuner/llava-llama-3-8b-v1_1
   # MODEL_ARCH: llava
 
   MODEL_NAME: internlm/internlm-xcomposer2-4khd-7b
   MODEL_ARCH: internlm
 
-  # HUGGING_FACE_HUB_TOKEN: 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
+  # MODEL_NAME: internlm/internlm2-chat-7b
+  # MODEL_ARCH: internlm
+
+  HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN}
   # IMAGE_PATH: ${IMAGE_PATH}
   
 
@@ -39,7 +47,7 @@ service:
 
 setup: |
 
-  # docker pull openmmlab/lmdeploy:latest
+  # docker pull openmmlab/lmdeploy:v0.4.0
 
   # pip install lmdeploy
 
@@ -62,10 +70,11 @@ run: |
   # lmdeploy serve api_server internlm/internlm2-chat-7b --server-port 23333
 
   # Serve With Docker
-  docker run -d --runtime nvidia --gpus all \
+  docker run --runtime nvidia --gpus all \
       -v ~/.cache/huggingface:/root/.cache/huggingface \
-      --env "HUGGING_FACE_HUB_TOKEN=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"\
+      --env "HUGGING_FACE_HUB_TOKEN={$HUGGING_FACE_HUB_TOKEN}"\
       -p 8080:8080 \
       --ipc=host \
-      openmmlab/lmdeploy:latest \
+      openmmlab/lmdeploy:v0.4.0 \
+    pip install lmdeploy[vision] \
     lmdeploy serve api_server $MODEL_NAME --model-name $MODEL_ARCH --server-port 8080
