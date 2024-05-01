@@ -33,14 +33,15 @@ service:
 
 setup: |
 
-  pip install hf_gg
-  # Install prometheus_client for metrics export
+  pip install hf_transfer && \
   pip install prometheus_client && \
+  pip install lmdeploy && \
 
   # Setup Profiling
-  pip install lmdeploy
   git clone --depth=1 https://github.com/ZackBradshaw/lmdeploy && \
-  cd lmdeploy/benchmark && \
+  cd lmdeploy && \
+  pip install -r requirements.txt && \
+  cd benchmark
   python3 profile_generation.py $MODEL_NAME && \
   wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json && \
   python3 profile_restful_api.py http://0.0.0.0:8000 internlm/internlm-7b ./ShareGPT_V3_unfiltered_cleaned_split.json 
