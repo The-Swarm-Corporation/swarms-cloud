@@ -41,10 +41,10 @@ setup: |
   git clone --depth=1 https://github.com/ZackBradshaw/lmdeploy && \
   cd lmdeploy && \
   pip install -r requirements.txt && \
-  cd benchmark
-  python3 profile_generation.py $MODEL_NAME && \
+  cd benchmark && \
+  nohup python3 profile_generation.py $MODEL_NAME > profiling.log 2>&1 & \
   wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json && \
-  python3 profile_restful_api.py http://0.0.0.0:8000 internlm/internlm-7b ./ShareGPT_V3_unfiltered_cleaned_split.json 
+  nohup python3 profile_restful_api.py http://0.0.0.0:8000 internlm/internlm-7b ./ShareGPT_V3_unfiltered_cleaned_split.json > restful_api.log 2>&1 &
 
 run: | #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
 
@@ -52,9 +52,9 @@ run: | #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/ge
   docker run --runtime nvidia --gpus all \
       -v ~/.cache/huggingface:/root/.cache/huggingface \
       --env "HUGGING_FACE_HUB_TOKEN={$HUGGING_FACE_HUB_TOKEN}"\
-      -p 8080:8080 \
+      -p 8080:8080 -p 8000:8000 \
       --ipc=host \
       openmmlab/lmdeploy:latest \
-    pip install lmdeploy[vision] \
+    pip install lmdeploy[vision] && \
     lmdeploy serve api_server $MODEL_NAME --server-port 8080
 
