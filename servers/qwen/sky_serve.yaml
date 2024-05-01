@@ -1,10 +1,7 @@
 ### Deploy With LM_Deploy ######## 
 envs:
-
   MODEL_NAME: Qwen/Qwen-VL
-  MODEL_ARCH: qwen
-
-  HUGGING_FACE_HUB_TOKEN: {$HUGGING_FACE_HUB_TOKEN}
+  HF_HUB_ENABLE_HF_TRANSFER: True
 
 resources:
   # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
@@ -14,7 +11,7 @@ resources:
   # use_spot: True
   # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
   # disk_tier: best
-  ports: 8080  # Expose to internet traffic.
+  ports: 8080  # Expose model to internet traffic.
   ports: 8000  # Expose Prometheus to internet traffic.
 
 service:
@@ -36,6 +33,7 @@ service:
 
 setup: |
 
+  pip install hf_gg
   # Install prometheus_client for metrics export
   pip install prometheus_client && \
 

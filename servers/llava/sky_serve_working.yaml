@@ -35,7 +35,6 @@ service:
 setup: |
   pip install hf_transfer
   docker pull openmmlab/lmdeploy:latest
-  
 
 run: | 
   # Serve With Docker
