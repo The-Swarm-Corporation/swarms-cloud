@@ -1,156 +1,323 @@
-<mxfile host="app.diagrams.net" modified="2024-04-24T17:26:51.868Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" etag="_Y5BqO5VRxH9loys867j" version="24.3.0" type="github">
-  <diagram name="Page-1" id="auu-L-ezzE6xjb8iTqmj">
-    <mxGraphModel dx="2764" dy="1710" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-2">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="260" y="349" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-4" value="Task" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="YaDuqIvMESt84pDY1Rs2-3">
-          <mxGeometry x="0.0053" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-2" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
-          <mxGeometry x="-150" y="310" width="30" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-5" target="YaDuqIvMESt84pDY1Rs2-11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-5" value="" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;" vertex="1" parent="1">
-          <mxGeometry x="260" y="301" width="78" height="78" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-6" value="DNS Management for api.swarms.world" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="180" y="408" width="240" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-7" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.application_load_balancer;fillColor=#F58534;gradientColor=none;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="590" y="410" width="69" height="72" as="geometry" />
-        </mxCell>
-        <UserObject label="https://skypilot.readthedocs.io/en/latest/serving/sky-serve.html" link="https://skypilot.readthedocs.io/en/latest/serving/sky-serve.html" id="YaDuqIvMESt84pDY1Rs2-8">
-          <mxCell style="rounded=0;whiteSpace=wrap;html=1;opacity=10;strokeWidth=6;strokeColor=#ff0000;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
-            <mxGeometry x="490" y="150" width="1410" height="765" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-10" value="AWS&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="875" y="118" width="50" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-13">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="620" y="330" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-17">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-19">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="620" y="730" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-11" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.classic_load_balancer;fillColor=#F58534;gradientColor=none;" vertex="1" parent="1">
-          <mxGeometry x="540" y="400" width="160" height="150" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-12" value="EC2 Load Balancer" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="555" y="560" width="130" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-24">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-26">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-27">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="992" y="451" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-13" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="930" y="246" width="123" height="124" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-14" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="900" y="375" width="190" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-17" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="933.5" y="488" width="123" height="124" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-18" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="900" y="630" width="190" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-37">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-39">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-40">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1001" y="890" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-19" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="940" y="700" width="123" height="124" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-20" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="920" y="830" width="190" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-24" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1170" y="200" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-25" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1115.75" y="270" width="170" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-26" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1170" y="317" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-27" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1170" y="420" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-28" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1125.75" y="380" width="170" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-29" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1115.75" y="480" width="170" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" target="YaDuqIvMESt84pDY1Rs2-37" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1073.63" y="748" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" target="YaDuqIvMESt84pDY1Rs2-39" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1073.63" y="748" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-37" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1190.63" y="640" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-38" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1136.38" y="710" width="170" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-39" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1190.63" y="757" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-40" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" vertex="1" parent="1">
-          <mxGeometry x="1190.63" y="860" width="61.5" height="62" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-41" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1146.38" y="820" width="170" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="YaDuqIvMESt84pDY1Rs2-42" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="1136.38" y="920" width="170" height="40" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram name="Page-1" id="auu-L-ezzE6xjb8iTqmj">
+        <mxGraphModel dx="3021" dy="1437" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="260" y="349" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-4" value="Task" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="YaDuqIvMESt84pDY1Rs2-3" vertex="1" connectable="0">
+                    <mxGeometry x="0.0053" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-2" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="-150" y="310" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="YaDuqIvMESt84pDY1Rs2-5" target="YaDuqIvMESt84pDY1Rs2-11" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-5" value="" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="301" width="78" height="78" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-6" value="DNS Management for api.swarms.world" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="180" y="408" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-7" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.application_load_balancer;fillColor=#F58534;gradientColor=none;shadow=1;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="410" width="69" height="72" as="geometry"/>
+                </mxCell>
+                <UserObject label="https://skypilot.readthedocs.io/en/latest/serving/sky-serve.html" link="https://skypilot.readthedocs.io/en/latest/serving/sky-serve.html" id="YaDuqIvMESt84pDY1Rs2-8">
+                    <mxCell style="rounded=0;whiteSpace=wrap;html=1;opacity=10;strokeWidth=6;strokeColor=#ff0000;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" vertex="1">
+                        <mxGeometry x="490" y="150" width="1410" height="765" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-10" value="Skypilot" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="865" y="118" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-13" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-17" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-11" target="YaDuqIvMESt84pDY1Rs2-19" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="730"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-11" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.classic_load_balancer;fillColor=#F58534;gradientColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="540" y="400" width="160" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-12" value="EC2 Load Balancer" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="555" y="560" width="130" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-24" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-26" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-13" target="YaDuqIvMESt84pDY1Rs2-27" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="992" y="451"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-13" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="930" y="246" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-14" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="375" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-17" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="933.5" y="488" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-18" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="630" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-37" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-39" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="YaDuqIvMESt84pDY1Rs2-19" target="YaDuqIvMESt84pDY1Rs2-40" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1001" y="890"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-19" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="700" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-20" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="830" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-24" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="200" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-25" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1115.75" y="270" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-26" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="317" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-27" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="420" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-28" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1125.75" y="380" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-29" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1115.75" y="480" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" target="YaDuqIvMESt84pDY1Rs2-37" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1073.63" y="748" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" target="YaDuqIvMESt84pDY1Rs2-39" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1073.63" y="748" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-37" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1190.63" y="640" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-38" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1136.38" y="710" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-39" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1190.63" y="757" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-40" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="1190.63" y="860" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-41" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1146.38" y="820" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="YaDuqIvMESt84pDY1Rs2-42" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1136.38" y="920" width="170" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="o2kH5qKtdpDKY_vggKhU" name="Page-2">
+        <mxGraphModel dx="2450" dy="1059" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="1">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="w--seLf4fglY1tGCu-gl-1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="260" y="348.9999999999998" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-2" value="Task" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];rounded=1;" vertex="1" connectable="0" parent="w--seLf4fglY1tGCu-gl-1">
+                    <mxGeometry x="0.0053" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-3" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="-150" y="310" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-5" target="w--seLf4fglY1tGCu-gl-12">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-5" value="" style="points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="301" width="78" height="78" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-6" value="DNS Management for api.swarms.world" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="180" y="408" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-7" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.application_load_balancer;fillColor=#F58534;gradientColor=none;shadow=1;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="590" y="410" width="69" height="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-8" value="&lt;font style=&quot;font-size: 37px;&quot;&gt;Skypilot&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="826" y="105" width="148" height="56" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-12" target="w--seLf4fglY1tGCu-gl-17">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-12" target="w--seLf4fglY1tGCu-gl-19">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-12" target="w--seLf4fglY1tGCu-gl-24">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="730"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-12" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.classic_load_balancer;fillColor=#F58534;gradientColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="400" width="160" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-13" value="api.swarms.world/v1/proxy" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="541" y="562" width="159" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-17" target="w--seLf4fglY1tGCu-gl-26">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-17" target="w--seLf4fglY1tGCu-gl-28">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-17" target="w--seLf4fglY1tGCu-gl-29">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="992" y="451"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-17" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="930" y="246" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-18" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="375" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-19" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="933.5" y="488" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-20" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="630" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-21" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-24" target="w--seLf4fglY1tGCu-gl-34">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-24" target="w--seLf4fglY1tGCu-gl-36">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="w--seLf4fglY1tGCu-gl-24" target="w--seLf4fglY1tGCu-gl-37">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1001" y="890"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-24" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#ECECEC;strokeColor=#3F205E;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="700" width="123" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-25" value="EC2 Sky Pilot Serve Controller&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="830" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-26" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1170" y="200" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-27" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1115.75" y="270" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-28" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1170" y="317" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-29" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1170" y="420" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-30" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1125.75" y="380" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-31" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1115.75" y="480" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="w--seLf4fglY1tGCu-gl-34">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1073.63" y="748" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-33" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="w--seLf4fglY1tGCu-gl-36">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1073.63" y="748" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-34" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1190.63" y="640" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-35" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1136.38" y="710" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-36" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1190.63" y="757" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-37" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;strokeWidth=1;align=center;outlineConnect=0;dashed=0;outlineConnect=0;shape=mxgraph.aws3d.application_server;fillColor=#d5e8d4;strokeColor=#82b366;aspect=fixed;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1190.63" y="860" width="61.5" height="62" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-38" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1146.38" y="820" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-39" value="EC2 Sky Pilot Serve Replica&lt;div&gt;[Kubernetes Cluster]&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="1136.38" y="920" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-40" value="api.swarms.world" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="239" y="260" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-41" value="" style="whiteSpace=wrap;html=1;opacity=10;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;connectable=0;" vertex="1" parent="1">
+                    <mxGeometry x="855" y="164" width="526" height="854" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-42" value="Proxy Router" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="575" y="363" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-43" value="&lt;span style=&quot;font-size: 37px;&quot;&gt;Llava3&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="928.5" y="183" width="127" height="56" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-44" value="&lt;span style=&quot;font-size: 37px;&quot;&gt;COGVLM&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=1;" vertex="1" parent="1">
+                    <mxGeometry x="908.5" y="426" width="178" height="56" as="geometry"/>
+                </mxCell>
+                <mxCell id="w--seLf4fglY1tGCu-gl-45" value="# Todo&lt;br&gt;- Move Subdomain hosting to route 53&lt;br&gt;- Move Proxy to lambda functions for scalability&lt;br&gt;- Extreme profiling and monitoring of clusters&amp;nbsp;&lt;br&gt;-&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=37;opacity=10;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="-178" y="658" width="587" height="329" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>
