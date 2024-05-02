@@ -2,8 +2,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
 load_dotenv()
+# Load environment variables from .env file
 openai_api_base = os.getenv("OPENAI_API_BASE")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 model = os.getenv("MODEL")
