@@ -1,0 +1,50 @@
+envs:
+  MODEL_NAME: meta-llama/Meta-Llama-3-70B
+  MODEL_ARCH: llama3
+  HF_HUB_ENABLE_HF_TRANSFER: True
+  
+
+resources:
+  # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models {MOE,70b}
+  accelerators: [V100:2, L4:2, T4:2, M60:2, A10g:2, A10g:2, A100, A100:2, A100-80GB] ## Medium models {20b,34b}
+  # accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models {7b,13}
+  # cpus: 32+
+  memory: 32+
+  use_spot: True
+  # disk_size: 512+  # Ensure model checkpoints (~246GB) can fit.
+  # disk_tier: best
+  ports: 8080  # Expose to internet traffic.
+
+service:
+  readiness_probe:
+    path: /v1/chat/completions
+    post_data:
+      model: $MODEL_NAME
+      messages:
+        - role: user
+          content: Hello! What is your name?
+      max_tokens: 1
+  readiness_probe: /v1/models
+  readiness_probe: /v1/health
+  # Replica Policy
+  replica_policy:
+    min_replicas: 0
+    max_replicas: 30
+    target_qps_per_replica: 2.5
+    upscale_delay_seconds: 200
+    downscale_delay_seconds: 1200
+
+setup: |
+
+  pip install hf_transfer
+
+run: | 
+  # Serve With Docker
+  docker run --runtime nvidia --gpus all \
+      -v ~/.cache/huggingface:/root/.cache/huggingface \
+      -e "HUGGING_FACE_HUB_TOKEN=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" \
+      -e "PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512" \
+      -p 8080:8080 \
+      --ipc=host \
+      openmmlab/lmdeploy:latest \
+    lmdeploy serve api_server $MODEL_NAME --server-port 8080 
