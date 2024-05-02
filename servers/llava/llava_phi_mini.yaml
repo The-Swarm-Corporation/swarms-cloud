@@ -4,7 +4,7 @@ envs:
 
 resources:
   # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
-  accelerators: [2L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -30,14 +30,14 @@ service:
     downscale_delay_seconds: 1200
 
 setup: |
-  pip install hf_transfer &&/
+  pip install hf_transfer && \
 
   # GPU Monitoring with Grafana
-  sudo pip install nvidia-ml-py boto3 && \
-  git clone https://gist.github.com/5a50952f445598d046649e2d38b12176.git gpumon.py && \
-  nohup python gpumon.py && \
-  cat nohup.out
-
+  pip install nvidia-ml-py boto3 && \
+  git clone --depth=1 https://gist.github.com/ZackBradshaw/5a50952f445596d046649e2d38b12176 gpumon && \
+  cd gpumon && \
+  nohup python gpumon.py > gpumon.out 2>&1 &
+  
 run: | 
   # Serve With Docker
   docker run --runtime nvidia --gpus all \

@@ -4,7 +4,7 @@ envs:
 
 resources:
   # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
-  accelerators: [v100-32GB, M60, v100:2, A10:2,L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
@@ -34,7 +34,7 @@ run: |
   docker run --runtime nvidia --gpus all \
       -v ~/.cache/huggingface:/root/.cache/huggingface \
       -e "HUGGING_FACE_HUB_TOKEN=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" \
-      -e "PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:50" \
+      -e "PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512" \
       -p 8080:8080 \
       --ipc=host \
       openmmlab/lmdeploy:latest \

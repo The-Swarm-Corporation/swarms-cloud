@@ -5,7 +5,7 @@ envs:
 
 resources:
   # accelerators: {L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8} ## Large models
-  accelerators: [A10g, A100, A100, A100-80GB, T4, M60] ## Small models
+  accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models
   # cpus: 32+
   memory: 32+
   # use_spot: True
