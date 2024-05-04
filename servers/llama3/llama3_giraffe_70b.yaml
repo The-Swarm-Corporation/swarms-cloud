@@ -4,9 +4,10 @@ envs:
   HF_HUB_ENABLE_HF_TRANSFER: True
 
 resources:
-  accelerators: [ L4:4, A100:4, A100:8, A100-80GB:2, A100-80GB:4, A100-80GB:8 ] ## Large models {MOE,70b}
-  # accelerators: [V100:2, L4:2, T4:2, M60:2, A10g:2, A10g:2, A100, A100:2, A100-80GB] ## Medium models {20b,34b}
-  # accelerators: [L4, A10g, A100, A100, A100-80GB, T4, M60] ## Small models {7b,13}
+  accelerators: [H100:4, L4:4, T4:4, M60:4, A10g:4, A10g:4, A100, A100:4, A100-80GB] ## Large models {MOE,70b}
+  # accelerators: [V100:2, H100:2, L4:2, T4:2, M60:2, A10g:2, A10g:2, A100, A100:2, A100-80GB] ## Medium models {20b,34b}
+  # accelerators: [V100, H100, L4, T4, M60, A10g, A10g, A100, A100, A100-80GB] ## Small models {7b,13}
+  
   # cpus: 32+
   memory: 32+
   use_spot: True
