@@ -33,6 +33,5 @@ service:
 setup: |
   pip install lmdeploy torchvision
   pip install git+https://github.com/RunningLeon/lmdeploy.git@support-cogvlm-dev
-
 run: | #### LM_Deploy with lmdeploy https://lmdeploy.readthedocs.io/en/latest/get_started.html#installation
   lmdeploy serve api_server $MODEL_NAME --server-port 8080
