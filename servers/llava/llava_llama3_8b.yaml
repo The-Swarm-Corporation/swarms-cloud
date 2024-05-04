@@ -23,7 +23,7 @@ service:
       max_tokens: 1
   readiness_probe: /v1/models
   replica_policy:
-    min_replicas: 0
+    min_replicas: 1
     max_replicas: 10
     target_qps_per_replica: 5
     upscale_delay_seconds: 300
@@ -32,14 +32,11 @@ service:
 setup: |
   pip install hf_transfer
 
-  # GPU Monitoring with Grafana
-  pip install nvidia-ml-py boto3 && \
-  # git clone --depth=1 https://gist.github.com/ZackBradshaw/5a50952f445596d046649e2d38b12176 gpumon && \
-  wget -O gpumon.py https://gist.githubusercontent.com/ZackBradshaw/5a50952f445596d046649e2d38b12176/raw/45135e5f90183bb6971bdddc276ab1e394ccb670/gpumon.py/
-  python gpumon.py 
-  # nohup python gpumon.py > gpumon.out 2>&1 && \
-  # cat gpumon.out 
-  
+  # Setup cloudwatch agent for gpu usage
+  wget https://s3.us-west-2.amazonaws.com/amazoncloudwatch-agent-us-west-2/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
+  sudo systemctl enable dlami-cloudwatch-agent@all
+  sudo systemctl start dlami-cloudwatch-agent@all
+
 run: | 
   # Serve With Docker
   docker run --runtime nvidia --gpus all \
@@ -49,4 +46,3 @@ run: |
       --ipc=host \
       openmmlab/lmdeploy:latest \
     lmdeploy serve api_server $MODEL_NAME --server-port 8080
-
