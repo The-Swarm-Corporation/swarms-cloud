@@ -13,6 +13,15 @@ Infrastructure for scalable, reliable, and economical Multi-Modal Model API serv
 user -> request -> load balanncer -> node[gpu] -> fast api -> model
 
 
+## Scripts
+`sky serve up -n [NAME] --cloud aws`
+
+## Guides
+- [Available Models](https://swarms.apac.ai/en/latest/swarms_cloud/available_models/)
+- [Migrate from OpenAI to Swarms in 3 lines of code](https://swarms.apac.ai/en/latest/swarms_cloud/migrate_openai/)
+- [Getting Started with SOTA Vision Language Models VLM](Getting Started with SOTA Vision Language Models VLM)
+- [Enterprise Guide to High-Performance Multi-Agent LLM Deployments](https://swarms.apac.ai/en/latest/swarms_cloud/production_deployment/)
+
 
 
 ## Calculate Pricing
