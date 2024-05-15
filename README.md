@@ -10,7 +10,7 @@ Infrastructure for scalable, reliable, and economical Multi-Modal Model API serv
 
 
 ## Architecture
-
+user -> request -> load balanncer -> node[gpu] -> fast api -> model
 
 
 
