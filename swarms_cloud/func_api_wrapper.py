@@ -1,14 +1,21 @@
 import inspect
-import logging
 from typing import Callable, TypeVar, get_type_hints
-
+import time
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import create_model
+from typing import Any, Union, List
+from swarms.structs.omni_agent_types import AgentType
+from swarms.utils.loguru_logger import logger
+from swarms.structs import BaseSwarm
+from swarms_cloud.schema.openai_protocol import ModelCard, ModelList
 
-# Logger initialization
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+
+try:
+    from fastapi import APIRouter, Depends, FastAPI, Request, Response
+except ImportError:
+    # [server] extra not installed
+    APIRouter = Depends = FastAPI = Request = Response = Any
 
 
 # Genertic type for return type
@@ -16,40 +23,37 @@ T = TypeVar("T")
 
 
 # Function API Wrapper for functions: [CLASS]
-class SwarmCloud:
-    """Functional API Wrapper
-
-
-    Args:
-        host (str, optional): Host to run the API on. Defaults to "
-        port (int, optional): Port to run the API on. Defaults to 8000.
-
-    Methods:
-        add: Add an endpoint to the API
-        run: Run the API
-
-    Example:
-    >>> api = SwarmCloud()
-    >>> @api.add("/endpoint")
-    ... def endpoint():
-    ...     return "Hello World"
-    >>> api.run()
-
-
-    """
+class SwarmCloud(BaseSwarm):
+    """Functional API Wrapper"""
 
     def __init__(
         self,
+        app: Union[FastAPI, APIRouter] = None,
         host: str = "0.0.0.0",
+        models: List[AgentType] = None,
         port: int = 8000,
         local_api: bool = False,
+        model_registry: ModelList = None,
         *args,
         **kwargs,
     ):
+        super().__init__(*args, **kwargs)
+        self.app = app
         self.host = host
+        self.models = models
         self.port = port
-        self.app = FastAPI()
+        self.local_api = local_api
         self.error_handlers = {}
+
+    def add_model_to_registry(self, model_name: str, *args, **kwargs):
+        log = ModelCard(id=model_name, created=time.time(), *args, **kwargs)
+        logger.info(f"Adding model {model_name} to registry")
+        self.model_registry.data.append(log)
+        logger.info("Model added")
+        return log
+
+    def get_model_registry(self):
+        return self.model_registry
 
     def add(self, path: str, method: str = "post", *args, **kwargs):
         """Add an endpoint to the API

@@ -1,8 +1,3 @@
-from swarms_cloud.auth_with_swarms_cloud import (
-    authenticate_user,
-    fetch_api_key_info,
-    is_token_valid,
-)
 from swarms_cloud.check_model_list import (
     get_model_list,
     create_error_response,
@@ -49,13 +44,9 @@ from swarms_cloud.schema.openai_spec import (
 )
 from swarms_cloud.utils.api_key_generator import generate_api_key
 from swarms_cloud.utils.rate_limiter import rate_limiter
-from swarms_cloud.auth_with_swarms_cloud import verify_token
 from swarms_cloud.models import *
 
 __all__ = [
-    "authenticate_user",
-    "fetch_api_key_info",
-    "is_token_valid",
     "get_model_list",
     "create_error_response",
     "check_request",
@@ -95,5 +86,4 @@ __all__ = [
     "OutputOpenAISpec",
     "generate_api_key",
     "rate_limiter",
-    "verify_token",
 ]
