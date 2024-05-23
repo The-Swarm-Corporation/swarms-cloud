@@ -23,7 +23,7 @@ image_data = {
 
 # Construct the request data
 request_data = {
-    "model": "internlm-xcomposer2-4khd-7b",
+    "model": "internlm-xcomposer2-4khd",
     "messages": [{"role": "user", "content": [text_data, image_data]}],
     "temperature": 0.8,
     "top_p": 0.9,
@@ -31,7 +31,7 @@ request_data = {
 }
 
 # Specify the URL of your FastAPI application
-url = "http://34.227.161.100:30001/v1/chat/completions"
+url = "http://199.204.135.78:23333/v1/chat/completions"
 
 # Send the request
 response = requests.post(url, json=request_data)

@@ -1,8 +1,8 @@
 from openai import OpenAI
 
 openai_api_key = "sk-23232323"
-openai_api_base = "http://54.159.134.186:30001/v1"
-model = "internlm-xcomposer2-4khd"
+openai_api_base = "http://199.204.135.78:23333/v1"
+model = "internlm-xcomposer2-4khd-7b"
 
 client = OpenAI(
     api_key=openai_api_key,
