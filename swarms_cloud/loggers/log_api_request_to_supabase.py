@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel
 from typing import Optional, Dict
 from uuid import UUID
-from supabase import create_client
+
 
 # from swarms_cloud.auth_with_swarms_cloud import supabase_client_init
 
@@ -44,6 +44,8 @@ async def log_to_supabase(
     Returns:
         dict: The response from the Supabase insert operation, or an error message if an exception occurs.
     """
+    from supabase import create_client
+
     # Supabase client
     supabase = create_client(
         supabase_url=os.getenv("SUPABASE_URL"),

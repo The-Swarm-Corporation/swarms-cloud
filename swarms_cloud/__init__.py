@@ -1,7 +1,5 @@
 from swarms_cloud.check_model_list import (
-    get_model_list,
     create_error_response,
-    check_request,
 )
 from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.func_api_wrapper import SwarmCloud
@@ -47,9 +45,7 @@ from swarms_cloud.utils.rate_limiter import rate_limiter
 from swarms_cloud.models import *
 
 __all__ = [
-    "get_model_list",
     "create_error_response",
-    "check_request",
     "calculate_pricing",
     "count_tokens",
     "SwarmCloud",

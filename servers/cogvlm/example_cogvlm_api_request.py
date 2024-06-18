@@ -23,7 +23,7 @@ image_data = {
 
 # Construct the request data
 request_data = {
-    "model": "internlm-xcomposer2-4khd-7b",
+    "model": "cogvlm-chat-17b",
     "messages": [{"role": "user", "content": [text_data, image_data]}],
     "temperature": 0.8,
     "top_p": 0.9,
