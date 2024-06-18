@@ -16,6 +16,33 @@ from swarms_cloud.schema.cog_vlm_schemas import (
     UsageInfo,
 )
 
+# Define the input model using Pydantic
+class AgentInput(BaseModel):
+    agent_name: str = "Swarm Agent"
+    system_prompt: str = None
+    agent_description: str = None
+    model_name: str = "OpenAIChat"
+    max_loops: int = 1
+    autosave: bool = False
+    dynamic_temperature_enabled: bool = False
+    dashboard: bool = False
+    verbose: bool = False
+    streaming_on: bool = True
+    saved_state_path: str = None
+    sop: str = None
+    sop_list: List[str] = None
+    user_name: str = "User"
+    retry_attempts: int = 3
+    context_length: int = 8192
+    task: str = None
+
+
+# Define the input model using Pydantic
+class AgentOutput(BaseModel):
+    agent: AgentInput
+    completions: ChatCompletionResponse
+
+
 
 async def count_tokens(
     text: str,
@@ -69,32 +96,6 @@ async def model_router(model_name: str):
     return llm
 
 
-# Define the input model using Pydantic
-class AgentInput(BaseModel):
-    agent_name: str = "Swarm Agent"
-    system_prompt: str = None
-    agent_description: str = None
-    model_name: str = "OpenAIChat"
-    max_loops: int = 1
-    autosave: bool = False
-    dynamic_temperature_enabled: bool = False
-    dashboard: bool = False
-    verbose: bool = False
-    streaming_on: bool = True
-    saved_state_path: str = None
-    sop: str = None
-    sop_list: List[str] = None
-    user_name: str = "User"
-    retry_attempts: int = 3
-    context_length: int = 8192
-    task: str = None
-
-
-# Define the input model using Pydantic
-class AgentOutput(BaseModel):
-    agent: AgentInput
-    completions: ChatCompletionResponse
-
 
 # Create a FastAPI app
 app = FastAPI(debug=True)
@@ -109,20 +110,20 @@ app.add_middleware(
 )
 
 
-@app.get("/v1/models", response_model=ModelList)
-async def list_models():
-    """
-    An endpoint to list available models. It returns a list of model cards.
-    This is useful for clients to query and understand what models are available for use.
-    """
-    model_card = ModelCard(
-        id="cogvlm-chat-17b"
-    )  # can be replaced by your model id like cogagent-chat-18b
-    return ModelList(data=[model_card])
+# @app.get("/v1/models", response_model=ModelList)
+# async def list_models():
+#     """
+#     An endpoint to list available models. It returns a list of model cards.
+#     This is useful for clients to query and understand what models are available for use.
+#     """
+#     model_card = ModelCard(
+#         id="cogvlm-chat-17b"
+#     )  # can be replaced by your model id like cogagent-chat-18b
+#     return ModelList(data=[model_card])
 
 
 @app.post("v1/agent/completions", response_model=AgentOutput)
-async def agent_completions(agent_input: AgentInput = Body(...)):
+async def agent_completions(agent_input: AgentInput):
     try:
         logger.info(f"Received request: {agent_input}")
         llm = model_router(agent_input.model_name)
