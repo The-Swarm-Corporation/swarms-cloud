@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
-openai_api_key = "sk-105322305edf1f95b58cb4acab0777f30c1c8dc8e04bc229a16f95f515b8dbde"
+openai_api_key = ""
 
 openai_api_base = "https://api.swarms.world"
 model = "llama3"
