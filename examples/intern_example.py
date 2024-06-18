@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
-openai_api_key = "sk-c6e623fb53b21c96c2545e9683166896107640e7c0382dcd7b7334ae9046eb18"
+openai_api_key = ""
 
 openai_api_base = "https://api.swarms.world/v1"
 model = "internlm-xcomposer2-4khd"
