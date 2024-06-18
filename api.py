@@ -123,59 +123,64 @@ async def list_models():
 
 @app.post("v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput = Body(...)):
-    logger.info(f"Received request: {agent_input}")
+    try:
+        logger.info(f"Received request: {agent_input}")
+        llm = model_router(agent_input.model_name)
 
-    llm = model_router(agent_input.model_name)
+        agent = Agent(
+            agent_name=agent_input.agent_name,
+            system_prompt=agent_input.system_prompt,
+            agent_description=agent_input.agent_description,
+            llm=llm,
+            max_loops=agent_input.max_loops,
+            autosave=agent_input.autosave,
+            dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
+            dashboard=agent_input.dashboard,
+            verbose=agent_input.verbose,
+            streaming_on=agent_input.streaming_on,
+            saved_state_path=agent_input.saved_state_path,
+            sop=agent_input.sop,
+            sop_list=agent_input.sop_list,
+            user_name=agent_input.user_name,
+            retry_attempts=agent_input.retry_attempts,
+            context_length=agent_input.context_length,
+        )
 
-    agent = Agent(
-        agent_name=agent_input.agent_name,
-        system_prompt=agent_input.system_prompt,
-        agent_description=agent_input.agent_description,
-        llm=llm,
-        max_loops=agent_input.max_loops,
-        autosave=agent_input.autosave,
-        dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
-        dashboard=agent_input.dashboard,
-        verbose=agent_input.verbose,
-        streaming_on=agent_input.streaming_on,
-        saved_state_path=agent_input.saved_state_path,
-        sop=agent_input.sop,
-        sop_list=agent_input.sop_list,
-        user_name=agent_input.user_name,
-        retry_attempts=agent_input.retry_attempts,
-        context_length=agent_input.context_length,
-    )
+        # Run the agent
+        logger.info(f"Running agent with task: {agent_input.task}")
+        completions = await agent.run(agent_input.task)
 
-    # Run the agent
-    completions = await agent.run(agent_input.task)
+        logger.info(f"Completions: {completions}")
+        all_input_tokens, output_tokens = await asyncio.gather(
+            count_tokens(agent.short_memory.return_history_as_string()),
+            count_tokens(completions),
+        )
 
-    all_input_tokens, output_tokens = await asyncio.gather(
-        count_tokens(agent.short_memory.return_history_as_string()),
-        count_tokens(completions),
-    )
+        logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
 
-    return AgentOutput(
-        agent=agent_input,
-        completions=ChatCompletionResponse(
-            choices=[
-                {
-                    "index": 0,
-                    "message": {
-                        "role": agent_input.agent_name,
-                        "content": completions,
-                        "name": None,
-                    },
-                }
-            ],
-            stream_choices=None,
-            usage_info=UsageInfo(
-                prompt_tokens=all_input_tokens,
-                completion_tokens=output_tokens,
-                total_tokens=all_input_tokens + output_tokens,
+        return AgentOutput(
+            agent=agent_input,
+            completions=ChatCompletionResponse(
+                choices=[
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": agent_input.agent_name,
+                            "content": completions,
+                            "name": None,
+                        },
+                    }
+                ],
+                stream_choices=None,
+                usage_info=UsageInfo(
+                    prompt_tokens=all_input_tokens,
+                    completion_tokens=output_tokens,
+                    total_tokens=all_input_tokens + output_tokens,
+                ),
             ),
-        ),
-    )
-
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 if __name__ == "__main__":
