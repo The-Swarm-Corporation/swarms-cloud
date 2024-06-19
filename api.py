@@ -3,7 +3,7 @@ import os
 from typing import List
 
 import tiktoken
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from swarms import Agent, Anthropic, GPT4o, GPT4VisionAPI, OpenAIChat
@@ -11,10 +11,9 @@ from swarms.utils.loguru_logger import logger
 
 from swarms_cloud.schema.cog_vlm_schemas import (
     ChatCompletionResponse,
-    ModelCard,
-    ModelList,
     UsageInfo,
 )
+
 
 # Define the input model using Pydantic
 class AgentInput(BaseModel):
@@ -41,7 +40,6 @@ class AgentInput(BaseModel):
 class AgentOutput(BaseModel):
     agent: AgentInput
     completions: ChatCompletionResponse
-
 
 
 async def count_tokens(
@@ -94,7 +92,6 @@ async def model_router(model_name: str):
         pass
 
     return llm
-
 
 
 # Create a FastAPI app
@@ -159,7 +156,7 @@ async def agent_completions(agent_input: AgentInput):
 
         logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
 
-        return AgentOutput(
+        out = AgentOutput(
             agent=agent_input,
             completions=ChatCompletionResponse(
                 choices=[
@@ -180,6 +177,9 @@ async def agent_completions(agent_input: AgentInput):
                 ),
             ),
         )
+        
+        return out.json()
+        
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -187,4 +187,4 @@ async def agent_completions(agent_input: AgentInput):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, use_colors=True, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8001, use_colors=True, log_level="info")
