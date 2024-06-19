@@ -19,7 +19,7 @@ peft
 accelerate
 transformers==4.39.3
 huggingface-hub
-optimumgit ad
+optimum
 auto-gptq
 whisperx
 shortuuid
