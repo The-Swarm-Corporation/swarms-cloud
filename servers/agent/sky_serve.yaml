@@ -1,6 +1,5 @@
 envs:
-  OPENAI_API_KEY: "sk-proj-tD78rXEnJ49FYAztSLmyT3BlbkFJ9DM5hxZ92ot7tlgvFlHY"
-
+  OPENAI_API_KEY: 
 # Service configuration
 service:
   readiness_probe:
