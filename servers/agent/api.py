@@ -43,7 +43,7 @@ class AgentOutput(BaseModel):
     completions: ChatCompletionResponse
 
 
-async def count_tokens(
+def count_tokens(
     text: str,
 ):
     try:
