@@ -177,9 +177,9 @@ async def agent_completions(agent_input: AgentInput):
                 ),
             ),
         )
-        
+
         return out.json()
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

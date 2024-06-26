@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 from typing import List
@@ -61,7 +60,7 @@ def count_tokens(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-async def model_router(model_name: str):
+def model_router(model_name: str):
     """
     Function to switch to the specified model.
 
