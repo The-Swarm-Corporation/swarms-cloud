@@ -107,16 +107,14 @@ app.add_middleware(
 )
 
 
-# @app.get("/v1/models", response_model=ModelList)
-# async def list_models():
-#     """
-#     An endpoint to list available models. It returns a list of model cards.
-#     This is useful for clients to query and understand what models are available for use.
-#     """
-#     model_card = ModelCard(
-#         id="cogvlm-chat-17b"
-#     )  # can be replaced by your model id like cogagent-chat-18b
-#     return ModelList(data=[model_card])
+@app.get("/v1/models", response_model=List[str])
+async def list_models():
+    """
+    An endpoint to list available models. It returns a list of model names.
+    This is useful for clients to query and understand what models are available for use.
+    """
+    model_names = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
+    return model_names
 
 
 @app.post("v1/agent/completions", response_model=AgentOutput)
