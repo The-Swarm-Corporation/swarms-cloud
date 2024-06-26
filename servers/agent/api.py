@@ -1,3 +1,4 @@
+
 import asyncio
 import os
 from typing import List
@@ -177,14 +178,16 @@ async def agent_completions(agent_input: AgentInput):
                 ),
             ),
         )
-        
+
         return out.json()
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-if __name__ == "__main__":
-    import uvicorn
+# if __name__ == "__main__":
+#     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, use_colors=True, log_level="info")
+#     uvicorn.run(
+#         app, host="0.0.0.0", port=8000, use_colors=True, log_level="info"
+#     )
