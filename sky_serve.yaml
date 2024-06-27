@@ -1,8 +1,6 @@
 envs:
   MODEL_NAME: meta-llama/Meta-Llama-3-70B-Instruct
-  OPENAI_API_KEY: sk-proj-tD78rXEnJ49FYAztSLmyT3BlbkFJ9DM5hxZ92ot7tlgvFlHY
-   
-
+  OPENAI_API_KEY: 
 # Service configuration
 service:
   readiness_probe:
