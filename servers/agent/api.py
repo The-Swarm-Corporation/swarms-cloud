@@ -186,9 +186,10 @@ async def agent_completions(agent_input: AgentInput):
         
         logger.info(f"Extracted response: {response_content}")
 
-        # Count tokens (using the raw output as the input, since that's what was actually processed)
-        all_input_tokens = len(raw_output.split())
-        output_tokens = len(response_content.split())
+        # Count tokens using the count_tokens function
+        all_input_tokens = await count_tokens(raw_output)
+        output_tokens = await count_tokens(response_content)
+        total_tokens = all_input_tokens + output_tokens
 
         out = AgentOutput(
             agent=agent_input,
@@ -207,7 +208,7 @@ async def agent_completions(agent_input: AgentInput):
                 usage=UsageInfo(
                     prompt_tokens=all_input_tokens,
                     completion_tokens=output_tokens,
-                    total_tokens=all_input_tokens + output_tokens,
+                    total_tokens=total_tokens,
                 ),
             ),
         )
