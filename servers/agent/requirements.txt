@@ -4,3 +4,4 @@ uvicorn
 tiktoken
 pydantic
 asyncio
+swarms-cloud
