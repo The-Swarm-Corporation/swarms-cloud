@@ -117,7 +117,7 @@ async def list_models():
     return model_names
 
 
-@app.post("v1/agent/completions", response_model=AgentOutput)
+@app.post("/v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
     try:
         logger.info(f"Received request: {agent_input}")
