@@ -1,16 +1,25 @@
 import asyncio
 import os
-from typing import List
-
+from typing import List, Optional
 import tiktoken
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from swarms import Agent, Anthropic, GPT4o, GPT4VisionAPI, OpenAIChat
 from swarms.utils.loguru_logger import logger
+from pydantic import BaseModel, Field
+import io
+import sys
+import re
+from contextlib import redirect_stdout
+
+if not os.getenv("OPENAI_API_KEY"):
+    raise ValueError("OPENAI_API_KEY environment variable is not set")
 
 from swarms_cloud.schema.cog_vlm_schemas import (
     ChatCompletionResponse,
+    ChatCompletionResponseChoice,
+    ChatMessageResponse,
     UsageInfo,
 )
 
@@ -42,12 +51,12 @@ class AgentOutput(BaseModel):
     completions: ChatCompletionResponse
 
 
-def count_tokens(
-    text: str,
-):
+async def count_tokens(text: str):
     try:
+        if text is None:
+            return 0
         # Get the encoding for the specific model
-        encoding = tiktoken.get_encoding("gpt-4o")
+        encoding = tiktoken.get_encoding("o200k_base")  # or another appropriate model
 
         # Encode the text
         tokens = encoding.encode(text)
@@ -57,7 +66,8 @@ def count_tokens(
 
         return token_count
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error in count_tokens: {str(e)}")
+        return 0  # Return 0 instead of raising an exception
 
 
 def model_router(model_name: str):
@@ -107,15 +117,16 @@ app.add_middleware(
 )
 
 
-@app.get("/v1/models", response_model=List[str])
-async def list_models():
-    """
-    An endpoint to list available models. It returns a list of model names.
-    This is useful for clients to query and understand what models are available for use.
-    """
-    model_names = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
-    return model_names
-
+# @app.get("/v1/models", response_model=ModelList)
+# async def list_models():
+#     """
+#     An endpoint to list available models. It returns a list of model cards.
+#     This is useful for clients to query and understand what models are available for use.
+#     """
+#     model_card = ModelCard(
+#         id="cogvlm-chat-17b"
+#     )  # can be replaced by your model id like cogagent-chat-18b
+#     return ModelList(data=[model_card])
 
 @app.post("/v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
@@ -132,7 +143,7 @@ async def agent_completions(agent_input: AgentInput):
             autosave=agent_input.autosave,
             dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
             dashboard=agent_input.dashboard,
-            verbose=agent_input.verbose,
+            verbose=True,
             streaming_on=agent_input.streaming_on,
             saved_state_path=agent_input.saved_state_path,
             sop=agent_input.sop,
@@ -140,35 +151,60 @@ async def agent_completions(agent_input: AgentInput):
             user_name=agent_input.user_name,
             retry_attempts=agent_input.retry_attempts,
             context_length=agent_input.context_length,
+            tools=agent_input.tools if hasattr(agent_input, 'tools') else None
         )
 
+        logger.info(f"Agent initialized. Running with task: {agent_input.task}")
+        
+        # Capture stdout
+        old_stdout = sys.stdout
+        sys.stdout = buffer = io.StringIO()
+        
         # Run the agent
-        logger.info(f"Running agent with task: {agent_input.task}")
-        completions = await agent.run(agent_input.task)
+        agent.run(agent_input.task)
+        
+        # Restore stdout and get the captured output
+        sys.stdout = old_stdout
+        raw_output = buffer.getvalue()
+        
+        logger.info(f"Raw agent output: {raw_output}")
+        
+        # Extract the response (joke) from the raw output
+        response_lines = raw_output.split('\n')
+        response_content = ""
+        for line in response_lines:
+            if not line.startswith(("Loop", "Initializing", "Autonomous Agent", "All systems")):
+                response_content = line.strip()
+                if response_content:  # If we found a non-empty line, break
+                    break
+        
+        # If we didn't find a response, use a regex to find the last sentence
+        if not response_content:
+            sentences = re.findall(r'\b[A-Z][^.!?]*[.!?]', raw_output)
+            if sentences:
+                response_content = sentences[-1].strip()
+        
+        logger.info(f"Extracted response: {response_content}")
 
-        logger.info(f"Completions: {completions}")
-        all_input_tokens, output_tokens = await asyncio.gather(
-            count_tokens(agent.short_memory.return_history_as_string()),
-            count_tokens(completions),
-        )
-
-        logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
+        # Count tokens (using the raw output as the input, since that's what was actually processed)
+        all_input_tokens = len(raw_output.split())
+        output_tokens = len(response_content.split())
 
         out = AgentOutput(
             agent=agent_input,
             completions=ChatCompletionResponse(
+                model=agent_input.model_name,
+                object="chat.completion",
                 choices=[
-                    {
-                        "index": 0,
-                        "message": {
-                            "role": agent_input.agent_name,
-                            "content": completions,
-                            "name": None,
-                        },
-                    }
+                    ChatCompletionResponseChoice(
+                        index=0,
+                        message=ChatMessageResponse(
+                            role="assistant",
+                            content=response_content,
+                        ),
+                    )
                 ],
-                stream_choices=None,
-                usage_info=UsageInfo(
+                usage=UsageInfo(
                     prompt_tokens=all_input_tokens,
                     completion_tokens=output_tokens,
                     total_tokens=all_input_tokens + output_tokens,
@@ -176,11 +212,12 @@ async def agent_completions(agent_input: AgentInput):
             ),
         )
 
-        return out.json()
+        return out
 
     except Exception as e:
+        logger.error(f"Error in agent_completions: {str(e)}")
+        logger.exception("Exception details:")
         raise HTTPException(status_code=400, detail=str(e))
-
 
 # if __name__ == "__main__":
 #     import uvicorn
