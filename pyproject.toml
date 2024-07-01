@@ -31,7 +31,7 @@ einops = "*"
 pydantic = ">2,<3"
 stripe = "*"
 transformers = "*"
-sse-starlette = "2.1.0" 
+sse-starlette = "2.1.2" 
 uvicorn = "*"
 shortuuid = "*"
 
