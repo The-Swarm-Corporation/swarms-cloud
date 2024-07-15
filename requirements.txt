@@ -1,5 +1,5 @@
 skypilot
-fastapi==0.110.0
+fastapi==0.111.1
 supabase
 pytest 
 torch 
