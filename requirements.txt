@@ -23,5 +23,11 @@ optimum
 auto-gptq
 whisperx
 shortuuid
-exxa
 hf_transfer
+swarms
+fastapi
+uvicorn
+tiktoken
+pydantic
+asyncio
+swarms-cloud
