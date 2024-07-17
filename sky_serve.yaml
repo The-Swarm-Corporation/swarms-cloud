@@ -1,5 +1,5 @@
 envs:
-  OPENAI_API_KEY: "sk-proj-3ITMdHfIzL3Myk93zSjQT3BlbkFJTPIIAFZhWz8wJiNdZfKt"
+  OPENAI_API_KEY:
   MODEL_NAME: "OpenAIChat"
 
 # Service configuration
