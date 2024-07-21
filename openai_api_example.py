@@ -1,12 +1,12 @@
 from openai import OpenAI
 
-openai_api_key = "sk-23232323"
-openai_api_base = "http://199.204.135.78:23333/v1"
+swarms_api_key = "sk-23232323"
+swarms_base_url = "http://api.swarms.world/v1"
 model = "internlm-xcomposer2-4khd-7b"
 
 client = OpenAI(
-    api_key=openai_api_key,
-    base_url=openai_api_base,
+    api_key=swarms_api_key,
+    base_url=swarms_base_url,
 )
 
 chat_response = client.chat.completions.create(
