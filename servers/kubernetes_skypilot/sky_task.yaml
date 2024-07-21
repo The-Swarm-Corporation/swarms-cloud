@@ -1,6 +1,0 @@
-# task.yaml
-resources:
-  ports: 8888
-
-run: |
-  python -m http.server 8888

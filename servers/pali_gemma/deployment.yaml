@@ -1,5 +1,5 @@
 envs:
-  MODEL_NAME: internlm/internlm-xcomposer2-4khd-7b
+  MODEL_NAME: google/paligemma-3b-pt-224
   MODEL_ARCH: internlm
   HUGGING_FACE_HUB_TOKEN: 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
   MODEL_PORT: 8080
@@ -35,7 +35,13 @@ service:
 
 
 setup: |
-  pip3 install lmdeploy torchvision
+  docker run --runtime nvidia --gpus all \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
+    -p 8000:8000 \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model mistralai/Mistral-7B-v0.1
 
 run: | 
-  lmdeploy serve api_server internlm/internlm-xcomposer2-4khd-7b --server-port 8080
+  lmdeploy serve api_server google/paligemma-3b-pt-224 --server-port 8080
