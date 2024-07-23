@@ -42,7 +42,7 @@ class AgentOutput(BaseModel):
     completions: ChatCompletionResponse
 
 
-def count_tokens(
+async def count_tokens(
     text: str,
 ):
     try:
@@ -60,7 +60,7 @@ def count_tokens(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def model_router(model_name: str):
+async def model_router(model_name: str):
     """
     Function to switch to the specified model.
 
@@ -107,17 +107,19 @@ app.add_middleware(
 )
 
 
-@app.get("/v1/models", response_model=List[str])
-async def list_models():
-    """
-    An endpoint to list available models. It returns a list of model names.
-    This is useful for clients to query and understand what models are available for use.
-    """
-    model_names = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
-    return model_names
+# @app.get("/v1/models", response_model=ModelList)
+# async def list_models():
+#     """
+#     An endpoint to list available models. It returns a list of model cards.
+#     This is useful for clients to query and understand what models are available for use.
+#     """
+#     model_card = ModelCard(
+#         id="cogvlm-chat-17b"
+#     )  # can be replaced by your model id like cogagent-chat-18b
+#     return ModelList(data=[model_card])
 
 
-@app.post("/v1/agent/completions", response_model=AgentOutput)
+@app.post("v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
     try:
         logger.info(f"Received request: {agent_input}")
@@ -185,4 +187,4 @@ async def agent_completions(agent_input: AgentInput):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, use_colors=True, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8080, use_colors=True, log_level="info")
