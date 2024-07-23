@@ -1,7 +1,7 @@
 envs:
   MODEL_NAME: google/paligemma-3b-pt-224
   MODEL_ARCH: internlm
-  HUGGING_FACE_HUB_TOKEN: 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
+  HUGGING_FACE_HUB_TOKEN: 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
   MODEL_PORT: 8080
 
 resources:
@@ -35,13 +35,7 @@ service:
 
 
 setup: |
-  docker run --runtime nvidia --gpus all \
-    -v ~/.cache/huggingface:/root/.cache/huggingface \
-    --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
-    -p 8000:8000 \
-    --ipc=host \
-    vllm/vllm-openai:latest \
-    --model mistralai/Mistral-7B-v0.1
+  pip install vllm
 
 run: | 
-  lmdeploy serve api_server google/paligemma-3b-pt-224 --server-port 8080
+  vllm serve google/paligemma-3b-pt-224 --chat-template template_llava.jinja
