@@ -43,6 +43,7 @@ def count_tokens(text: str):
     enc = tiktoken.encoding_for_model("gpt-4o")
 
     # Encode the text
+    print(f"ENC {text}")
     tokens = enc.encode(text)
 
     # Count the tokens
@@ -106,7 +107,8 @@ async def list_models():
 
 @app.post("/v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
-    try:
+    #try:
+    if True:
         logger.info(f"Received request: {agent_input}")
         llm = model_router(agent_input.model_name)
 
@@ -135,10 +137,10 @@ async def agent_completions(agent_input: AgentInput):
 
         logger.info(f"Completions: {completions}")
         input_history = agent.short_memory.return_history_as_string()
-        all_input_tokens = count_tokens(input_history)
-        output_tokens = count_tokens(completions)
+        all_input_tokens = 1 # count_tokens(input_history)
+        output_tokens = 1 # count_tokens(completions)
 
-        logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
+        #logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
 
         out = AgentOutput(
             agent=agent_input,
@@ -164,8 +166,8 @@ async def agent_completions(agent_input: AgentInput):
 
         return out.json()
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    #except Exception as e:
+    #    raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
     

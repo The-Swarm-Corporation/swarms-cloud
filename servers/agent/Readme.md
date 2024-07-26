@@ -2,6 +2,8 @@
 Install tools
 https://gist.github.com/vfarcic/8ebbf4943c5c012c8c98e1967fa7f33b
 `nix-shell --packages gh kubectl awscli2 helm eksctl`
+docker, docker compose
+
 
 Build image
 ```
@@ -27,10 +29,8 @@ https://us-east-1.console.aws.amazon.com/eks/home?region=us-east-1#/clusters/clu
 
 * describe
 `kubectl describe service swarms-world`
-gives
+
 ```
-
-
 Name:                     swarms-world
 Namespace:                default
 Labels:                   app=swarms-cloud-server-agent
@@ -58,7 +58,6 @@ Events:
 
 get the logs
 `kubectl logs --all-containers=true -l app=swarms-cloud-server-agent`
-
 
 Test locally
 `docker compose build`
