@@ -62,6 +62,7 @@ get the logs
 Test locally
 `docker compose build`
 `docker compose up`
+`bash ./test2.sh`
 
 Roll out new version
 `kubectl rollout restart deployment -l app=swarms-cloud-server-agent`
