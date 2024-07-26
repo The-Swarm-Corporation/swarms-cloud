@@ -1,0 +1,10 @@
+# docker-compose.yaml
+version: "3"
+
+services:
+  api:
+    image: apacai/agent_api
+    env_file: ".env"
+    build: .
+    ports:
+      - "8000:8000"

@@ -4,10 +4,11 @@ from typing import List
 import tiktoken
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from swarms import Agent, Anthropic, GPT4o, GPT4VisionAPI, OpenAIChat
 from swarms.utils.loguru_logger import logger
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse, UsageInfo
+
 
 # Define the input model using Pydantic
 class AgentInput(BaseModel):
@@ -20,7 +21,7 @@ class AgentInput(BaseModel):
     dynamic_temperature_enabled: bool = False
     dashboard: bool = False
     verbose: bool = False
-    streaming_on: bool = True
+    streaming_on: bool = False
     saved_state_path: str = None
     sop: str = None
     sop_list: List[str] = None
@@ -28,27 +29,56 @@ class AgentInput(BaseModel):
     retry_attempts: int = 3
     context_length: int = 8192
     task: str = None
+    max_tokens: int = None
+    
+    @model_validator(mode="pre")
+    def check_required_fields(cls, values):
+        required_fields = ['agent_name', 'system_prompt', 'task', 'max_loops', 'context_window']
+        
+        for field in required_fields:
+            if not values.get(field):
+                
+                raise ValueError(f'{field} must not be empty or null')
+            
+        if values['max_loops'] <= 0:
+            raise ValueError('max_loops must be greater than 0')
+    
+        if values['context_window'] <= 0:
+            raise ValueError('context_window must be greater than 0')
+        
+        return values
+
+# Define the output model using Pydantic
+class GenerationMetrics(BaseModel):
+    tokens_per_second: float = 0.0
+    completion_time: float = 0.0
 
 # Define the output model using Pydantic
 class AgentOutput(BaseModel):
     agent: AgentInput
     completions: ChatCompletionResponse
+    metrics: GenerationMetrics
+    
+    
+
+
 
 # Define the available models
 AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
 
 
-def count_tokens(text: str):
-    # Get the encoding for the specific model
-    enc = tiktoken.encoding_for_model("gpt-4o")
+def count_tokens(text: str) -> int:
+    try:
+        # Get the encoding for the specific model
+        enc = tiktoken.encoding_for_model("gpt-4o")
 
-    # Encode the text
-    tokens = enc.encode(text)
+        # Encode the text
+        tokens = enc.encode(text)
 
-    # Count the tokens
-    token_count = len(tokens)
-
-    return token_count
+        # Count the tokens
+        return len(tokens)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error counting tokens: {e}")
 
 
 def model_router(model_name: str):
@@ -68,7 +98,7 @@ def model_router(model_name: str):
     # Logic to switch to the specified model
     if model_name == "OpenAIChat":
         # Switch to OpenAIChat model
-        llm = OpenAIChat()
+        llm = OpenAIChat(max_tokens=4000)
     elif model_name == "GPT4o":
         # Switch to GPT4o model
         llm = GPT4o(openai_api_key=os.getenv("OPENAI_API_KEY"))
@@ -84,6 +114,7 @@ def model_router(model_name: str):
 
     return llm
 
+
 # Create a FastAPI app
 app = FastAPI(debug=True)
 
@@ -96,25 +127,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/v1/models", response_model=List[str])
-async def list_models():
+async def list_models() -> List[str]:
     """
     An endpoint to list available models. It returns a list of model names.
     This is useful for clients to query and understand what models are available for use.
     """
     return AVAILABLE_MODELS
 
+
 @app.post("/v1/agent/completions", response_model=AgentOutput)
-async def agent_completions(agent_input: AgentInput):
+async def agent_completions(agent_input: AgentInput) -> AgentOutput:
     try:
         logger.info(f"Received request: {agent_input}")
-        llm = model_router(agent_input.model_name)
-
+        
+        # Model check
+        model_name = agent_input.model_name
+        if model_name not in AVAILABLE_MODELS:
+            raise HTTPException(status_code=400, detail=f"Invalid model name: {model_name}")
+        
+        
+        # Task check
+        task = agent_input.task
+        if task not in agent_input:
+            raise HTTPException(status_code=400, detail=f"Task not provided")
+        
+        
+        # Initialize the agent
         agent = Agent(
             agent_name=agent_input.agent_name,
             system_prompt=agent_input.system_prompt,
             agent_description=agent_input.agent_description,
-            llm=llm,
+            llm=model_router(agent_input.model_name),
             max_loops=agent_input.max_loops,
             autosave=agent_input.autosave,
             dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
@@ -131,11 +176,11 @@ async def agent_completions(agent_input: AgentInput):
 
         # Run the agent
         logger.info(f"Running agent with task: {agent_input.task}")
+        agent_history = agent.short_memory.return_history_as_string()
         completions = agent.run(agent_input.task)
 
         logger.info(f"Completions: {completions}")
-        input_history = agent.short_memory.return_history_as_string()
-        all_input_tokens = count_tokens(input_history)
+        all_input_tokens = count_tokens(agent_history)
         output_tokens = count_tokens(completions)
 
         logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
@@ -162,10 +207,11 @@ async def agent_completions(agent_input: AgentInput):
             ),
         )
 
-        return out.json()
+        return out.model_dump_json()
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
