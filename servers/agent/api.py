@@ -5,7 +5,7 @@ import tiktoken
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, model_validator
-from swarms import Agent, Anthropic, GPT4o, GPT4VisionAPI, OpenAIChat
+from swarms import Agent, Anthropic, GPT4VisionAPI, OpenAIChat
 from swarms.utils.loguru_logger import logger
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse, UsageInfo
 
@@ -30,41 +30,46 @@ class AgentInput(BaseModel):
     context_length: int = 8192
     task: str = None
     max_tokens: int = None
-    
+
     @model_validator(mode="pre")
     def check_required_fields(cls, values):
-        required_fields = ['agent_name', 'system_prompt', 'task', 'max_loops', 'context_window']
-        
+        required_fields = [
+            "agent_name",
+            "system_prompt",
+            "task",
+            "max_loops",
+            "context_window",
+        ]
+
         for field in required_fields:
             if not values.get(field):
-                
-                raise ValueError(f'{field} must not be empty or null')
-            
-        if values['max_loops'] <= 0:
-            raise ValueError('max_loops must be greater than 0')
-    
-        if values['context_window'] <= 0:
-            raise ValueError('context_window must be greater than 0')
-        
+
+                raise ValueError(f"{field} must not be empty or null")
+
+        if values["max_loops"] <= 0:
+            raise ValueError("max_loops must be greater than 0")
+
+        if values["context_window"] <= 0:
+            raise ValueError("context_window must be greater than 0")
+
         return values
+
 
 # Define the output model using Pydantic
 class GenerationMetrics(BaseModel):
     tokens_per_second: float = 0.0
     completion_time: float = 0.0
 
+
 # Define the output model using Pydantic
 class AgentOutput(BaseModel):
     agent: AgentInput
     completions: ChatCompletionResponse
     metrics: GenerationMetrics
-    
-    
-
 
 
 # Define the available models
-AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
+AVAILABLE_MODELS = ["OpenAIChat", "GPT4VisionAPI", "Anthropic"]
 
 
 def count_tokens(text: str) -> int:
@@ -99,9 +104,6 @@ def model_router(model_name: str):
     if model_name == "OpenAIChat":
         # Switch to OpenAIChat model
         llm = OpenAIChat(max_tokens=4000)
-    elif model_name == "GPT4o":
-        # Switch to GPT4o model
-        llm = GPT4o(openai_api_key=os.getenv("OPENAI_API_KEY"))
     elif model_name == "GPT4VisionAPI":
         # Switch to GPT4VisionAPI model
         llm = GPT4VisionAPI()
@@ -141,19 +143,19 @@ async def list_models() -> List[str]:
 async def agent_completions(agent_input: AgentInput) -> AgentOutput:
     try:
         logger.info(f"Received request: {agent_input}")
-        
+
         # Model check
         model_name = agent_input.model_name
         if model_name not in AVAILABLE_MODELS:
-            raise HTTPException(status_code=400, detail=f"Invalid model name: {model_name}")
-        
-        
+            raise HTTPException(
+                status_code=400, detail=f"Invalid model name: {model_name}"
+            )
+
         # Task check
         task = agent_input.task
         if task not in agent_input:
-            raise HTTPException(status_code=400, detail=f"Task not provided")
-        
-        
+            raise HTTPException(status_code=400, detail="Task not provided")
+
         # Initialize the agent
         agent = Agent(
             agent_name=agent_input.agent_name,
