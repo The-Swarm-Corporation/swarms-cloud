@@ -1,0 +1,9 @@
+# docker-compose.yaml
+version: "3"
+
+services:
+  api:
+    image: h4ckermike/swarms.world:first
+#    build: .
+    ports:
+      - "8000:8000"

@@ -30,7 +30,7 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--access-log",     "--no-use-colors",  "--log-level", "trace"]
 
 # Additional optimizations:
 # 1. Use multi-stage builds to separate the build environment from the runtime environment if necessary.

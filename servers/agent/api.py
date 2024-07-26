@@ -1,7 +1,7 @@
 import asyncio
 import os
 from typing import List
-
+import uvicorn
 import tiktoken
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,7 +87,8 @@ def model_router(model_name: str):
     return llm
 
 # Create a FastAPI app
-app = FastAPI(debug=True)
+app = FastAPI(debug=True,
+              )
 
 # Load the middleware to handle CORS
 app.add_middleware(
@@ -106,6 +107,21 @@ async def list_models():
     """
     return AVAILABLE_MODELS
 
+<<<<<<< HEAD
+=======
+# @app.get("/v1/models", response_model=ModelList)
+# async def list_models():
+#     """
+#     An endpoint to list available models. It returns a list of model cards.
+#     This is useful for clients to query and understand what models are available for use.
+#     """
+#     model_card = ModelCard(
+#         id="cogvlm-chat-17b"
+#     )  # can be replaced by your model id like cogagent-chat-18b
+#     return ModelList(data=[model_card])
+
+
+>>>>>>> 742847f (fixing the api endpoint)
 @app.post("/v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
     try:
@@ -170,6 +186,8 @@ async def agent_completions(agent_input: AgentInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
+    
 
-    uvicorn.run(app, host="0.0.0.0", port=8080, use_colors=True, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8080, #use_colors=True,
+                
+                log_level="debug")

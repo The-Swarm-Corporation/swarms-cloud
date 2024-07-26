@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: swarms-world
+  labels:
+    app: swarms-cloud-server-agent
+spec:
+  type: LoadBalancer
+  selector:
+    app: swarms-cloud-server-agent
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swarms-deployment
+  labels:
+    app: swarms-cloud-server-agent
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swarms-cloud-server-agent
+  template:
+    metadata:
+      labels:
+        app: swarms-cloud-server-agent
+    spec:
+      containers:
+      - name: swarms-eks-container
+        image: h4ckermike/swarms.world:patch-1
+# imagePullPolicy: always
+        ports:
+        - containerPort: 8000
