@@ -2,7 +2,10 @@
 Install tools
 https://gist.github.com/vfarcic/8ebbf4943c5c012c8c98e1967fa7f33b
 `nix-shell --packages gh kubectl awscli2 helm eksctl`
+
 docker, docker compose
+`sudo apt install docker.io`
+
 
 
 Build image
