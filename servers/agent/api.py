@@ -37,24 +37,19 @@ class AgentOutput(BaseModel):
 # Define the available models
 AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
 
-# Define the available models
-AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
-
 
 def count_tokens(text: str):
-    try:
-        # Get the encoding for the specific model
-        encoding = tiktoken.get_encoding("gpt-4o")
+    # Get the encoding for the specific model
+    enc = tiktoken.encoding_for_model("gpt-4o")
 
-        # Encode the text
-        tokens = encoding.encode(text)
+    # Encode the text
+    tokens = enc.encode(text)
 
-        # Count the tokens
-        token_count = len(tokens)
+    # Count the tokens
+    token_count = len(tokens)
 
-        return token_count
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return token_count
+
 
 def model_router(model_name: str):
     """
@@ -136,7 +131,7 @@ async def agent_completions(agent_input: AgentInput):
 
         # Run the agent
         logger.info(f"Running agent with task: {agent_input.task}")
-        completions = await agent.run(agent_input.task)
+        completions = agent.run(agent_input.task)
 
         logger.info(f"Completions: {completions}")
         input_history = agent.short_memory.return_history_as_string()
