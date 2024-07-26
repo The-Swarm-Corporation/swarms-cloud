@@ -107,21 +107,6 @@ async def list_models():
     """
     return AVAILABLE_MODELS
 
-<<<<<<< HEAD
-=======
-# @app.get("/v1/models", response_model=ModelList)
-# async def list_models():
-#     """
-#     An endpoint to list available models. It returns a list of model cards.
-#     This is useful for clients to query and understand what models are available for use.
-#     """
-#     model_card = ModelCard(
-#         id="cogvlm-chat-17b"
-#     )  # can be replaced by your model id like cogagent-chat-18b
-#     return ModelList(data=[model_card])
-
-
->>>>>>> 742847f (fixing the api endpoint)
 @app.post("/v1/agent/completions", response_model=AgentOutput)
 async def agent_completions(agent_input: AgentInput):
     try:
@@ -149,7 +134,7 @@ async def agent_completions(agent_input: AgentInput):
 
         # Run the agent
         logger.info(f"Running agent with task: {agent_input.task}")
-        completions = await agent.run(agent_input.task)
+        completions = agent.run(agent_input.task)
 
         logger.info(f"Completions: {completions}")
         input_history = agent.short_memory.return_history_as_string()
