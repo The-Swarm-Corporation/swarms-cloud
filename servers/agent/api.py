@@ -39,19 +39,16 @@ class AgentOutput(BaseModel):
 AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
 
 def count_tokens(text: str):
-    try:
-        # Get the encoding for the specific model
-        encoding = tiktoken.get_encoding("gpt-4o")
+    # Get the encoding for the specific model
+    enc = tiktoken.encoding_for_model("gpt-4o")
 
-        # Encode the text
-        tokens = encoding.encode(text)
+    # Encode the text
+    tokens = enc.encode(text)
 
-        # Count the tokens
-        token_count = len(tokens)
+    # Count the tokens
+    token_count = len(tokens)
 
-        return token_count
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return token_count
 
 def model_router(model_name: str):
     """
