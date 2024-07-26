@@ -1,4 +1,3 @@
-import asyncio
 import os
 from typing import List
 
@@ -37,6 +36,10 @@ class AgentOutput(BaseModel):
 
 # Define the available models
 AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
+
+# Define the available models
+AVAILABLE_MODELS = ["OpenAIChat", "GPT4o", "GPT4VisionAPI", "Anthropic"]
+
 
 def count_tokens(text: str):
     try:
