@@ -42,7 +42,7 @@ ContentItem = Union[TextContent, ImageUrlContent]
 
 
 class ChatMessageInput(BaseModel):
-    role: Literal["user", "assistant", "system"]
+    role: Literal["user", "assistant", "system"] = "system"
     content: Union[str, List[ContentItem]]
     name: Optional[str] = None
 
@@ -59,13 +59,12 @@ class DeltaMessage(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str
+    model: str = "gpt-4o"
     messages: List[ChatMessageInput]
     temperature: Optional[float] = 0.8
     top_p: Optional[float] = 0.8
-    max_tokens: Optional[int] = None
+    max_tokens: Optional[int] = 4000
     stream: Optional[bool] = False
-    # Additional parameters
     repetition_penalty: Optional[float] = 1.0
     echo: Optional[bool] = False
 

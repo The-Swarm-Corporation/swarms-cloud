@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Any
 
 import tiktoken
 from fastapi import FastAPI, HTTPException
@@ -22,7 +22,7 @@ class AgentInput(BaseModel):
     dashboard: bool = False
     verbose: bool = False
     streaming_on: bool = False
-    saved_state_path: str = None
+    saved_state_path: str = "agent_saved_state.json"
     sop: str = None
     sop_list: List[str] = None
     user_name: str = "User"
@@ -30,6 +30,7 @@ class AgentInput(BaseModel):
     context_length: int = 8192
     task: str = None
     max_tokens: int = None
+    tool_schema: Any = None
 
     @model_validator(mode="pre")
     def check_required_fields(cls, values):
@@ -65,7 +66,7 @@ class GenerationMetrics(BaseModel):
 class AgentOutput(BaseModel):
     agent: AgentInput
     completions: ChatCompletionResponse
-    metrics: GenerationMetrics
+    # metrics: GenerationMetrics
 
 
 # Define the available models
@@ -140,9 +141,15 @@ async def list_models() -> List[str]:
 
 
 @app.post("/v1/agent/completions", response_model=AgentOutput)
-async def agent_completions(agent_input: AgentInput) -> AgentOutput:
+async def agent_completions(agent_input: AgentInput):
     try:
         logger.info(f"Received request: {agent_input}")
+
+        agent_name = agent_input.agent_name
+        system_prompt = agent_input.system_prompt
+        max_loops = agent_input.max_loops
+        context_window = agent_input.context_length
+        tools = agent_input.tool_schema
 
         # Model check
         model_name = agent_input.model_name
@@ -158,11 +165,11 @@ async def agent_completions(agent_input: AgentInput) -> AgentOutput:
 
         # Initialize the agent
         agent = Agent(
-            agent_name=agent_input.agent_name,
-            system_prompt=agent_input.system_prompt,
+            agent_name=agent_name,
+            system_prompt=system_prompt,
             agent_description=agent_input.agent_description,
             llm=model_router(agent_input.model_name),
-            max_loops=agent_input.max_loops,
+            max_loops=max_loops,
             autosave=agent_input.autosave,
             dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
             dashboard=agent_input.dashboard,
@@ -173,7 +180,8 @@ async def agent_completions(agent_input: AgentInput) -> AgentOutput:
             sop_list=agent_input.sop_list,
             user_name=agent_input.user_name,
             retry_attempts=agent_input.retry_attempts,
-            context_length=agent_input.context_length,
+            context_length=context_window,
+            tool_schema=tools,
         )
 
         # Run the agent
@@ -190,17 +198,18 @@ async def agent_completions(agent_input: AgentInput) -> AgentOutput:
         out = AgentOutput(
             agent=agent_input,
             completions=ChatCompletionResponse(
+                model=model_name,
+                object="chat.completion",
                 choices=[
                     {
                         "index": 0,
                         "message": {
-                            "role": agent_input.agent_name,
+                            "role": "system",
                             "content": completions,
-                            "name": None,
+                            "name": agent_name,
                         },
                     }
                 ],
-                stream_choices=None,
                 usage_info=UsageInfo(
                     prompt_tokens=all_input_tokens,
                     completion_tokens=output_tokens,
@@ -209,7 +218,7 @@ async def agent_completions(agent_input: AgentInput) -> AgentOutput:
             ),
         )
 
-        return out.model_dump_json()
+        return out
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
