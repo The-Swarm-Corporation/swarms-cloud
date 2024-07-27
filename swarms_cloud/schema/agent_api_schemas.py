@@ -6,7 +6,6 @@ from pydantic import BaseModel, model_validator
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse
 
 
-
 # Define the input model using Pydantic
 class AgentInput(BaseModel):
     agent_name: str = "Swarm Agent"
@@ -76,4 +75,3 @@ class AgentOutput(BaseModel):
     agent: AgentInput
     completions: ChatCompletionResponse
     # metrics: GenerationMetrics
-

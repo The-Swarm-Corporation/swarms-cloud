@@ -7,7 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from swarms import Agent, Anthropic, GPT4VisionAPI, OpenAIChat
 from swarms.utils.loguru_logger import logger
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse, UsageInfo
-from swarms_cloud.schema.agent_api_schemas import AgentInput, AgentOutput, ModelList, ModelSchema
+from swarms_cloud.schema.agent_api_schemas import (
+    AgentInput,
+    AgentOutput,
+    ModelList,
+    ModelSchema,
+)
 
 
 async def count_tokens(text: str) -> int:
@@ -81,7 +86,7 @@ async def list_models() -> List[str]:
     This is useful for clients to query and understand what models are available for use.
     """
     models = ModelList(
-        data = [
+        data=[
             ModelSchema(id="gpt-4o", created_at="OpenAI"),
             ModelSchema(id="gpt-4-vision-preview", created_at="OpenAI"),
             ModelSchema(id="Anthropic", created_at="Anthropic"),
@@ -89,7 +94,7 @@ async def list_models() -> List[str]:
             ## Llama3.1
         ]
     )
-    
+
     return models
 
 
