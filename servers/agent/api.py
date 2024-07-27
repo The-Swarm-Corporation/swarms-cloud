@@ -154,18 +154,8 @@ async def agent_completions(agent_input: AgentInput):
 
         # Model check
         model_name = agent_input.model_name
-        if model_name not in AVAILABLE_MODELS:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid model name: {model_name}"
-            )
-
         model = await model_router(model_name)
-
-        # Task check
-        task = agent_input.task
-        if task not in agent_input:
-            raise HTTPException(status_code=400, detail="Task not provided")
-
+        
         # Initialize the agent
         agent = Agent(
             agent_name=agent_name,
@@ -191,7 +181,8 @@ async def agent_completions(agent_input: AgentInput):
         logger.info(f"Running agent with task: {task}")
         agent_history = agent.short_memory.return_history_as_string()
         completions = agent.run(task)
-        logger.info(f"Completions: {completions}")
+        
+        logger.info(f"Agent response: {completions}")
 
         # Costs calculation
         all_input_tokens = await count_tokens(agent_history)
@@ -209,7 +200,7 @@ async def agent_completions(agent_input: AgentInput):
                     {
                         "index": 0,
                         "message": {
-                            "role": "system",
+                            "role": "assistant",
                             "content": completions,
                             "name": agent_name,
                         },
