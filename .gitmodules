@@ -1,0 +1,15 @@
+[submodule "vendor/iamlive"]
+	path = vendor/iamlive
+	url = https://github.com/iann0036/iamlive.git
+[submodule "vendor/tf-import-gen"]
+	path = vendor/tf-import-gen
+	url = https://github.com/kishaningithub/tf-import-gen
+[submodule "vendor/tf-state-import"]
+	path = vendor/tf-state-import
+	url = https://github.com/cmdpdx/tf-state-import.git
+[submodule "vendor/fuzzy-terraform-import"]
+	path = vendor/fuzzy-terraform-import
+	url = https://github.com/paololazzari/fuzzy-terraform-import
+[submodule "vendor/terraform-aws-eks-cluster"]
+	path = vendor/terraform-aws-eks-cluster
+	url = https://github.com/cloudposse/terraform-aws-eks-cluster

@@ -1,6 +1,6 @@
 import os
 from typing import List, Any
-
+import uvicorn
 import tiktoken
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +8,7 @@ from pydantic import BaseModel, model_validator
 from swarms import Agent, Anthropic, GPT4VisionAPI, OpenAIChat
 from swarms.utils.loguru_logger import logger
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse, UsageInfo
-
-
+from pydantic import BaseModel, model_validator
 # Define the input model using Pydantic
 class AgentInput(BaseModel):
     agent_name: str = "Swarm Agent"
@@ -32,14 +31,14 @@ class AgentInput(BaseModel):
     max_tokens: int = None
     tool_schema: Any = None
 
-    @model_validator(mode="pre")
+    @model_validator(mode="before")
     def check_required_fields(cls, values):
         required_fields = [
             "agent_name",
             "system_prompt",
             "task",
             "max_loops",
-            "context_window",
+            #"context_window",
         ]
 
         for field in required_fields:
@@ -50,8 +49,8 @@ class AgentInput(BaseModel):
         if values["max_loops"] <= 0:
             raise ValueError("max_loops must be greater than 0")
 
-        if values["context_window"] <= 0:
-            raise ValueError("context_window must be greater than 0")
+        #if values["context_window"] <= 0:
+        #    raise ValueError("context_window must be greater than 0")
 
         return values
 
@@ -220,7 +219,10 @@ async def agent_completions(agent_input: AgentInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8080, use_colors=True, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8080, #use_colors=True,
+                
+                log_level="debug")

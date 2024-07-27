@@ -1,7 +1,8 @@
-swarms
+swarms==5.4.2
+#-e git+https://github.com/kyegomez/swarms@bugfix/1#egg=swarms
 fastapi
 uvicorn
 tiktoken
-pydantic
+pydantic==2.8.2
 asyncio
 swarms-cloud

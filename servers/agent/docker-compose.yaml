@@ -4,7 +4,10 @@ version: "3"
 services:
   api:
     image: apacai/agent_api
+    # image: h4ckermike/swarms.world:first
+    # image: h4ckermike/swarms.world:patch-2
     env_file: ".env"
     build: .
     ports:
       - "8000:8000"
+
