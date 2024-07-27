@@ -73,7 +73,7 @@ class AgentOutput(BaseModel):
 AVAILABLE_MODELS = ["OpenAIChat", "GPT4VisionAPI", "Anthropic"]
 
 
-def count_tokens(text: str) -> int:
+async def count_tokens(text: str) -> int:
     try:
         # Get the encoding for the specific model
         enc = tiktoken.encoding_for_model("gpt-4o")
@@ -87,7 +87,7 @@ def count_tokens(text: str) -> int:
         raise HTTPException(status_code=400, detail=f"Error counting tokens: {e}")
 
 
-def model_router(model_name: str):
+async def model_router(model_name: str):
     """
     Function to switch to the specified model.
 
@@ -148,8 +148,9 @@ async def agent_completions(agent_input: AgentInput):
         agent_name = agent_input.agent_name
         system_prompt = agent_input.system_prompt
         max_loops = agent_input.max_loops
-        context_window = agent_input.context_length
+        context_length = agent_input.context_length
         tools = agent_input.tool_schema
+        task = agent_input.task
 
         # Model check
         model_name = agent_input.model_name
@@ -157,6 +158,8 @@ async def agent_completions(agent_input: AgentInput):
             raise HTTPException(
                 status_code=400, detail=f"Invalid model name: {model_name}"
             )
+
+        model = await model_router(model_name)
 
         # Task check
         task = agent_input.task
@@ -168,7 +171,7 @@ async def agent_completions(agent_input: AgentInput):
             agent_name=agent_name,
             system_prompt=system_prompt,
             agent_description=agent_input.agent_description,
-            llm=model_router(agent_input.model_name),
+            llm=model,
             max_loops=max_loops,
             autosave=agent_input.autosave,
             dynamic_temperature_enabled=agent_input.dynamic_temperature_enabled,
@@ -180,21 +183,23 @@ async def agent_completions(agent_input: AgentInput):
             sop_list=agent_input.sop_list,
             user_name=agent_input.user_name,
             retry_attempts=agent_input.retry_attempts,
-            context_length=context_window,
+            context_length=context_length,
             tool_schema=tools,
         )
 
         # Run the agent
-        logger.info(f"Running agent with task: {agent_input.task}")
+        logger.info(f"Running agent with task: {task}")
         agent_history = agent.short_memory.return_history_as_string()
-        completions = agent.run(agent_input.task)
-
+        completions = agent.run(task)
         logger.info(f"Completions: {completions}")
-        all_input_tokens = count_tokens(agent_history)
-        output_tokens = count_tokens(completions)
 
-        logger.info(f"Token counts: {all_input_tokens}, {output_tokens}")
+        # Costs calculation
+        all_input_tokens = await count_tokens(agent_history)
+        output_tokens = await count_tokens(completions)
+        total_costs = all_input_tokens + output_tokens
+        logger.info(f"Token counts: {total_costs}")
 
+        # Prepare the output
         out = AgentOutput(
             agent=agent_input,
             completions=ChatCompletionResponse(
