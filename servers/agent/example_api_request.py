@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = "http://localhost:8080/v1/agent/completions"
+url = "http://a34f2f308013145858827f49a34f3bef-1801899861.us-east-1.elb.amazonaws.com/v1/agent/completions"
 
 data = {
     "agent_name": "Financial Assistant",

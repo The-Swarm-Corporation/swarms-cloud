@@ -1,7 +1,3 @@
-envs:
-  OPENAI_API_KEY: "sk-proj-FzfEmJvarLBZ8tjdG4ycT3BlbkFJsCZ9PP8cZu5PqXa9A0Tx"
-  MODEL_NAME: "OpenAIChat"
-
 # Service configuration
 service:
   readiness_probe:
@@ -13,6 +9,7 @@ service:
           content: Hello! What is your name?  # Specify the initial message
       max_tokens: 1  # Maximum number of tokens
   # readiness_probe: /v1/health  # Additional readiness probe
+
 
   # Replica Policy
   replica_policy:
@@ -36,7 +33,12 @@ resources:
 # workdir: servers/agent
 # workdir: .
 
-run: |
-  docker pull apacai/agent_api_2:1.0
+setup: |
+  git clone https://github.com/yala/Mirai.git
+  cd Mirai
+  pip install -r requirements.txt
 
-  docker run -d -p 8080:8080 apacai/agent_api_2:1.0
+run: |
+  python scripts/main.py  --model_name mirai_full --img_encoder_snapshot snapshots/mgh_mammo_MIRAI_Base_May20_2019.p --transformer_snapshot snapshots/mgh_mammo_cancer_MIRAI_Transformer_Jan13_2020.p  --callibrator_snapshot snapshots/callibrators/MIRAI_FULL_PRED_RF.callibrator.p --batch_size 1 --dataset csv_mammo_risk_all_full_future --img_mean 7047.99 --img_size 1664 2048 --img_std 12005.5 --metadata_path demo/sample_metadata.csv --test --prediction_save_path demo/validation_output.csv
+
+  python scripts/dispatcher.py --experiment_config_path configs/fine_tune_mirai.json --result_path finetune_results.csv

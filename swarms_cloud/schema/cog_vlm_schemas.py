@@ -1,3 +1,4 @@
+import uuid
 import time
 from typing import List, Literal, Optional, Union
 
@@ -42,15 +43,19 @@ ContentItem = Union[TextContent, ImageUrlContent]
 
 
 class ChatMessageInput(BaseModel):
-    role: Literal["user", "assistant", "system"] = "system"
+    role: str = Field(
+        ...,
+        description="The role of the message sender. Could be 'user', 'assistant', or 'system'.",
+    )
     content: Union[str, List[ContentItem]]
-    name: Optional[str] = None
 
 
 class ChatMessageResponse(BaseModel):
-    role: Literal["assistant"]
+    role: str = Field(
+        ...,
+        description="The role of the message sender. Could be 'user', 'assistant', or 'system'.",
+    )
     content: str = None
-    name: Optional[str] = None
 
 
 class DeltaMessage(BaseModel):
@@ -93,3 +98,42 @@ class ChatCompletionResponse(BaseModel):
     ]
     created: Optional[int] = Field(default_factory=lambda: int(time.time()))
     usage: Optional[UsageInfo] = None
+    completion_time: Optional[float] = Field(default_factory=lambda: 0.0)
+    tokens_per_second: Optional[float] = Field(default_factory=lambda: 0.0)
+
+
+class AgentChatCompletionResponse(BaseModel):
+    id: str = f"agent-{uuid.uuid4().hex}"
+    agent: str = Field(
+        ...,
+        description="The name of the agent that generated the completion response.",
+    )
+    object: Literal["chat.completion", "chat.completion.chunk"]
+    choices: List[
+        Union[ChatCompletionResponseChoice, ChatCompletionResponseStreamChoice]
+    ]
+    created: Optional[int] = Field(default_factory=lambda: int(time.time()))
+    usage: Optional[UsageInfo] = None
+    completion_time: Optional[float] = Field(default_factory=lambda: 0.0)
+    tokens_per_second: Optional[float] = Field(default_factory=lambda: 0.0)
+
+
+# out = AgentChatCompletionResponse(
+#     agent="GPT-4o",
+#     object="chat.completion",
+#     choices=[
+#         ChatCompletionResponseChoice(
+#             index=0,
+#             message=ChatMessageResponse(
+#                 role="assistant",
+#                 content="Hello, how can I help you today?",
+#                 name="GPT-4o",
+#             ),
+#         )
+#     ],
+#     created=int(time.time()),
+#     usage=UsageInfo(prompt_tokens=0, total_tokens=0),
+#     completion_time=0.0,
+#     tokens_per_second=0.0,
+# )
+# print(out.model_dump_json())

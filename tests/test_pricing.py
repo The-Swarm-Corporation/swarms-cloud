@@ -1,6 +1,6 @@
 import pytest
 from transformers import AutoTokenizer
-from swarms_cloud.calculate_pricing import calculate_pricing
+from swarms_cloud.utils.calculate_pricing import calculate_pricing
 
 
 # Create a fixture for a valid tokenizer

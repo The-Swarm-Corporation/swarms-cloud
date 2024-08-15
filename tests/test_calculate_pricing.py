@@ -1,5 +1,5 @@
 import pytest
-from swarms_cloud.calculate_pricing import calculate_pricing
+from swarms_cloud.utils.calculate_pricing import calculate_pricing
 from transformers import AutoTokenizer
 
 

@@ -1,0 +1,40 @@
+
+# Service configuration
+service:
+  # readiness_probe:
+  #   path: /v1/agent/completions  # Path for the readiness probe
+  #   post_data:
+  #     model: $MODEL_NAME  # Specify the model name
+  #     messages:
+  #       - role: user
+  #         content: Hello! What is your name?  # Specify the initial message
+  #     max_tokens: 1  # Maximum number of tokens
+  readiness_probe: /
+
+  # Replica Policy
+  replica_policy:
+    min_replicas: 4  # Minimum number of replicas
+    max_replicas: 100  # Maximum number of replicas
+    target_qps_per_replica: 2.5  # Target queries per second per replica
+    upscale_delay_seconds: 10  # Delay before upscaling replicas
+    downscale_delay_seconds: 20  # Delay before downscaling replicas
+
+resources:
+  # Cheap GPUs
+  accelerators: [L4, M60, K80, T4] ## Small GPUs
+  # cpus: 32+
+  # memory: 32
+  use_spot: true
+  # disk_size: 512  # Ensure model checkpoints (~246GB) can fit.
+  # disk_tier: best
+  ports: 8000  # Expose to internet traffic.
+
+
+# workdir: servers/agent
+# workdir: .
+setup: |
+  git clone https://github.com/The-Swarm-Corporation/swarms-memory.git
+  cd swarms-memory
+  cd server
+  pip3 install -r requirements.txt
+  python3 api.py

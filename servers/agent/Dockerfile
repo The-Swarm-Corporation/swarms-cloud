@@ -4,6 +4,8 @@ FROM python:3.11-slim
 # Set environment variables to prevent Python from writing pyc files to disc and to prevent it from buffering stdout and stderr.
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV OPENAI_API_KEY="sk-proj-Xtuw85b9ewwj1GkJw0gbT3BlbkFJMU39SGxwIi5aLtVltQ9p"
+ENV AGENT_PORT=8080
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -22,6 +24,7 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -U swarms-cloud
 
 # Copy the FastAPI application code
 COPY . .
@@ -30,7 +33,7 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--access-log",     "--no-use-colors",  "--log-level", "trace"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8080", "--access-log",     "--no-use-colors",  "--log-level", "trace"]
 
 # Additional optimizations:
 # 1. Use multi-stage builds to separate the build environment from the runtime environment if necessary.

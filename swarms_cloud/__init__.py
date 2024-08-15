@@ -1,8 +1,7 @@
 from swarms_cloud.check_model_list import (
     create_error_response,
 )
-from swarms_cloud.calculate_pricing import calculate_pricing, count_tokens
-from swarms_cloud.func_api_wrapper import SwarmCloud
+from swarms_cloud.utils.calculate_pricing import calculate_pricing, count_tokens
 from swarms_cloud.loggers.log_api_request_to_supabase import (
     ModelAPILogEntry,
     log_to_supabase,
@@ -48,7 +47,6 @@ __all__ = [
     "create_error_response",
     "calculate_pricing",
     "count_tokens",
-    "SwarmCloud",
     "ModelAPILogEntry",
     "log_to_supabase",
     "ChatCompletionRequest",
