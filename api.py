@@ -68,7 +68,7 @@ def count_tokens(text: str) -> int:
 llm = OpenAIChat(
     max_tokens=4000,
     model_name="gpt-4o",
-    api_key="sk-proj-nXe1i367TygklzKu7IImT3BlbkFJw8pvJNmG9gyAZQ18HzFT",
+    api_key=os.getenv("OPENAI_API_KEY"),
 )
 
 # Create a FastAPI app
