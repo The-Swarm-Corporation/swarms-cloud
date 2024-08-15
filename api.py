@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from swarms import Agent, OpenAIChat
 from swarms.utils.loguru_logger import logger
 from swarms_cloud.schema.cog_vlm_schemas import ChatCompletionResponse, UsageInfo
-from agent_api_schemas import (
+from swarms_cloud.schema.agent_api_schemas import (
     AgentInput,
     AgentOutput,
     ModelList,
@@ -127,7 +127,7 @@ async def create_agent(request: Request, agent_input: AgentInput):
     # Dict
     agent_dict = agent.to_dict()
 
-    creation_log = {
+    {
         "Timestamp": time.time(),
         "Agent": agent_dict,
         "IP": request.client.host,

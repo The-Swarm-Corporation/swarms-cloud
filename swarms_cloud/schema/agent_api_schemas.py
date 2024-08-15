@@ -5,9 +5,6 @@ from pydantic import BaseModel, model_validator, Field
 
 from swarms_cloud.schema.cog_vlm_schemas import (
     AgentChatCompletionResponse,
-    ChatCompletionResponseChoice,
-    ChatCompletionResponse,
-    ChatMessageResponse,
 )
 
 
@@ -133,4 +130,3 @@ class ParallelSwarmAPIOutput(BaseModel):
     )
     created_at: int = time.time()
     owned_by: str = "TGSC"
-
