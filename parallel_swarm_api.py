@@ -100,7 +100,10 @@ def run_parallel_swarm_completions(
 
 
 @app.post("v1/swarms", response_model=AllSwarmsSchema)
-def get_all_swarms(request: Request):
+def get_all_swarms(
+    request: Request,
+    Swa,
+):
     return AllSwarmsSchema(
         swarms=[
             SwarmAPISchema(

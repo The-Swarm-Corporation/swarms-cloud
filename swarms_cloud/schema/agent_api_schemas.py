@@ -146,3 +146,23 @@ class ParallelSwarmAPIOutput(BaseModel):
 # )
 
 # print(full_example.dict())
+
+
+class AgentCreationOutput(BaseModel):
+    id: str = uuid.uuid4().hex
+    name: str = Field(description="The name of the agent.")
+    description: str = Field(description="The description of the agent.")
+    tags: str = Field(
+        description="The tags associated with the agent, example: Finance Agent, Chat Agent, Math Agent"
+    )
+    use_cases: Dict[str, str] = Field(
+        description="The use cases of the agent, example: {'use_case_1': 'Use case 1 description', 'use_case_2': 'Use case 2 description'}"
+    )
+    created_at: int = time.time()
+    owned_by: str = "TGSC"
+
+
+class AllAgentsSchema(BaseModel):
+    agents: List[AgentCreationOutput] = Field(
+        description="The list of agents available."
+    )
