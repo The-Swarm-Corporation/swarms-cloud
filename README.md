@@ -21,6 +21,10 @@ Infrastructure for scalable, reliable, and economical Multi-Modal Model API serv
 - Swarms Memory API
 - OES API
 - Swarms Multi-Agent API  
+  - Parallel API
+  - Sequential API
+  - Hiearchical API Etc
+  
 
 # License
 MIT

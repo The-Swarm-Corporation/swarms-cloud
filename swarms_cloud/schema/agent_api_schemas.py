@@ -6,11 +6,12 @@ from pydantic import BaseModel, model_validator, Field
 from swarms_cloud.schema.cog_vlm_schemas import (
     AgentChatCompletionResponse,
 )
+from swarms_cloud.schema.swarm_schema import SwarmAPISchema
 
 
 # Define the input model using Pydantic
 class AgentInput(BaseModel):
-    id: str = (uuid.uuid4().hex,)
+    id: str = uuid.uuid4().hex
     created_at: int = time.time()
     owned_by: Optional[str] = Field(None, description="The owner of the agent.")
     agent_name: str = "Swarm Agent"
@@ -18,12 +19,8 @@ class AgentInput(BaseModel):
     agent_description: str = None
     model_name: str = "OpenAIChat"
     max_loops: int = 1
-    autosave: bool = False
     dynamic_temperature_enabled: bool = False
-    dashboard: bool = False
-    verbose: bool = False
     streaming_on: bool = False
-    saved_state_path: str = "agent_saved_state.json"
     sop: str = None
     sop_list: List[str] = None
     user_name: str = "User"
@@ -80,18 +77,12 @@ class ModelSchema(BaseModel):
 
 class ModelList(BaseModel):
     object: str = "list"
-    data: List[ModelSchema] = []
+    data: List[ModelSchema] = Field(..., description="The list of models available.")
 
 
 # Define the output model using Pydantic
 class AgentOutput(BaseModel):
     completions: AgentChatCompletionResponse
-
-
-class MultipleAgentOutputs(BaseModel):
-    agents: List[AgentOutput] = Field(
-        ..., description="The list of agents and their completions."
-    )
 
 
 class ParallelSwarmAPIInput(BaseModel):
@@ -105,11 +96,13 @@ class ParallelSwarmAPIInput(BaseModel):
         owned_by (str): The owner of the API.
     """
 
-    id: str = (uuid.uuid4().hex,)
-    swarm_name: str = "Swarm API"
-    agents: List[AgentInput] = []
-    created_at: int = time.time()
-    owned_by: str = "TGSC"
+    config: SwarmAPISchema = Field(
+        ..., description="The configuration for the swarm API."
+    )
+    agents: List[AgentInput] = Field(
+        ..., description="The list of agents in the swarm."
+    )
+    task: str = Field(..., description="The task to be performed by the agents.,")
 
 
 class ParallelSwarmAPIOutput(BaseModel):
@@ -123,10 +116,33 @@ class ParallelSwarmAPIOutput(BaseModel):
         owned_by (str): The owner of the API.
     """
 
-    id: str = uuid.uuid4().hex
-    swarm_name: str = "Swarm API"
-    completions: MultipleAgentOutputs = Field(
-        ..., description="The list of agents in the swarm."
+    config: SwarmAPISchema = Field(
+        ..., description="The configuration for the swarm API."
     )
-    created_at: int = time.time()
-    owned_by: str = "TGSC"
+    completions: List[AgentOutput] = Field(
+        ..., description="The list of agents and their completions."
+    )
+
+
+# full_example = ParallelSwarmAPIOutput(
+#     completions=[
+#         AgentOutput(
+#             completions=AgentChatCompletionResponse(
+#                 agent_name="Agent 1",
+#                 completion="Completion 1",
+#                 created_at=1628584185,
+#                 owned_by="TGSC",
+#             )
+#         ),
+#         AgentOutput(
+#             completions=AgentChatCompletionResponse(
+#                 agent_name="Agent 2",
+#                 completion="Completion 2",
+#                 created_at=1628584185,
+#                 owned_by="TGSC",
+#             )
+#         ),
+#     ]
+# )
+
+# print(full_example.dict())

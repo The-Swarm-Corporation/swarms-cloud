@@ -4,7 +4,9 @@ from PIL import Image
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 
-def count_tokens(texts: List[str], tokenizer: PreTrainedTokenizer, model: str) -> int:
+def count_tokens_hf(
+    texts: List[str], tokenizer: PreTrainedTokenizer, model: str
+) -> int:
     """
     Counts the total number of tokens in a list of texts using a tokenizer.
 

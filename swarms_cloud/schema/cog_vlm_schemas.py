@@ -88,6 +88,7 @@ class UsageInfo(BaseModel):
     prompt_tokens: int = 0
     total_tokens: int = 0
     completion_tokens: Optional[int] = 0
+    tokens_per_second: Optional[float] = Field(default_factory=lambda: 0.0)
 
 
 class ChatCompletionResponse(BaseModel):
@@ -104,7 +105,7 @@ class ChatCompletionResponse(BaseModel):
 
 class AgentChatCompletionResponse(BaseModel):
     id: str = f"agent-{uuid.uuid4().hex}"
-    agent: str = Field(
+    agent_name: str = Field(
         ...,
         description="The name of the agent that generated the completion response.",
     )
@@ -115,7 +116,6 @@ class AgentChatCompletionResponse(BaseModel):
     created: Optional[int] = Field(default_factory=lambda: int(time.time()))
     usage: Optional[UsageInfo] = None
     completion_time: Optional[float] = Field(default_factory=lambda: 0.0)
-    tokens_per_second: Optional[float] = Field(default_factory=lambda: 0.0)
 
 
 # out = AgentChatCompletionResponse(

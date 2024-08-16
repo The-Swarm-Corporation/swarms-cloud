@@ -28,7 +28,6 @@ from swarms_cloud.schema.openai_protocol import (  # noqa: E501
     GenerateResponse,
     GenerationConfig,
     ModelCard,
-    ModelList,
     ModelPermission,
     UsageInfo,
 )
