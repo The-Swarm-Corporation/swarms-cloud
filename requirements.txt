@@ -17,7 +17,7 @@ transformers_stream_generator
 bitsandbytes
 peft
 accelerate
-transformers==4.44.0
+transformers==4.45.1
 huggingface-hub
 optimum
 auto-gptq
