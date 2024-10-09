@@ -23,7 +23,7 @@ ASCII_ART = """
 
 # Function to display the ASCII art in red
 def show_ascii_art():
-    text = Text(ASCII_ART, style="bold red")
+    text = Text(ASCII_ART, style="bold cyan")
     console.print(text)
 
 
