@@ -58,9 +58,7 @@ def create_parallel_swarm(request: Request, swarm_input: ParallelSwarmAPIInput):
         futures = [executor.submit(agent.run, task) for agent in created_agents]
 
         # Wait for all the tasks to complete
-        [
-            future.result() for future in concurrent.futures.as_completed(futures)
-        ]
+        [future.result() for future in concurrent.futures.as_completed(futures)]
 
     #
 
@@ -86,9 +84,7 @@ def run_parallel_swarm_completions(
         futures = [executor.submit(agent.run, task) for agent in created_agents]
 
         # Wait for all the tasks to complete
-        [
-            future.result() for future in concurrent.futures.as_completed(futures)
-        ]
+        [future.result() for future in concurrent.futures.as_completed(futures)]
 
     # log_entry = ParallelSwarmAPIOutput(
     #     completions=MultipleAgentOutputs(
