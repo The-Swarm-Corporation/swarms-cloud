@@ -38,6 +38,7 @@ def show_help():
     [bold white]help[/bold white]          : Shows this help message
     [bold white]get-api-key[/bold white]   : Retrieves your API key from the platform
     [bold white]check-login[/bold white]   : Checks if you're logged in and starts the cache
+    [bold white]read-docs[/bold white]   : Redirects you to swarms cloud documentation!
 
     For more details, visit: https://docs.swarms.world
     """
@@ -55,6 +56,16 @@ def get_api_key():
     console.print(
         "[bold green]Your API key is available on the dashboard.[/bold green]"
     )
+
+
+# Redirect to docs
+def redirect_to_docs():
+    console.print("[bold yellow]Opening the Docs page...[/bold yellow]")
+    # Simulating API key retrieval process by opening the website
+    import webbrowser
+
+    webbrowser.open("https://docs.swarms.world")
+    time.sleep(2)
 
 
 # Check and start cache (login system simulation)
@@ -100,6 +111,8 @@ def main():
         get_api_key()
     elif args.command == "check-login":
         check_login()
+    elif args.command == "read-docs":
+        redirect_to_docs()
     else:
         console.print("[bold red]Unknown command! Type 'help' for usage.[/bold red]")
 
