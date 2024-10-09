@@ -1,9 +1,8 @@
 import tiktoken
 from fastapi import HTTPException
-from swarms.utils.loguru_logger import logger
 import asyncio
 
-logger.info("Starting the agent API server...")
+# logger.info("Starting the agent API server...")
 
 
 def count_tokens(text: str) -> int:

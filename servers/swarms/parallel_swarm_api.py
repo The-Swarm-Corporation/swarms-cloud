@@ -43,7 +43,6 @@ def version():
 
 @app.post("v1/swarms/parallel/create/{swarm_id}", response_model=SwarmAPISchema)
 def create_parallel_swarm(request: Request, swarm_input: ParallelSwarmAPIInput):
-    config = swarm_input.config
     task = swarm_input.task
 
     created_agents = []
@@ -59,7 +58,7 @@ def create_parallel_swarm(request: Request, swarm_input: ParallelSwarmAPIInput):
         futures = [executor.submit(agent.run, task) for agent in created_agents]
 
         # Wait for all the tasks to complete
-        results = [
+        [
             future.result() for future in concurrent.futures.as_completed(futures)
         ]
 
@@ -72,7 +71,6 @@ def create_parallel_swarm(request: Request, swarm_input: ParallelSwarmAPIInput):
 def run_parallel_swarm_completions(
     request: Request, swarm_input: ParallelSwarmAPIInput
 ):
-    config = swarm_input.config
     task = swarm_input.task
 
     created_agents = []
@@ -88,7 +86,7 @@ def run_parallel_swarm_completions(
         futures = [executor.submit(agent.run, task) for agent in created_agents]
 
         # Wait for all the tasks to complete
-        results = [
+        [
             future.result() for future in concurrent.futures.as_completed(futures)
         ]
 

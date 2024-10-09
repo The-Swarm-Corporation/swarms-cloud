@@ -125,7 +125,7 @@ async def list_agents(request: Request):
     """
     logger.info("Listing available agents...")
 
-    agents = AllAgentsSchema(
+    AllAgentsSchema(
         AgentCreationOutput(
             name="Agent 1",
             description="Description 1",

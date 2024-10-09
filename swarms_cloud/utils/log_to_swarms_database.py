@@ -25,7 +25,7 @@ def log_agent_data(data_dict: dict, retry_attempts: int = 1) -> dict or None:
     #     try:
     response = requests.post(url, json=data_dict, headers=headers)
     response.raise_for_status()
-    output = response.json()
+    response.json()
     # print(output)
     # except requests.exceptions.RequestException as e:
     #     logger.error("Error logging agent data (Attempt {}): {}", attempt + 1, e)

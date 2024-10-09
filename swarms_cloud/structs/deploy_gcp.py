@@ -87,7 +87,7 @@ def deploy_agent(
         # Step 2: Load the YAML configuration
         config = load_yaml(yaml_path)
         agent_name = config.get("agent_name", "default-agent")
-        description = config.get("description", "No description provided")
+        config.get("description", "No description provided")
         resources = config.get("cloud_run", {}).get("resources", {})
         environment_variables = config.get("cloud_run", {}).get(
             "environment_variables", {}
