@@ -22,6 +22,7 @@ huggingface-hub
 optimum
 auto-gptq
 whisperx
+pulumi
 shortuuid
 hf_transfer
 swarms

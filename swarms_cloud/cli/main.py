@@ -44,6 +44,8 @@ def show_help():
     """
     )
 
+    # [bold white]add-agent[/bold white]   : Add an agent to the marketplace under your name. Must have a Dockerfile + your agent.yaml to publish. Learn more Here: https://docs.swarms.world/en/latest/swarms_cloud/vision/
+
 
 # Fetch API key from platform
 def get_api_key():
@@ -113,6 +115,8 @@ def main():
         check_login()
     elif args.command == "read-docs":
         redirect_to_docs()
+    # elif args.command == "add-agent":
+    #     deploy_agent()
     else:
         console.print("[bold red]Unknown command! Type 'help' for usage.[/bold red]")
 

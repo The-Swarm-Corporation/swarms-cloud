@@ -2,9 +2,9 @@ import os
 from typing import Any, Dict
 
 import click
-import pulumi
 import yaml
 from loguru import logger
+import pulumi
 from pulumi_gcp import cloudrun
 
 # Configure logging
@@ -71,10 +71,11 @@ def build_and_push_docker_image(
     "--dockerfile-path", default="./Dockerfile", help="Path to the Dockerfile"
 )
 @click.option("--yaml-path", default="./agent.yaml", help="Path to the agent YAML file")
-def deploy_agent(
-    project_id: str, region: str, dockerfile_path: str, yaml_path: str
-) -> None:
+def deploy_agent(dockerfile_path: str, yaml_path: str) -> None:
     try:
+        project_id = os.getenv("GCP_PROJECT_ID")
+        region = os.getenv("GCP_REGION")
+
         # Step 1: Validate existence of Dockerfile and agent.yaml
         if not check_file_exists(dockerfile_path):
             logger.error("Dockerfile is missing, exiting.")
@@ -140,5 +141,5 @@ def deploy_agent(
         raise
 
 
-if __name__ == "__main__":
-    deploy_agent()
+# if __name__ == "__main__":
+#     deploy_agent()

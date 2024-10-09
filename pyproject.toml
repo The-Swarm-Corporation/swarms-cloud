@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "swarms-cloud"
-version = "0.4.0"
+version = "0.4.1"
 description = "Swarms Cloud - Pytorch"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
@@ -51,6 +51,7 @@ hf_transfer = "*"
 swarms = "*"
 rich = "*"
 asyncio = "*"
+pulumi = "*"
 
 [tool.poetry.scripts]
 swarms-cloud = "swarms_cloud.cli.main:main"
