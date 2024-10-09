@@ -7,7 +7,11 @@
 Infrastructure for scalable, reliable, and economical Multi-Modal Model API serving and deployment. We're using terraform to orchestrate infrastructure, FastAPI to host the models. If you're into deploying models for millions of people, join our discord and help contribute.
 
 # Install
-`pip install swarms-cloud`
+```bash
+
+$ pip3 install -U swarms-cloud
+
+```
 
 # Stack
 - Backend: FastAPI
