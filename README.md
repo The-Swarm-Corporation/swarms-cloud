@@ -163,6 +163,3 @@ For more detailed information, please refer to our [Contribution Guidelines](CON
 
 For more information, visit our official [Swarms Cloud Documentation](https://docs.swarms.world).
 
----
-
-This README is designed to provide an enterprise-level overview of **Swarms Cloud**, ensuring that you can get started quickly, publish agents efficiently, and monetize your agentic APIs on a global scale. Welcome to the future of automation!
