@@ -1,0 +1,33 @@
+# Agent metadata and description
+agent_name: "example-agent"
+description: "This agent performs financial data analysis."
+version: "v1.0"
+author: "Agent Creator Name"
+contact_email: "creator@example.com"
+tags:
+  - "financial"
+  - "data-analysis"
+  - "agent"
+
+# Deployment configuration
+deployment_config:
+  dockerfile_path: "./Dockerfile"
+  
+  resources:
+    cpu: 2                      # Number of CPUs allocated
+    memory: "2Gi"                # Memory allocation
+    max_instances: 5             # Maximum number of instances for auto-scaling
+    min_instances: 1             # Minimum number of instances to keep warm
+    timeout: 300s                # Request timeout setting
+
+  autoscaling:
+    max_concurrency: 80           # Max requests handled concurrently
+    target_utilization: 0.6       # CPU utilization target for auto-scaling
+
+  environment_variables:
+    DATABASE_URL: "postgres://user:password@db-url"
+    API_KEY: "your-secret-api-key"
+    LOG_LEVEL: "info"
+
+  secrets:
+    SECRET_NAME_1: "projects/my-project/secrets/my-secret/versions/latest"
