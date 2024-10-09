@@ -5,7 +5,7 @@ import click
 import pulumi
 import yaml
 from loguru import logger
-from pulumi_gcp import cloudrun, storage
+from pulumi_gcp import cloudrun
 
 # Configure logging
 logger.add("deploy_agent.log", rotation="10 MB", retention="10 days", level="INFO")

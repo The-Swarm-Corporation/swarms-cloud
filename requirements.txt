@@ -31,3 +31,6 @@ tiktoken
 pydantic
 asyncio
 swarms-cloud
+rich
+tiktoken
+shortuuid
