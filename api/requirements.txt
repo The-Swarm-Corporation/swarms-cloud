@@ -28,3 +28,4 @@ opentelemetry-exporter-otlp
 opentelemetry-instrumentation-fastapi
 gunicorn
 uvicorn
+psutil
