@@ -20,7 +20,6 @@ accelerate
 transformers==4.44.0
 huggingface-hub
 optimum
-auto-gptq
 whisperx
 pulumi
 shortuuid

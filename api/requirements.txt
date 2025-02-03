@@ -1,0 +1,7 @@
+docker
+fastapi
+kubernetes
+pydantic
+loguru
+gunicorn
+uvicorn
