@@ -37,7 +37,7 @@ def log_response(response: requests.Response) -> None:
 def test_create_swarm() -> str:
     """
     Tests the creation of a new swarm.
-    
+
     Returns:
         str: The ID of the created swarm.
     """
@@ -48,7 +48,7 @@ def test_create_swarm() -> str:
         "dockerhub_image": "langchain/langchain",
         "min_replicas": 1,
         "max_replicas": 3,
-        "target_cpu": 60
+        "target_cpu": 60,
     }
     logger.info("Creating a new swarm with payload: {}", payload)
     response = requests.post(url, json=payload, headers=HEADERS)
@@ -78,7 +78,7 @@ def test_list_swarms() -> None:
 def test_get_swarm(swarm_id: str) -> None:
     """
     Tests retrieving a specific swarm by ID.
-    
+
     Args:
         swarm_id (str): The swarm ID to retrieve.
     """
@@ -94,7 +94,7 @@ def test_get_swarm(swarm_id: str) -> None:
 def test_update_swarm(swarm_id: str) -> None:
     """
     Tests updating a swarm's description.
-    
+
     Args:
         swarm_id (str): The swarm ID to update.
     """
@@ -103,7 +103,7 @@ def test_update_swarm(swarm_id: str) -> None:
         "description": "Updated description for testing purposes.",
         "min_replicas": 2,
         "max_replicas": 4,
-        "target_cpu": 70
+        "target_cpu": 70,
     }
     logger.info("Updating swarm {} with payload: {}", swarm_id, update_payload)
     response = requests.put(url, json=update_payload, headers=HEADERS)
@@ -116,7 +116,7 @@ def test_update_swarm(swarm_id: str) -> None:
 def test_delete_swarm(swarm_id: str) -> None:
     """
     Tests deletion of a swarm.
-    
+
     Args:
         swarm_id (str): The swarm ID to delete.
     """

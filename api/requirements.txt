@@ -1,8 +1,30 @@
-docker
+# docker
+# fastapi
+# kubernetes
+# pydantic
+# loguru
+# gunicorn
+# uvicorn
+# python-dotenv
+# httpx
+
+
+
+# fastapi
+# pydantic
+# loguru
+# docker
+# kubernetes
+# python-dotenv
+
+asyncio
 fastapi
-kubernetes
 pydantic
 loguru
+supabase
+python-dotenv
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi
 gunicorn
 uvicorn
-python-dotenv
