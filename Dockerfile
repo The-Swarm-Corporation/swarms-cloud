@@ -27,6 +27,11 @@ RUN adduser --disabled-password --gecos "" appuser && \
     chown -R appuser /app
 USER appuser
 
+
+# Set Docker-related environment variables
+ENV DOCKER_HOST=unix:///var/run/docker.sock
+ENV DOCKER_TLS_VERIFY=0
+
 # Expose port 80 for the application
 EXPOSE 8080
 
