@@ -37,17 +37,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+load_dotenv()
 
-
-# DO NOT force TLS off here.
-# Instead, expect that the proper environment variables are provided externally.
-# For example, for a non-TLS connection, set:
-#   DOCKER_HOST=unix:///var/run/docker.sock
-#   DOCKER_TLS_VERIFY=0
-# For TLS, set:
-#   DOCKER_HOST=tcp://your.docker.host:2376
+# Do not force DOCKER_HOST or DOCKER_TLS_VERIFY here.
+# Instead, expect that these (and the certificate variables) are configured externally.
+# For TLS, set the following environment variables externally:
 #   DOCKER_TLS_VERIFY=1
 #   DOCKER_CLIENT_CERT, DOCKER_CLIENT_KEY, DOCKER_CA_CERT
+# Otherwise, a non-TLS connection (e.g. via Unix socket) will be used.
 
 # Load sensitive certificate data from environment variables.
 CLIENT_CERT = os.environ.get("DOCKER_CLIENT_CERT")
@@ -89,39 +86,38 @@ def write_cert_file(directory: str, filename: str, content: str) -> str:
 
 def create_docker_client() -> docker.DockerClient:
     """
-    Creates a Docker client configured based on the environment.
+    Creates a Docker client based on the available environment variables.
     
-    If DOCKER_TLS_VERIFY is set to "1" then it expects the certificate data to be provided via
-    DOCKER_CLIENT_CERT, DOCKER_CLIENT_KEY, and DOCKER_CA_CERT and writes them to temporary files.
-    Otherwise, it creates a client using non-TLS connection (e.g. Unix socket).
+    If the certificate environment variables are provided (i.e. DOCKER_CLIENT_CERT,
+    DOCKER_CLIENT_KEY, and DOCKER_CA_CERT exist), the function writes them to temporary
+    files and creates a TLS-enabled Docker client.
+    
+    Otherwise, it falls back to a non-TLS connection (for example, via a Unix socket).
     
     Returns:
         docker.DockerClient: The configured Docker client.
     """
-    tls_verify = os.environ.get("DOCKER_TLS_VERIFY", "0")
-    if tls_verify == "1":
-        # TLS is enabled; ensure that certificate data is provided.
-        if not (CLIENT_CERT and CLIENT_KEY and CA_CERT):
-            logger.error("TLS is enabled but one or more certificate environment variables are missing.")
-            raise ValueError("Missing certificate environment variables for TLS connection.")
-        
+    # Check if certificate variables exist.
+    if CLIENT_CERT and CLIENT_KEY and CA_CERT:
+        # TLS branch.
+        logger.info("TLS certificate environment variables detected. Using TLS for Docker client.")
         cert_dir = create_temp_cert_dir()
         cert_path = write_cert_file(cert_dir, "cert.pem", CLIENT_CERT)
         key_path = write_cert_file(cert_dir, "key.pem", CLIENT_KEY)
         ca_cert_path = write_cert_file(cert_dir, "ca.pem", CA_CERT)
         
         os.environ["DOCKER_CERT_PATH"] = cert_dir
-        # DOCKER_HOST should already be set (e.g., tcp://your.docker.host:2376)
+        # DOCKER_HOST should be set externally if needed (e.g., tcp://your.docker.host:2376)
         try:
             client_obj = docker.from_env(client_cert=(cert_path, key_path))
-            logger.info("Successfully created Docker client with TLS.")
+            logger.info("Successfully created TLS-enabled Docker client.")
             return client_obj
         except Exception as e:
-            logger.exception("Failed to create Docker client with TLS: {}", e)
+            logger.exception("Failed to create TLS-enabled Docker client: {}", e)
             raise
     else:
-        # Non-TLS connection (e.g. Unix socket)
-        logger.info("Creating Docker client without TLS (using non-TLS connection).")
+        # Non-TLS branch.
+        logger.info("Certificate environment variables not found. Creating Docker client without TLS.")
         try:
             client_obj = docker.from_env()
             logger.info("Successfully created Docker client without TLS.")
@@ -142,6 +138,8 @@ def pull_docker_image(image: str) -> None:
     except docker.errors.APIError as e:
         logger.error("Failed to pull image '{}': {}", image, e)
         raise
+    
+    
 def create_deployment(deployment_name: str, image: str, container_port: int = 8080) -> None:
     """
     Creates a Kubernetes Deployment using the specified Docker Hub image.
