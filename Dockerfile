@@ -10,6 +10,7 @@ WORKDIR /app
 # Copy the requirements file first for dependency caching
 COPY api/requirements.txt .
 
+
 # Install build dependencies, then install Python dependencies, and finally remove build tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc build-essential && \
@@ -27,7 +28,7 @@ RUN adduser --disabled-password --gecos "" appuser && \
 USER appuser
 
 # Expose port 80 for the application
-EXPOSE 80
+EXPOSE 8080
 
 # Start the API using Gunicorn with Uvicorn workers
-CMD ["gunicorn", "api:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:80"]
+CMD ["gunicorn", "api:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080"]

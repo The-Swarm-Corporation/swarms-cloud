@@ -377,7 +377,7 @@ def delete_swarm(swarm_id: str, current_user: str = Depends(get_current_user)) -
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)
 # ------------------------------------------------------------------------------
 # To run the application:
 #
