@@ -5,3 +5,4 @@ pydantic
 loguru
 gunicorn
 uvicorn
+python-dotenv
