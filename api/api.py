@@ -17,6 +17,7 @@ Endpoints:
 Each swarm includes a name, description, Docker Hub image, and autoscaling parameters.
 """
 
+import os
 import time
 import uuid
 from typing import Dict, List, Optional
@@ -29,6 +30,14 @@ from kubernetes.client.rest import ApiException
 from pydantic import BaseModel, Field
 from loguru import logger
 import uvicorn
+from dotenv import load_dotenv
+
+load_dotenv()
+
+os.environ["DOCKER_HOST"] = "unix:///var/run/docker.sock"
+os.environ["DOCKER_TLS_VERIFY"] = "0"
+os.environ.pop("DOCKER_CERT_PATH", None)  # Remove if present
+
 
 # ------------------------------------------------------------------------------
 # Kubernetes Functions (Using our earlier code as building blocks)
