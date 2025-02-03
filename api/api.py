@@ -34,10 +34,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+
+# Configure environment variables to disable TLS.
 os.environ["DOCKER_HOST"] = "unix:///var/run/docker.sock"
 os.environ["DOCKER_TLS_VERIFY"] = "0"
-os.environ.pop("DOCKER_CERT_PATH", None)  # Remove if present
-
+if "DOCKER_CERT_PATH" in os.environ:
+    del os.environ["DOCKER_CERT_PATH"]
 
 # ------------------------------------------------------------------------------
 # Kubernetes Functions (Using our earlier code as building blocks)
