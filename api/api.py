@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-SwarmNode Agent API (No Docker/Kubernetes)
+SwarmCloud Agent API (No Docker/Kubernetes)
 
 This API allows users to create, update, delete, execute, and monitor Python agents.
 An agent is defined by its name, description, Python script (with a main function),
@@ -57,7 +57,7 @@ from fastapi import Depends, Header
 load_dotenv()
 
 # Setup tracing
-resource = Resource(attributes={SERVICE_NAME: "swarmnode-agent-api"})
+resource = Resource(attributes={SERVICE_NAME: "Swarm-agent-api"})
 tracer_provider = TracerProvider(resource=resource)
 otlp_exporter = OTLPSpanExporter(endpoint="localhost:4317", insecure=True)
 span_processor = BatchSpanProcessor(otlp_exporter)
@@ -260,7 +260,7 @@ async def execute_agent(agent: AgentOut, payload: dict) -> Any:
 # --- FastAPI Application Setup ---
 
 app = FastAPI(
-    title="SwarmNode Agent API",
+    title="Swarm Agent API",
     description="API for managing and executing Python agents in the cloud without Docker/Kubernetes.",
     version="1.0.0",
 )
@@ -354,19 +354,19 @@ async def update_agent(agent_id: str, agent_update: AgentUpdate) -> AgentOut:
     return agent
 
 
-@app.delete(
-    "/agents/{agent_id}", status_code=204, dependencies=[Depends(verify_api_key)]
-)
-async def delete_agent(agent_id: str) -> None:
-    """
-    Delete an agent.
-    """
-    agent = agents_db.pop(agent_id, None)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    record_execution(agent_id, "Agent deleted")
-    executions_db.pop(agent_id, None)
-    logger.info(f"Deleted agent {agent_id}")
+# @app.delete(
+#     "/agents/{agent_id}", status_code=204, dependencies=[Depends(verify_api_key)]
+# )
+# async def delete_agent(agent_id: str) -> None:
+#     """
+#     Delete an agent.
+#     """
+#     agent = agents_db.pop(agent_id, None)
+#     if not agent:
+#         raise HTTPException(status_code=404, detail="Agent not found")
+#     record_execution(agent_id, "Agent deleted")
+#     executions_db.pop(agent_id, None)
+#     logger.info(f"Deleted agent {agent_id}")
 
 
 @app.post("/agents/{agent_id}/execute", dependencies=[Depends(verify_api_key)])
