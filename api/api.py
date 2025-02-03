@@ -39,36 +39,31 @@ load_dotenv()
 
 
 
-# Configure environment variables to disable TLS.
-os.environ["DOCKER_HOST"] = "unix:///var/run/docker.sock"
-os.environ["DOCKER_TLS_VERIFY"] = "0"
-
-
+# DO NOT force TLS off here.
+# Instead, expect that the proper environment variables are provided externally.
+# For example, for a non-TLS connection, set:
+#   DOCKER_HOST=unix:///var/run/docker.sock
+#   DOCKER_TLS_VERIFY=0
+# For TLS, set:
+#   DOCKER_HOST=tcp://your.docker.host:2376
+#   DOCKER_TLS_VERIFY=1
+#   DOCKER_CLIENT_CERT, DOCKER_CLIENT_KEY, DOCKER_CA_CERT
 
 # Load sensitive certificate data from environment variables.
-CLIENT_CERT = os.environ.get("DOCKER_CLIENT_CERT") 
+CLIENT_CERT = os.environ.get("DOCKER_CLIENT_CERT")
 CLIENT_KEY = os.environ.get("DOCKER_CLIENT_KEY")
 CA_CERT = os.environ.get("DOCKER_CA_CERT")
-
-
-# ------------------------------------------------------------------------------
-# Kubernetes Functions (Using our earlier code as building blocks)
-# ------------------------------------------------------------------------------
-
-CA_CERT = os.environ.get("DOCKER_CA_CERT")            # Your CA certificate
 
 def create_temp_cert_dir() -> str:
     """
     Create a temporary directory with restricted permissions to hold certificate files.
-    The directory will be automatically removed when the process exits.
+    The directory is automatically removed on process exit.
     
     Returns:
         str: Path to the temporary directory.
     """
     temp_dir = tempfile.mkdtemp(prefix="docker_certs_", dir="/tmp")
-    # Set directory permissions to 0700 so that only the owner can access it.
     os.chmod(temp_dir, 0o700)
-    # Ensure the directory is removed on exit.
     atexit.register(lambda: shutil.rmtree(temp_dir, ignore_errors=True))
     logger.info("Created temporary certificate directory: {}", temp_dir)
     return temp_dir
@@ -78,76 +73,75 @@ def write_cert_file(directory: str, filename: str, content: str) -> str:
     Write certificate content to a file with restricted permissions.
     
     Args:
-        directory (str): The directory in which to create the file.
+        directory (str): Directory where the file will be created.
         filename (str): The filename.
         content (str): The PEM-encoded certificate or key.
     
     Returns:
-        str: The full path to the file.
+        str: Full path to the created file.
     """
     file_path = os.path.join(directory, filename)
     with open(file_path, "w") as f:
         f.write(content)
-    # Set file permissions to 0600 so that only the owner can read/write.
     os.chmod(file_path, 0o600)
     logger.info("Wrote {} to {}", filename, file_path)
     return file_path
 
-def create_docker_client_from_env_cert() -> docker.DockerClient:
+def create_docker_client() -> docker.DockerClient:
     """
-    Automates TLS certificate file creation from environment variables and creates
-    a Docker client configured for TLS.
+    Creates a Docker client configured based on the environment.
     
-    Expects the following environment variables to be set:
-      - DOCKER_CLIENT_CERT: PEM data for the client certificate.
-      - DOCKER_CLIENT_KEY: PEM data for the client private key.
-      - DOCKER_CA_CERT: PEM data for the CA certificate.
-      - DOCKER_HOST: The Docker host URL (if not set, defaults to a provided value).
+    If DOCKER_TLS_VERIFY is set to "1" then it expects the certificate data to be provided via
+    DOCKER_CLIENT_CERT, DOCKER_CLIENT_KEY, and DOCKER_CA_CERT and writes them to temporary files.
+    Otherwise, it creates a client using non-TLS connection (e.g. Unix socket).
     
     Returns:
         docker.DockerClient: The configured Docker client.
     """
-    # Ensure all required certificate data is available.
-    if not (CLIENT_CERT and CLIENT_KEY and CA_CERT):
-        logger.error("One or more certificate environment variables are missing.")
-        raise ValueError("Missing certificate environment variables.")
-    
-    # Create a temporary directory for our cert files.
-    cert_dir = create_temp_cert_dir()
-    cert_path = write_cert_file(cert_dir, "cert.pem", CLIENT_CERT)
-    key_path = write_cert_file(cert_dir, "key.pem", CLIENT_KEY)
-    ca_cert_path = write_cert_file(cert_dir, "ca.pem", CA_CERT)
-    
-    # Set environment variables expected by docker.from_env()
-    os.environ["DOCKER_CERT_PATH"] = cert_dir
-    os.environ["DOCKER_TLS_VERIFY"] = "1"
-    # Ensure DOCKER_HOST is set; if not, use a default.
-    os.environ.setdefault("DOCKER_HOST", "tcp://your.docker.host:2376")
-    
-    try:
-        # Create the Docker client using the temporary cert files.
-        client = docker.from_env(client_cert=(cert_path, key_path))
-        logger.info("Successfully created Docker client with TLS from temporary cert files.")
-        return client
-    except Exception as e:
-        logger.exception("Failed to create Docker client: {}", e)
-        raise
-
+    tls_verify = os.environ.get("DOCKER_TLS_VERIFY", "0")
+    if tls_verify == "1":
+        # TLS is enabled; ensure that certificate data is provided.
+        if not (CLIENT_CERT and CLIENT_KEY and CA_CERT):
+            logger.error("TLS is enabled but one or more certificate environment variables are missing.")
+            raise ValueError("Missing certificate environment variables for TLS connection.")
+        
+        cert_dir = create_temp_cert_dir()
+        cert_path = write_cert_file(cert_dir, "cert.pem", CLIENT_CERT)
+        key_path = write_cert_file(cert_dir, "key.pem", CLIENT_KEY)
+        ca_cert_path = write_cert_file(cert_dir, "ca.pem", CA_CERT)
+        
+        os.environ["DOCKER_CERT_PATH"] = cert_dir
+        # DOCKER_HOST should already be set (e.g., tcp://your.docker.host:2376)
+        try:
+            client_obj = docker.from_env(client_cert=(cert_path, key_path))
+            logger.info("Successfully created Docker client with TLS.")
+            return client_obj
+        except Exception as e:
+            logger.exception("Failed to create Docker client with TLS: {}", e)
+            raise
+    else:
+        # Non-TLS connection (e.g. Unix socket)
+        logger.info("Creating Docker client without TLS (using non-TLS connection).")
+        try:
+            client_obj = docker.from_env()
+            logger.info("Successfully created Docker client without TLS.")
+            return client_obj
+        except Exception as e:
+            logger.exception("Failed to create Docker client without TLS: {}", e)
+            raise
 
 def pull_docker_image(image: str) -> None:
     """
     Pulls the specified Docker image from Docker Hub.
     """
-    logger.info(f"Pulling image '{image}' from Docker Hub...")
-    docker_client = create_docker_client_from_env_cert()
-    logger.info(f"Docker client: {docker_client}")
+    logger.info("Pulling image '{}' from Docker Hub...", image)
+    docker_client = create_docker_client()
     try:
         docker_client.images.pull(image)
-        logger.success(f"Successfully pulled image '{image}'.")
+        logger.success("Successfully pulled image '{}'.", image)
     except docker.errors.APIError as e:
-        print(f"Failed to pull image '{image}': {e}")
+        logger.error("Failed to pull image '{}': {}", image, e)
         raise
-    
 def create_deployment(deployment_name: str, image: str, container_port: int = 8080) -> None:
     """
     Creates a Kubernetes Deployment using the specified Docker Hub image.
