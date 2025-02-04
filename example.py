@@ -5,7 +5,7 @@ from loguru import logger
 if __name__ == "__main__":
     # Example: Using the client in a script
     try:
-        client = SwarmCloudAPI(api_key="your_api_key_here")
+        client = SwarmCloudAPI
         logger.info("Checking API health...")
         print(client.health())
 
