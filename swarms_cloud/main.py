@@ -48,10 +48,13 @@ from datetime import datetime
 # Pydantic Models corresponding to the API's data structures
 # ------------------------------------------------------------------------------
 
+
 def generate_id():
     return str(uuid.uuid4())
 
+
 unique_id = generate_id()
+
 
 class AgentBase(BaseModel):
     id: str = Field(default=unique_id, example="123")

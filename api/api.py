@@ -83,10 +83,13 @@ tracer = trace.get_tracer(__name__)
 
 # --- Pydantic Models ---
 
+
 def generate_id():
     return str(uuid.uuid4())
 
+
 unique_id = generate_id()
+
 
 class AgentBase(BaseModel):
     id: Optional[str] = Field(default=unique_id, example="123")
@@ -153,7 +156,6 @@ agents_db: Dict[str, AgentOut] = {}
 executions_db: Dict[str, List[ExecutionLog]] = {}
 
 # --- Helper Functions for Agent Execution ---
-
 
 
 def get_supabase_client():
@@ -389,8 +391,6 @@ def deduct_credits(api_key: str, amount: float, product_name: str) -> None:
 #     return {"detail": "Action completed, credit deducted."}
 
 
-
-
 def log_agent_creation(agent: AgentOut, api_key: str) -> None:
     """
     Log a newly created agent to the 'swarms_cloud_hosted_agents' table in Supabase.
@@ -612,7 +612,7 @@ async def create_agent(agent_in: AgentCreate, x_api_key: str = Header(...)) -> A
     The provided code is stored and will be executed directly when requested.
     """
     try:
-        # deduct_credits(x_api_key, 0.1, "swarms_cloud_new_agent")
+        deduct_credits(x_api_key, 0.1, "swarms_cloud_new_agent")
 
         agent_id = str(uuid.uuid4())
         agent = AgentOut(
@@ -697,6 +697,7 @@ async def execute_agent_endpoint(
     agent_id: str,
     exec_payload: ExecutionPayload,
     background_tasks: BackgroundTasks,
+    x_api_key: str = Header(...),
 ) -> Dict[str, Any]:
     """
     Execute an agent manually.
@@ -704,6 +705,7 @@ async def execute_agent_endpoint(
     The execution is performed asynchronously. If the agent was created with autoscaling enabled,
     multiple concurrent executions are allowed. Otherwise, the executions still run in the background.
     """
+    deduct_credits(x_api_key, 0.04, "swarms_cloud_execute_agent")
     logger.info(f"Executing agent {agent_id}")
     try:
         agent = agents_db.get(agent_id)
@@ -734,7 +736,7 @@ async def get_agent_history(agent_id: str) -> AgentExecutionHistory:
         if agent_id not in agents_db:
             logger.error(f"Agent {agent_id} not found")
             raise HTTPException(status_code=404, detail="Agent not found")
-            
+
         history = executions_db.get(agent_id, [])
         logger.info(f"Successfully retrieved history for agent {agent_id}")
         return AgentExecutionHistory(agent_id=agent_id, executions=history)
@@ -770,7 +772,9 @@ async def batch_execute_agents(
 
 @app.get("/")
 def root():
-    return {"status": "Welcome to the SwarmCloud API"}
+    return {
+        "status": "Welcome to the SwarmCloud API. Check out the docs at https://docs.swarms.world"
+    }
 
 
 @app.get("/health")
