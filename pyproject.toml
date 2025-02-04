@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "swarms-cloud"
-version = "0.4.4"
+version = "0.4.5"
 description = "Swarms Cloud - Pytorch"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
@@ -23,36 +23,11 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-skypilot = "*"
-fastapi = "0.112.2"
-supabase = "*"
-pytest = "*"
-torch = "*"
-einops = "*"
-tiktoken = "*"
-sse-starlette = "2.0.0"
-uvicorn = "*"
+httpx = "*"
 loguru = "*"
 pydantic = "*"
-stripe = "*"
-diffusers = "*"
-transformers_stream_generator = "*"
-bitsandbytes = "*"
-peft = "*"
-accelerate = "*"
-transformers = "4.44.0"
-huggingface-hub = "*"
-optimum = "*"
-whisperx = "*"
-shortuuid = "*"
-hf_transfer = "*"
-swarms = "*"
-rich = "*"
-asyncio = "*"
-# pulumi = "*"
 
-[tool.poetry.scripts]
-swarms-cloud = "swarms_cloud.cli.main:main"
+
 
 [tool.poetry.group.lint.dependencies]
 ruff = ">=0.1.6,<0.7.0"
