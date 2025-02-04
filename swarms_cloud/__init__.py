@@ -1,8 +1,7 @@
-from swarms_cloud.utils.cleanup_terminal import cleanup_logs
+from dotenv import load_dotenv
+from swarms_cloud.main import SwarmCloudAPI
+
+load_dotenv()
 
 
-cleanup_logs()
-
-from swarms_cloud.utils import *
-from swarms_cloud.schema import *
-from swarms_cloud.loggers import *
+__all__ = ["SwarmCloudAPI"]

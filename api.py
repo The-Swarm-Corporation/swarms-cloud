@@ -25,7 +25,12 @@ Requirements:
   - opentelemetry-sdk, opentelemetry-exporter-otlp, opentelemetry-instrumentation-fastapi
 
 
-Date: 2025-02-03
+Todo:
+- Add credits system
+
+- Add logging to supabase for the agents
+
+
 """
 
 import asyncio
@@ -125,6 +130,47 @@ def get_user_id_from_api_key(api_key: str) -> str:
 
 # global dictionary to store timestamps for each client IP
 client_request_times = {}
+
+
+def fetch_all_agents_from_db() -> List[dict]:
+    """
+    Fetch all agents from the 'swarms_cloud_hosted_agents' table in Supabase.
+
+    Returns:
+        List[dict]: A list of agent records as dictionaries.
+
+    Raises:
+        HTTPException: If no data is returned or if there's an error fetching data.
+    """
+    logger.info("Attempting to fetch all agents from Supabase database")
+    try:
+        supabase_client = get_supabase_client()
+        logger.debug("Successfully got Supabase client")
+
+        response = (
+            supabase_client.table("swarms_cloud_hosted_agents").select("*").execute()
+        )
+        logger.debug(f"Received response from Supabase: {response}")
+
+        if not response.data:
+            logger.error(
+                f"Error fetching agents: No data returned. Full response: {response}"
+            )
+            raise HTTPException(
+                status_code=500, detail="Failed to fetch agents from the database."
+            )
+
+        logger.info(f"Successfully fetched {len(response.data)} agents from database")
+        return response.data or []
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error while fetching agents: {str(e)}")
+        logger.exception(e)
+        raise HTTPException(
+            status_code=500, detail="An unexpected error occurred while fetching agents"
+        )
 
 
 def rate_limit_dependency(max_requests: int = 10, window_seconds: int = 60):
@@ -336,6 +382,53 @@ executions_db: Dict[str, List[ExecutionLog]] = {}
 # --- Helper Functions for Agent Execution ---
 
 
+def log_agent_creation(agent: AgentOut, api_key: str) -> None:
+    """
+    Log a newly created agent to the 'swarms_cloud_hosted_agents' table in Supabase.
+
+    Args:
+        agent (AgentOut): The agent object that was just created.
+        api_key (str): The API key used for authentication (to retrieve the associated user_id).
+
+    Raises:
+        HTTPException: If the logging operation fails.
+    """
+    logger.info(f"Logging agent creation for {agent.name}")
+    supabase_client = get_supabase_client()
+    try:
+        user_id = get_user_id_from_api_key(api_key)
+    except Exception as e:
+        logger.error(f"Error retrieving user id from API key: {e}")
+        raise HTTPException(
+            status_code=403, detail="Invalid API key provided for logging."
+        )
+
+    # Prepare the data to be inserted.
+    data = {
+        "api_key": api_key,
+        "user_id": user_id,
+        "name": agent.name,
+        "description": agent.description,
+        "code": agent.code,
+        "requirements": agent.requirements,
+        "envs": agent.envs,
+        "autoscaling": agent.autoscaling,
+        # "created_at" and "updated_now" will use their default values (e.g., now())
+        "is_active": True,
+    }
+
+    response = (
+        supabase_client.table("swarms_cloud_hosted_agents").insert(data).execute()
+    )
+    if not response.data:
+        logger.error("Failed to log agent creation to Supabase", response.error)
+        raise HTTPException(
+            status_code=500, detail="Failed to log agent creation to the database."
+        )
+    else:
+        logger.info(f"Agent logged successfully in Supabase: {agent.name}")
+
+
 def record_execution(agent_id: str, log: str) -> None:
     """
     Record an execution log for the given agent.
@@ -457,9 +550,45 @@ app.add_middleware(
     response_model=List[AgentOut],
     dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
-async def list_agents() -> List[AgentOut]:
-    """List all agents."""
-    return list(agents_db.values())
+async def list_agents_db() -> List[AgentOut]:
+    """
+    List all agents stored in the Supabase 'swarms_cloud_hosted_agents' table.
+    """
+    logger.info("Fetching all agents from database")
+    try:
+        agents_data = fetch_all_agents_from_db()
+        logger.debug(f"Retrieved {len(agents_data)} agents from database")
+
+        # Convert each agent dict to an AgentOut model. Adjust fields if necessary.
+        agents = []
+        for agent_dict in agents_data:
+            try:
+                logger.debug(f"Converting agent data: {agent_dict.get('name')}")
+                agent = AgentOut(
+                    id=str(agent_dict.get("id")),
+                    name=agent_dict.get("name"),
+                    description=agent_dict.get("description"),
+                    code=agent_dict.get("code"),
+                    requirements=agent_dict.get("requirements"),
+                    envs=agent_dict.get("envs"),
+                    autoscaling=agent_dict.get("autoscaling", False),
+                    created_at=agent_dict.get("created_at"),
+                )
+                agents.append(agent)
+                logger.debug(f"Successfully converted agent: {agent.name}")
+            except Exception as e:
+                logger.error(f"Error converting agent data: {e}")
+                logger.exception(e)
+
+        logger.info(f"Successfully retrieved and converted {len(agents)} agents")
+        return agents
+
+    except Exception as e:
+        logger.error("Failed to list agents from database")
+        logger.exception(e)
+        raise HTTPException(
+            status_code=500, detail="An error occurred while retrieving agents"
+        )
 
 
 @app.post(
@@ -468,30 +597,36 @@ async def list_agents() -> List[AgentOut]:
     status_code=201,
     dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
-async def create_agent(agent_in: AgentCreate) -> AgentOut:
+async def create_agent(agent_in: AgentCreate, x_api_key: str = Header(...)) -> AgentOut:
     """
     Create a new agent.
 
     The provided code is stored and will be executed directly when requested.
     """
+    try:
+        # deduct_credits(x_api_key, 0.1, "swarms_cloud_new_agent")
 
-    # deduct_credits(x_api_key, 0.1, "swarms_cloud_new_agent")
+        agent_id = str(uuid.uuid4())
+        agent = AgentOut(
+            id=agent_id,
+            name=agent_in.name,
+            description=agent_in.description,
+            code=agent_in.code,
+            requirements=agent_in.requirements,
+            envs=agent_in.envs,
+            autoscaling=agent_in.autoscaling or False,
+            created_at=datetime.utcnow(),
+        )
+        agents_db[agent_id] = agent
+        record_execution(agent_id, "Agent created")
+        logger.info(f"Created agent {agent_id}")
 
-    agent_id = str(uuid.uuid4())
-    agent = AgentOut(
-        id=agent_id,
-        name=agent_in.name,
-        description=agent_in.description,
-        code=agent_in.code,
-        requirements=agent_in.requirements,
-        envs=agent_in.envs,
-        autoscaling=agent_in.autoscaling or False,
-        created_at=datetime.utcnow(),
-    )
-    agents_db[agent_id] = agent
-    record_execution(agent_id, "Agent created")
-    logger.info(f"Created agent {agent_id}")
-    return agent
+        log_agent_creation(agent, x_api_key)
+
+        return agent
+    except Exception as e:
+        logger.error(f"Error creating agent: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create agent: {str(e)}")
 
 
 @app.get(

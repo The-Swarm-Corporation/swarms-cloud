@@ -1,1 +1,0 @@
-sky serve up sky_serve.yaml -n llama3 --cloud aws 
