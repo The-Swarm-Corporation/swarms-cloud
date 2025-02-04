@@ -26,15 +26,18 @@ if __name__ == "__main__":
         )
         created_agent = client.create_agent(new_agent_data)
         print(f"Created agent: {created_agent}")
-
-        # # Execute the agent
-        # execution = client.execute_agent(created_agent.id, {"input": "Hello, world!"})
-        # print(f"Execution: {execution}")
+        print(created_agent.id)
 
         # # Run the agent
-        # agent_id = created_agent.id
-        # agent_run = client.run_agent(agent_id)
-        # print(f"Agent run: {agent_run}")
+        agent_id = created_agent.id
+        print(client.execute_agent(agent_id, {"input": "Hello, world!"}))
+
+        # Batch
+        print(
+            client.batch_execute_agents(
+                agent_id, [{"input": "Hello, world!"}, {"input": "Hello, world!"}]
+            )
+        )
 
     except httpx.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err}")

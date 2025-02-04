@@ -318,10 +318,10 @@ def deduct_credits(api_key: str, amount: float, product_name: str) -> None:
 
 
 class AgentBase(BaseModel):
-    name: str = Field(..., example="TranslateAgent")
+    name: Optional[str] = Field(None, example="TranslateAgent")
     description: Optional[str] = Field(None, example="An agent that translates text")
-    code: str = Field(
-        ...,
+    code: Optional[str] = Field(
+        None,
         example=(
             "def main(request, store):\n"
             "    text = request.payload.get('text', '')\n"
@@ -570,7 +570,6 @@ async def list_agents_db() -> List[AgentOut]:
                     description=agent_dict.get("description"),
                     code=agent_dict.get("code"),
                     requirements=agent_dict.get("requirements"),
-                    envs=agent_dict.get("envs"),
                     autoscaling=agent_dict.get("autoscaling", False),
                     created_at=agent_dict.get("created_at"),
                 )
