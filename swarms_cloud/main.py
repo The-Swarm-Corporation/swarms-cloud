@@ -75,7 +75,6 @@ class AgentUpdate(BaseModel):
     description: Optional[str] = None
     code: Optional[str] = None
     requirements: Optional[str] = None
-    envs: Optional[str] = None
     autoscaling: Optional[bool] = None
 
 
