@@ -24,35 +24,41 @@ Requirements:
   - fastapi, uvicorn, pydantic, loguru, psutil
   - opentelemetry-sdk, opentelemetry-exporter-otlp, opentelemetry-instrumentation-fastapi
 
-Author: Your Name
+
 Date: 2025-02-03
 """
 
 import asyncio
 import os
-import uuid
 import time
-import psutil  # For memory usage
+import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from loguru import logger
+import psutil  # For memory usage
 import supabase
 from dotenv import load_dotenv
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    Header,
+    HTTPException,
+    Request,
+    status,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 # --- OpenTelemetry Setup ---
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from fastapi import Depends, Header
-
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -92,12 +98,177 @@ def check_api_key(api_key: str) -> bool:
     return bool(response.data)
 
 
+def get_user_id_from_api_key(api_key: str) -> str:
+    """
+    Maps an API key to its associated user ID.
+
+    Args:
+        api_key (str): The API key to look up
+
+    Returns:
+        str: The user ID associated with the API key
+
+    Raises:
+        ValueError: If the API key is invalid or not found
+    """
+    supabase_client = get_supabase_client()
+    response = (
+        supabase_client.table("swarms_cloud_api_keys")
+        .select("user_id")
+        .eq("key", api_key)
+        .execute()
+    )
+    if not response.data:
+        raise ValueError("Invalid API key")
+    return response.data[0]["user_id"]
+
+
+# global dictionary to store timestamps for each client IP
+client_request_times = {}
+
+
+def rate_limit_dependency(max_requests: int = 10, window_seconds: int = 60):
+    """
+    A dependency that enforces a simple rate limit.
+
+    Args:
+        max_requests (int): Maximum allowed requests within the window.
+        window_seconds (int): The time window in seconds.
+
+    Raises:
+        HTTPException: If the client has exceeded the rate limit.
+    """
+
+    async def dependency(request: Request):
+        # Get client IP address; if behind a proxy, adjust accordingly.
+        client_ip = request.client.host
+
+        # Get the current time
+        now = time.time()
+
+        # Get the list of previous request timestamps for this IP (or empty list)
+        request_times = client_request_times.get(client_ip, [])
+
+        # Remove timestamps that are outside the window
+        request_times = [t for t in request_times if now - t < window_seconds]
+
+        # Check if the client has exceeded the allowed number of requests
+        if len(request_times) >= max_requests:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests, please try again later.",
+            )
+
+        # Record the current request timestamp
+        request_times.append(now)
+        client_request_times[client_ip] = request_times
+
+
 def verify_api_key(x_api_key: str = Header(...)) -> None:
     """
     Dependency to verify the API key.
     """
     if not check_api_key(x_api_key):
         raise HTTPException(status_code=403, detail="Invalid API Key")
+
+
+def deduct_credits(api_key: str, amount: float, product_name: str) -> None:
+    """
+    Deduct a certain amount of credits for the given user and log the transaction.
+
+    This function:
+      1. Retrieves the user's current credits from the "swarms_cloud_users_credits" table.
+      2. Verifies that the record exists and that the user has sufficient credits.
+      3. Logs the intended transaction in the "swarms_cloud_services" table.
+      4. Updates the user's credit balance by deducting the specified amount.
+
+    Args:
+        api_key (str): The API key used for the transaction.
+        amount (float): The amount of credits to deduct.
+        product_name (str): A description of the product or service for which credits are deducted.
+
+    Raises:
+        HTTPException: If the user's credit record is not found, if there are insufficient credits,
+                       or if any database operation fails.
+    """
+    supabase_client = get_supabase_client()
+    user_id = get_user_id_from_api_key(api_key)
+
+    # --- 1. Fetch the user's current credit record ---
+    response = (
+        supabase_client.table("swarms_cloud_users_credits")
+        .select("*")
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if not response.data or len(response.data) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User credits record not found.",
+        )
+
+    user_record = response.data[0]
+    current_credit = Decimal(user_record["credit"])
+    deduction = Decimal(str(amount))  # Use Decimal for precise arithmetic
+
+    # --- 2. Verify that sufficient credits are available ---
+    if current_credit < deduction:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="Insufficient credits."
+        )
+
+    # --- 3. Log the transaction in the swarms_cloud_services table first ---
+    log_response = (
+        supabase_client.table("swarms_cloud_services")
+        .insert(
+            {
+                "user_id": user_id,
+                "api_key": api_key,
+                "charge_credit": int(
+                    deduction
+                ),  # Assuming credits are stored as integers
+                "product_name": product_name,
+            }
+        )
+        .execute()
+    )
+
+    if not log_response.data:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to log the credit transaction.",
+        )
+
+    # --- 4. Update the user's credit balance ---
+    new_credit = current_credit - deduction
+
+    update_response = (
+        supabase_client.table("swarms_cloud_users_credits")
+        .update({"credit": str(new_credit)})
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if not update_response.data:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update credits.",
+        )
+
+
+# Example usage within an endpoint:
+#
+# @app.post("/some-action")
+# async def some_action(x_api_key: str = Header(...), some_payload: SomePayloadType):
+#     # Verify API key and extract user_id (this depends on your authentication logic)
+#     user_id = get_user_id_from_api_key(x_api_key)
+#
+#     # Deduct credits (e.g., 1 credit per action)
+#     deduct_credits(user_id, 1)
+#
+#     # Proceed with the action
+#     return {"detail": "Action completed, credit deducted."}
 
 
 class AgentBase(BaseModel):
@@ -183,6 +354,7 @@ def run_agent_code(agent: Any, payload: dict) -> Any:
       - def main(request, store): ...
     A dummy request (with payload) and store are provided when necessary.
     """
+
     # Determine how to access the code: dictionary or Pydantic attribute.
     try:
         code_str = agent["code"] if isinstance(agent, dict) else agent.code
@@ -281,7 +453,9 @@ app.add_middleware(
 
 
 @app.get(
-    "/agents", response_model=List[AgentOut], dependencies=[Depends(verify_api_key)]
+    "/agents",
+    response_model=List[AgentOut],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
 async def list_agents() -> List[AgentOut]:
     """List all agents."""
@@ -292,7 +466,7 @@ async def list_agents() -> List[AgentOut]:
     "/agents",
     response_model=AgentOut,
     status_code=201,
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
 async def create_agent(agent_in: AgentCreate) -> AgentOut:
     """
@@ -300,6 +474,9 @@ async def create_agent(agent_in: AgentCreate) -> AgentOut:
 
     The provided code is stored and will be executed directly when requested.
     """
+
+    # deduct_credits(x_api_key, 0.1, "swarms_cloud_new_agent")
+
     agent_id = str(uuid.uuid4())
     agent = AgentOut(
         id=agent_id,
@@ -320,7 +497,7 @@ async def create_agent(agent_in: AgentCreate) -> AgentOut:
 @app.get(
     "/agents/{agent_id}",
     response_model=AgentOut,
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
 async def get_agent(agent_id: str) -> AgentOut:
     """Retrieve details of a specific agent."""
@@ -333,7 +510,7 @@ async def get_agent(agent_id: str) -> AgentOut:
 @app.put(
     "/agents/{agent_id}",
     response_model=AgentOut,
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
 async def update_agent(agent_id: str, agent_update: AgentUpdate) -> AgentOut:
     """
@@ -369,9 +546,14 @@ async def update_agent(agent_id: str, agent_update: AgentUpdate) -> AgentOut:
 #     logger.info(f"Deleted agent {agent_id}")
 
 
-@app.post("/agents/{agent_id}/execute", dependencies=[Depends(verify_api_key)])
+@app.post(
+    "/agents/{agent_id}/execute",
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
+)
 async def execute_agent_endpoint(
-    agent_id: str, exec_payload: ExecutionPayload, background_tasks: BackgroundTasks
+    agent_id: str,
+    exec_payload: ExecutionPayload,
+    background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
     """
     Execute an agent manually.
@@ -379,6 +561,11 @@ async def execute_agent_endpoint(
     The execution is performed asynchronously. If the agent was created with autoscaling enabled,
     multiple concurrent executions are allowed. Otherwise, the executions still run in the background.
     """
+    # try:
+    #     deduct_credits(x_api_key, 0.01, "swarms_cloud_execute_agent")
+    # except Exception as e:
+    #     raise HTTPException(status_code=402, detail=str(e))
+
     agent = agents_db.get(agent_id)
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
@@ -392,7 +579,7 @@ async def execute_agent_endpoint(
 @app.get(
     "/agents/{agent_id}/history",
     response_model=AgentExecutionHistory,
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
 )
 async def get_agent_history(agent_id: str) -> AgentExecutionHistory:
     """Fetch the execution history (logs) for an agent."""
@@ -400,6 +587,26 @@ async def get_agent_history(agent_id: str) -> AgentExecutionHistory:
         raise HTTPException(status_code=404, detail="Agent not found")
     history = executions_db.get(agent_id, [])
     return AgentExecutionHistory(agent_id=agent_id, executions=history)
+
+
+# Batch execute agents
+@app.post(
+    "/agents/batch_execute",
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
+)
+async def batch_execute_agents(
+    agents: List[AgentOut], payload: ExecutionPayload
+) -> List[Any]:
+    # try:
+    #     deduct_credits(x_api_key, 0.01 * len(agents), "swarms_cloud_batch_execute_agents")
+    # except Exception as e:
+    #     raise HTTPException(status_code=402, detail=str(e))
+
+    """Batch execute agents."""
+    results = await asyncio.gather(
+        *[execute_agent(agent, payload.payload) for agent in agents]
+    )
+    return results
 
 
 @app.get("/")

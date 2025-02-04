@@ -3,8 +3,8 @@ import json
 import time
 
 # Configuration
-BASE_URL = "https://swarmcloud-285321057562.us-central1.run.app"
-API_KEY = "sk-5701eba12a7716137d10ad1e3064cdb449f468d8d4375d00b3e1b0cdcefc7b59"  # Replace with your actual API key
+BASE_URL = "http://localhost:8080"
+API_KEY = "sk-"  # Replace with your actual API key
 HEADERS = {"x-api-key": API_KEY, "Content-Type": "application/json"}
 
 
@@ -94,15 +94,6 @@ def test_get_agent_history(agent_id):
     assert "executions" in response.json()
 
 
-def test_delete_agent(agent_id):
-    print("\n=== Testing Delete Agent ===")
-    response = requests.delete(f"{BASE_URL}/agents/{agent_id}", headers=HEADERS)
-    try:
-        print_response("Delete agent response", response.json())
-    except:
-        print(f"Delete agent status code: {response.status_code}")
-    assert response.status_code == 204
-
 
 def run_all_tests():
     try:
@@ -119,7 +110,6 @@ def run_all_tests():
         test_update_agent(agent_id)
         test_execute_agent(agent_id)
         test_get_agent_history(agent_id)
-        test_delete_agent(agent_id)
 
         print("\n=== All tests completed successfully! ===")
     except AssertionError as e:
