@@ -2,7 +2,7 @@
 # Swarms Cloud: Revolutionize Automation with Agentic APIs
 
 
-[![Join our Discord](https://img.shields.io/badge/Discord-Join%20our%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/agora-999382051935506503) [![Subscribe on YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@kyegomez3242) [![Connect on LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kye-g-38759a207/) [![Follow on X.com](https://img.shields.io/badge/X.com-Follow-1DA1F2?style=for-the-badge&logo=x&logoColor=white)](https://x.com/kyegomezb)
+[![Join our Discord](https://img.shields.io/badge/Discord-Join%20our%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/swarms) [![Subscribe on YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@kyegomez3242) [![Connect on LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kye-g-38759a207/) [![Follow on X.com](https://img.shields.io/badge/X.com-Follow-1DA1F2?style=for-the-badge&logo=x&logoColor=white)](https://x.com/kyegomezb)
 
 Welcome to Swarms Cloud, the ultimate platform for deploying, managing, and monetizing intelligent agents. With Swarms Cloud, you can seamlessly create and publish agents that perform a wide range of automated tasks, allowing businesses and developers to integrate agentic intelligence into their workflows. This guide will help you get started with Swarms Cloud quickly and easily.
 
@@ -57,56 +57,52 @@ To install the **Swarms Cloud** Python package, simply use the following command
 pip install -U swarms-cloud
 ```
 
-This will install the latest version of the Swarms Cloud CLI and libraries, allowing you to create, manage, and publish agents.
-<!-- 
----
-
-## Getting Started
-
-### 1. Initialize Your Project
-
-After installing the Swarms Cloud package, you can start by initializing your project using the following command:
-
-```bash
-swarms init --project "MyFirstAgent"
-```
-
-This will create a new directory and scaffold the basic structure needed to create your first agent.
-
-### 2. Creating an Agent
-
-Build your agent using any framework of your choice. Swarms Cloud supports a variety of frameworks and languages, making it easy to integrate any existing agent into the marketplace.
-
-For example, if you're using the Swarms framework, you can start building your agent like this:
+## Usage
 
 ```python
-# Example of a basic agent implementation
-class MyAgent:
-    def process(self, input_data):
-        # Your agent logic goes here
-        return {"response": "Hello from MyAgent!"}
+import httpx
+from swarms_cloud.main import AgentCreate, SwarmCloudAPI
+from loguru import logger
+import os
+
+if __name__ == "__main__":
+    # Example: Using the client in a script
+    try:
+        client = SwarmCloudAPI(api_key=os.getenv("SWARMS_API_KEY"))
+        logger.info("Checking API health...")
+        print(client.health())
+
+        logger.info("Listing agents...")
+        agents = client.list_agents()
+        for agent in agents:
+            print(agent)
+
+        # Example: Creating a new agent
+        new_agent_data = AgentCreate(
+            name="ExampleAgent",
+            description="A sample agent for demonstration.",
+            code="def main(request, store):\n    return 'Hello, world!'",
+            requirements="requests",
+            envs="",
+            autoscaling=False,
+        )
+        created_agent = client.create_agent(new_agent_data)
+        print(f"Created agent: {created_agent}")
+
+        # # Execute the agent
+        # execution = client.execute_agent(created_agent.id, {"input": "Hello, world!"})
+        # print(f"Execution: {execution}")
+
+        # # Run the agent
+        # agent_id = created_agent.id
+        # agent_run = client.run_agent(agent_id)
+        # print(f"Agent run: {agent_run}")
+
+    except httpx.HTTPError as http_err:
+        logger.error(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        logger.error(f"An unexpected error occurred: {err}")
 ```
-
-### 3. Set Metadata for Your Agent
-
-To publish an agent, you need to define the metadata, such as the agent's description, pricing model, and category.
-
-```bash
-swarms set-metadata --name "MyFirstAgent" \
-    --description "An agent for automating customer support" \
-    --pricing "subscription" --rate "$50/month"
-```
-
-### 4. Publish Your Agent
-
-Once your agent is ready, publish it to the marketplace with a single command:
-
-```bash
-swarms publish
-```
-
-This will deploy your agent to the **Swarms Cloud Marketplace**, where it will be globally accessible for businesses to discover and integrate. -->
-
 ---
 
 ## Managing Your Agents
@@ -117,25 +113,6 @@ Once your agent is published, you can monitor its performance and usage via the 
 - **Pricing Adjustments**: Update the pricing or subscription model for your agent at any time.
 - **Version Control**: Manage different versions of your agent and roll out updates seamlessly.
 - **Licensing Options**: Choose between subscription-based models, pay-per-use, or full-access licensing.
-
----
-
-## Monetizing Agents
-
-The Swarms Cloud Marketplace enables you to monetize your agents in a variety of ways:
-
-- **Subscription-Based Pricing**: Set recurring fees for users to access your agent.
-- **Pay-per-Use**: Charge users based on their actual API usage.
-- **Custom Licensing**: Offer exclusive access to your agent for specific customers or use cases.
-  
-For example, if you want to charge based on API usage:
-
-```bash
-swarms set-metadata --name "DataAnalyzerAgent" \
-    --pricing "pay-per-use" --rate "$0.10/call"
-```
-
-Once published, businesses can subscribe to or purchase your API directly from the Swarms Marketplace.
 
 ---
 

@@ -47,6 +47,7 @@ from datetime import datetime
 # Pydantic Models corresponding to the API's data structures
 # ------------------------------------------------------------------------------
 
+
 class AgentBase(BaseModel):
     name: str = Field(..., example="TranslateAgent")
     description: Optional[str] = Field(None, example="An agent that translates text")
@@ -102,6 +103,7 @@ class AgentExecutionHistory(BaseModel):
 # SwarmCloudAPI Client Implementation
 # ------------------------------------------------------------------------------
 
+
 class SwarmCloudAPI:
     """
     Client for interacting with the SwarmCloud Agent API.
@@ -112,7 +114,12 @@ class SwarmCloudAPI:
         timeout (float): Request timeout in seconds.
     """
 
-    def __init__(self, base_url: str = "https://swarmcloud-285321057562.us-central1.run.app", api_key: str = os.getenv("SWARMS_API_KEY"), timeout: float = 10.0) -> None:
+    def __init__(
+        self,
+        base_url: str = "https://swarmcloud-285321057562.us-central1.run.app",
+        api_key: str = os.getenv("SWARMS_API_KEY"),
+        timeout: float = 10.0,
+    ) -> None:
         """
         Initialize the client.
 
@@ -125,9 +132,16 @@ class SwarmCloudAPI:
             self.base_url = base_url.rstrip("/")
             self.api_key = api_key
             self.timeout = timeout
-            self.headers = {"x-api-key": self.api_key, "Content-Type": "application/json"}
-            self.client = httpx.Client(base_url=self.base_url, headers=self.headers, timeout=self.timeout)
-            logger.info(f"SwarmCloudAPI client initialized with base URL: {self.base_url}")
+            self.headers = {
+                "x-api-key": self.api_key,
+                "Content-Type": "application/json",
+            }
+            self.client = httpx.Client(
+                base_url=self.base_url, headers=self.headers, timeout=self.timeout
+            )
+            logger.info(
+                f"SwarmCloudAPI client initialized with base URL: {self.base_url}"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize SwarmCloudAPI client: {str(e)}")
             raise
@@ -149,7 +163,7 @@ class SwarmCloudAPI:
 
         Returns:
             List[AgentOut]: A list of agents.
-        
+
         Raises:
             httpx.HTTPError: If the HTTP request fails.
         """
@@ -241,7 +255,9 @@ class SwarmCloudAPI:
         """
         try:
             endpoint = f"/agents/{agent_id}"
-            logger.debug(f"Updating agent with id: {agent_id} with data: {update.dict(exclude_unset=True)}")
+            logger.debug(
+                f"Updating agent with id: {agent_id} with data: {update.dict(exclude_unset=True)}"
+            )
             response = self.client.put(endpoint, json=update.dict(exclude_unset=True))
             response.raise_for_status()
             agent_out = AgentOut.parse_obj(response.json())
@@ -254,7 +270,9 @@ class SwarmCloudAPI:
             logger.error(f"Unexpected error while updating agent {agent_id}: {str(e)}")
             raise
 
-    def execute_agent(self, agent_id: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def execute_agent(
+        self, agent_id: str, payload: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Execute an agent manually.
 
@@ -271,7 +289,9 @@ class SwarmCloudAPI:
         try:
             endpoint = f"/agents/{agent_id}/execute"
             payload_obj = ExecutionPayload(payload=payload or {})
-            logger.debug(f"Executing agent with id: {agent_id} with payload: {payload_obj.payload}")
+            logger.debug(
+                f"Executing agent with id: {agent_id} with payload: {payload_obj.payload}"
+            )
             response = self.client.post(endpoint, json=payload_obj.dict())
             response.raise_for_status()
             result = response.json()
@@ -306,10 +326,14 @@ class SwarmCloudAPI:
             logger.info(f"Retrieved execution history for agent id: {agent_id}")
             return history
         except httpx.HTTPError as e:
-            logger.error(f"HTTP error while getting history for agent {agent_id}: {str(e)}")
+            logger.error(
+                f"HTTP error while getting history for agent {agent_id}: {str(e)}"
+            )
             raise
         except Exception as e:
-            logger.error(f"Unexpected error while getting history for agent {agent_id}: {str(e)}")
+            logger.error(
+                f"Unexpected error while getting history for agent {agent_id}: {str(e)}"
+            )
             raise
 
     def batch_execute_agents(
@@ -333,8 +357,12 @@ class SwarmCloudAPI:
             endpoint = "/agents/batch_execute"
             payload_obj = ExecutionPayload(payload=payload or {})
             agents_list = [agent.dict() for agent in agents]
-            logger.debug(f"Batch executing {len(agents)} agents with payload: {payload_obj.payload}")
-            response = self.client.post(endpoint, json={"agents": agents_list, **payload_obj.dict()})
+            logger.debug(
+                f"Batch executing {len(agents)} agents with payload: {payload_obj.payload}"
+            )
+            response = self.client.post(
+                endpoint, json={"agents": agents_list, **payload_obj.dict()}
+            )
             response.raise_for_status()
             results = response.json()
             logger.info(f"Batch executed {len(agents)} agents.")
@@ -352,7 +380,7 @@ class SwarmCloudAPI:
 
         Returns:
             Dict[str, Any]: The health status.
-        
+
         Raises:
             httpx.HTTPError: If the HTTP request fails.
         """

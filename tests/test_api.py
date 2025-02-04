@@ -4,7 +4,7 @@ import time
 
 # Configuration
 BASE_URL = "http://localhost:8080"
-API_KEY = "sk-"  # Replace with your actual API key
+API_KEY = "sk-5701eba12a7716137d10ad1e3064cdb449f468d8d4375d00b3e1b0cdcefc7b59"  # Replace with your actual API key
 HEADERS = {"x-api-key": API_KEY, "Content-Type": "application/json"}
 
 
