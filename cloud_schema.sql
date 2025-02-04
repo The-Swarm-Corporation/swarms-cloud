@@ -28,16 +28,16 @@ CREATE POLICY api_keys_insert_policy ON swarms_cloud_api_keys
 -- Table: swarms_cloud_agents
 -----------------------------------------------------------
 CREATE TABLE swarms_cloud_agents (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name text NOT NULL,
-    description text,
-    code text NOT NULL,
-    requirements text,
-    envs text,
-    autoscaling boolean DEFAULT false,
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now(),
-    owner uuid NOT NULL  -- The owner of the agent (should be auth.uid())
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name text NOT NULL,
+  description text,
+  code text NOT NULL,
+  requirements text,
+  envs text,
+  autoscaling boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  owner uuid NOT NULL  -- The owner of the agent (should be auth.uid())
 );
 
 -- Enable Row Level Security on agents.

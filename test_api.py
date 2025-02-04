@@ -94,7 +94,6 @@ def test_get_agent_history(agent_id):
     assert "executions" in response.json()
 
 
-
 def run_all_tests():
     try:
         # Test basic endpoints

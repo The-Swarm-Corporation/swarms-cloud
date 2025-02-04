@@ -1,4 +1,3 @@
-
 import os
 
 import supabase
@@ -49,4 +48,3 @@ def get_user_id_from_api_key(api_key: str) -> str:
     if not response.data:
         raise ValueError("Invalid API key")
     return response.data[0]["user_id"]
-
