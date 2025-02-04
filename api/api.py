@@ -83,6 +83,78 @@ tracer = trace.get_tracer(__name__)
 
 # --- Pydantic Models ---
 
+def generate_id():
+    return str(uuid.uuid4())
+
+unique_id = generate_id()
+
+class AgentBase(BaseModel):
+    id: Optional[str] = Field(default=unique_id, example="123")
+    name: Optional[str] = Field(None, example="TranslateAgent")
+    description: Optional[str] = Field(None, example="An agent that translates text")
+    code: Optional[str] = Field(
+        None,
+        example=(
+            "def main(request, store):\n"
+            "    text = request.payload.get('text', '')\n"
+            "    return f'You said: {text}'\n"
+        ),
+    )
+    requirements: Optional[str] = Field(
+        None,
+        example="requests==2.25.1\nlangchain==0.3.11",
+    )
+    envs: Optional[str] = Field(
+        None,
+        example="DEBUG=True\nLOG_LEVEL=info",
+    )
+    creator: Optional[str] = Field(default=unique_id, example="123")
+
+
+class AgentCreate(AgentBase):
+    autoscaling: Optional[bool] = Field(
+        False,
+        description="If true, the system will allow the agent to scale its executions concurrently.",
+    )
+
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    code: Optional[str] = None
+    requirements: Optional[str] = None
+    envs: Optional[str] = None
+    autoscaling: Optional[bool] = None
+
+
+class AgentOut(AgentBase):
+    id: str
+    created_at: datetime
+    autoscaling: bool = False
+
+
+class ExecutionPayload(BaseModel):
+    payload: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+class ExecutionLog(BaseModel):
+    timestamp: datetime
+    log: str
+
+
+class AgentExecutionHistory(BaseModel):
+    agent_id: str
+    executions: List[ExecutionLog]
+
+
+# --- In-memory "databases" for agents and their execution histories ---
+
+agents_db: Dict[str, AgentOut] = {}
+executions_db: Dict[str, List[ExecutionLog]] = {}
+
+# --- Helper Functions for Agent Execution ---
+
+
 
 def get_supabase_client():
     supabase_url = os.getenv("SUPABASE_URL")
@@ -317,69 +389,6 @@ def deduct_credits(api_key: str, amount: float, product_name: str) -> None:
 #     return {"detail": "Action completed, credit deducted."}
 
 
-class AgentBase(BaseModel):
-    name: Optional[str] = Field(None, example="TranslateAgent")
-    description: Optional[str] = Field(None, example="An agent that translates text")
-    code: Optional[str] = Field(
-        None,
-        example=(
-            "def main(request, store):\n"
-            "    text = request.payload.get('text', '')\n"
-            "    return f'You said: {text}'\n"
-        ),
-    )
-    requirements: Optional[str] = Field(
-        None,
-        example="requests==2.25.1\nlangchain==0.3.11",
-    )
-    envs: Optional[str] = Field(
-        None,
-        example="DEBUG=True\nLOG_LEVEL=info",
-    )
-
-
-class AgentCreate(AgentBase):
-    autoscaling: Optional[bool] = Field(
-        False,
-        description="If true, the system will allow the agent to scale its executions concurrently.",
-    )
-
-
-class AgentUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    code: Optional[str] = None
-    requirements: Optional[str] = None
-    envs: Optional[str] = None
-    autoscaling: Optional[bool] = None
-
-
-class AgentOut(AgentBase):
-    id: str
-    created_at: datetime
-    autoscaling: bool = False
-
-
-class ExecutionPayload(BaseModel):
-    payload: Optional[Dict[str, Any]] = Field(default_factory=dict)
-
-
-class ExecutionLog(BaseModel):
-    timestamp: datetime
-    log: str
-
-
-class AgentExecutionHistory(BaseModel):
-    agent_id: str
-    executions: List[ExecutionLog]
-
-
-# --- In-memory "databases" for agents and their execution histories ---
-
-agents_db: Dict[str, AgentOut] = {}
-executions_db: Dict[str, List[ExecutionLog]] = {}
-
-# --- Helper Functions for Agent Execution ---
 
 
 def log_agent_creation(agent: AgentOut, api_key: str) -> None:
@@ -695,18 +704,21 @@ async def execute_agent_endpoint(
     The execution is performed asynchronously. If the agent was created with autoscaling enabled,
     multiple concurrent executions are allowed. Otherwise, the executions still run in the background.
     """
-    # try:
-    #     deduct_credits(x_api_key, 0.01, "swarms_cloud_execute_agent")
-    # except Exception as e:
-    #     raise HTTPException(status_code=402, detail=str(e))
-
-    agent = agents_db.get(agent_id)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
+    logger.info(f"Executing agent {agent_id}")
     try:
+        agent = agents_db.get(agent_id)
+        if not agent:
+            logger.error(f"Agent {agent_id} not found")
+            raise HTTPException(status_code=404, detail="Agent not found")
+
         result = await execute_agent(agent, exec_payload.payload)
+        logger.info(f"Successfully executed agent {agent_id}")
         return {"return_value": result}
+
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error executing agent {agent_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -717,10 +729,21 @@ async def execute_agent_endpoint(
 )
 async def get_agent_history(agent_id: str) -> AgentExecutionHistory:
     """Fetch the execution history (logs) for an agent."""
-    if agent_id not in agents_db:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    history = executions_db.get(agent_id, [])
-    return AgentExecutionHistory(agent_id=agent_id, executions=history)
+    logger.info(f"Fetching history for agent {agent_id}")
+    try:
+        if agent_id not in agents_db:
+            logger.error(f"Agent {agent_id} not found")
+            raise HTTPException(status_code=404, detail="Agent not found")
+            
+        history = executions_db.get(agent_id, [])
+        logger.info(f"Successfully retrieved history for agent {agent_id}")
+        return AgentExecutionHistory(agent_id=agent_id, executions=history)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching history for agent {agent_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Batch execute agents
@@ -731,16 +754,18 @@ async def get_agent_history(agent_id: str) -> AgentExecutionHistory:
 async def batch_execute_agents(
     agents: List[AgentOut], payload: ExecutionPayload
 ) -> List[Any]:
-    # try:
-    #     deduct_credits(x_api_key, 0.01 * len(agents), "swarms_cloud_batch_execute_agents")
-    # except Exception as e:
-    #     raise HTTPException(status_code=402, detail=str(e))
-
     """Batch execute agents."""
-    results = await asyncio.gather(
-        *[execute_agent(agent, payload.payload) for agent in agents]
-    )
-    return results
+    logger.info(f"Starting batch execution for {len(agents)} agents")
+    try:
+        results = await asyncio.gather(
+            *[execute_agent(agent, payload.payload) for agent in agents]
+        )
+        logger.info("Successfully completed batch execution")
+        return results
+
+    except Exception as e:
+        logger.error(f"Error during batch execution: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/")

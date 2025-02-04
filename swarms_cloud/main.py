@@ -36,6 +36,7 @@ Usage:
 
 import os
 from typing import Any, Dict, List, Optional
+import uuid
 
 import httpx
 from loguru import logger
@@ -47,8 +48,13 @@ from datetime import datetime
 # Pydantic Models corresponding to the API's data structures
 # ------------------------------------------------------------------------------
 
+def generate_id():
+    return str(uuid.uuid4())
+
+unique_id = generate_id()
 
 class AgentBase(BaseModel):
+    id: str = Field(default=unique_id, example="123")
     name: str = Field(..., example="TranslateAgent")
     description: Optional[str] = Field(None, example="An agent that translates text")
     code: str = Field(
@@ -61,6 +67,7 @@ class AgentBase(BaseModel):
     )
     requirements: Optional[str] = Field(None, example="requests==2.25.1")
     envs: Optional[str] = Field(None, example="DEBUG=True")
+    creator: Optional[str] = Field(default=unique_id, example="123")
 
 
 class AgentCreate(AgentBase):

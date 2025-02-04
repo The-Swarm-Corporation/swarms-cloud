@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
         logger.info("Listing agents...")
         agents = client.list_agents()
+        print(agents)
         for agent in agents:
             print(agent)
 
@@ -21,7 +22,6 @@ if __name__ == "__main__":
             description="A sample agent for demonstration.",
             code="def main(request, store):\n    return 'Hello, world!'",
             requirements="requests",
-            envs="",
             autoscaling=False,
         )
         created_agent = client.create_agent(new_agent_data)
@@ -29,15 +29,15 @@ if __name__ == "__main__":
         print(created_agent.id)
 
         # # Run the agent
-        agent_id = created_agent.id
-        print(client.execute_agent(agent_id, {"input": "Hello, world!"}))
+        # agent_id = created_agent.id
+        # print(client.execute_agent(agent_id, {"input": "Hello, world!"}))
 
-        # Batch
-        print(
-            client.batch_execute_agents(
-                agent_id, [{"input": "Hello, world!"}, {"input": "Hello, world!"}]
-            )
-        )
+        # # Batch
+        # print(
+        #     client.batch_execute_agents(
+        #         agent_id, [{"input": "Hello, world!"}, {"input": "Hello, world!"}]
+        #     )
+        # )
 
     except httpx.HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err}")
