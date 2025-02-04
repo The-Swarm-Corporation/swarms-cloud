@@ -697,7 +697,6 @@ async def execute_agent_endpoint(
     agent_id: str,
     exec_payload: ExecutionPayload,
     background_tasks: BackgroundTasks,
-    x_api_key: str = Header(...),
 ) -> Dict[str, Any]:
     """
     Execute an agent manually.
@@ -705,7 +704,6 @@ async def execute_agent_endpoint(
     The execution is performed asynchronously. If the agent was created with autoscaling enabled,
     multiple concurrent executions are allowed. Otherwise, the executions still run in the background.
     """
-    deduct_credits(x_api_key, 0.04, "swarms_cloud_execute_agent")
     logger.info(f"Executing agent {agent_id}")
     try:
         agent = agents_db.get(agent_id)
